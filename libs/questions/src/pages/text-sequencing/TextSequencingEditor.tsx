@@ -1,21 +1,8 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  Box,
-  Switch,
-  FormControlLabel,
-  Button,
-  Typography,
-  TextField,
-  IconButton,
-  Alert,
-  styled,
-  alpha,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import { GripVertical, Plus, Trash2, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import { Input, cn } from '@item-bank/ui';
 
 type SequencingItem = {
   id: string;
@@ -36,40 +23,6 @@ function moveItem<T>(list: T[], from: number, to: number): T[] {
   next.splice(to, 0, removed);
   return next;
 }
-
-const RowCard = styled(Box)(({ theme }) => ({
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.6)
-      : alpha(theme.palette.primary.main, 0.03),
-  transition: 'box-shadow 0.18s ease, border-color 0.12s ease, background-color 0.12s ease, transform 0.15s ease, opacity 0.15s ease',
-  '&[data-drag-over="true"]': {
-    borderColor: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? alpha(theme.palette.primary.main, 0.12)
-        : alpha(theme.palette.primary.main, 0.07),
-  },
-  '&[data-dragging="true"]': {
-    boxShadow: theme.shadows[8],
-    opacity: 0.88,
-    transform: 'scale(1.015)',
-    cursor: 'grabbing',
-    position: 'relative',
-    zIndex: 20,
-    pointerEvents: 'none',
-  },
-}));
-const DragHandle = styled(Box)(({ theme }) => ({
-  color: alpha(theme.palette.text.secondary, 0.5),
-  '&:focus-visible': {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: 2,
-    color: theme.palette.primary.main,
-  },
-  '&:active': { cursor: 'grabbing' },
-}));
 
 function TextSequencingEditor() {
   const { watch, setValue, register, unregister, getValues } = useFormContext();
@@ -289,40 +242,50 @@ function TextSequencingEditor() {
   }, []);
 
   return (
-    <Box className="flex flex-col gap-6">
-      
-      <Box className="flex justify-between items-center flex-wrap gap-4">
-        <Typography variant="body2" className="font-semibold" sx={{ color: 'text.primary' }}>
-          {t('editor.text_sequencing.rows_label')} *
-        </Typography>
-        <Box className="flex gap-4 items-center flex-wrap">
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={autoDistribute}
-                onChange={(e) => handleAutoDistributeChange(e.target.checked)}
-              />
-            }
-            label={t('editor.text_sequencing.auto_distribute')}
-            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={allowPartialCredit}
-                onChange={(e) => handlePartialCreditChange(e.target.checked)}
-              />
-            }
-            label={t('editor.text_sequencing.partial_credit')}
-            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-          />
-        </Box>
-      </Box>
+    <div className="flex flex-col gap-6">
 
-      
-      <Box
+      {/* Header row: label + toggles */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <span className="text-sm font-semibold text-foreground">
+          {t('editor.text_sequencing.rows_label')} *
+        </span>
+        <div className="flex gap-4 items-center flex-wrap">
+          {/* Auto-distribute toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="sr-only peer/auto"
+              checked={autoDistribute}
+              onChange={(e) => handleAutoDistributeChange(e.target.checked)}
+            />
+            <div className="w-9 h-5 rounded-full bg-muted peer-checked/auto:bg-primary relative transition-colors">
+              <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/auto:translate-x-4 rtl:peer-checked/auto:-translate-x-4" />
+            </div>
+            <span className="text-sm text-foreground">
+              {t('editor.text_sequencing.auto_distribute')}
+            </span>
+          </label>
+
+          {/* Partial credit toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="sr-only peer/partial"
+              checked={allowPartialCredit}
+              onChange={(e) => handlePartialCreditChange(e.target.checked)}
+            />
+            <div className="w-9 h-5 rounded-full bg-muted peer-checked/partial:bg-primary relative transition-colors">
+              <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/partial:translate-x-4 rtl:peer-checked/partial:-translate-x-4" />
+            </div>
+            <span className="text-sm text-foreground">
+              {t('editor.text_sequencing.partial_credit')}
+            </span>
+          </label>
+        </div>
+      </div>
+
+      {/* Draggable row list */}
+      <div
         className="flex flex-col gap-3 touch-none"
         ref={rowListRef}
         role="list"
@@ -336,9 +299,16 @@ function TextSequencingEditor() {
           const isDragOver = dragOverIndex === index && dragSource.current !== index;
 
           return (
-            <RowCard
-              className="flex items-center gap-2 p-3 rounded-2xl"
+            <div
               key={item.id}
+              className={cn(
+                'flex items-center gap-2 p-3 rounded-2xl border bg-card transition-colors',
+                isDragging
+                  ? 'opacity-80 shadow-lg border-primary/30 z-20 pointer-events-none'
+                  : isDragOver
+                    ? 'border-primary bg-primary/[0.07]'
+                    : 'border-border hover:border-primary/20'
+              )}
               role="listitem"
               data-row-index={index}
               data-drag-over={isDragOver ? 'true' : undefined}
@@ -347,94 +317,98 @@ function TextSequencingEditor() {
                 isDragging
                   ? {
                       transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) scale(1.015)`,
+                      transition: 'box-shadow 0.18s ease, border-color 0.12s ease, background-color 0.12s ease',
                     }
                   : undefined
               }
             >
-              
-              <DragHandle
-                className="flex items-center p-1 rounded-lg shrink-0 cursor-grab"
+              {/* Drag handle */}
+              <div
+                className="flex items-center p-1 rounded-lg shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/50 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 focus-visible:text-primary"
                 data-drag-handle="true"
                 tabIndex={0}
                 aria-label={t('editor.text_sequencing.drag_handle_label', { index: index + 1 })}
-                onKeyDown={(e) => handleHandleKeyDown(e as React.KeyboardEvent, index)}
+                onKeyDown={(e) => handleHandleKeyDown(e, index)}
               >
-                <DragIndicatorIcon fontSize="small" />
-              </DragHandle>
+                <GripVertical size={16} />
+              </div>
 
-              <Typography
-                variant="caption"
-                className="text-center shrink-0 min-w-5"
-                sx={{ color: 'text.disabled' }}
-              >
+              <span className="text-center shrink-0 min-w-5 text-xs text-muted-foreground">
                 {index + 1}
-              </Typography>
+              </span>
 
-              <TextField
+              <Input
                 value={item.text}
                 onChange={(e) => handleTextChange(item.id, e.target.value)}
                 placeholder={t('editor.text_sequencing.row_placeholder', { index: index + 1 })}
-                size="small"
-                className="flex-1"
-                error={!item.text.trim()}
+                className={cn('flex-1 h-8', !item.text.trim() && 'border-destructive')}
                 required
               />
 
-              <TextField
-                value={item.markPercent}
-                onChange={(e) => handleMarkChange(item.id, e.target.value)}
-                type="number"
-                size="small"
-                disabled={autoDistribute}
-                className="w-20 shrink-0"
-                slotProps={{
-                  htmlInput: { min: 0, max: 100, step: 0.01 },
-                  input: { endAdornment: <Typography variant="caption">%</Typography> },
-                }}
-              />
+              {/* Mark percent input */}
+              <div className="relative w-20 shrink-0">
+                <input
+                  type="number"
+                  value={item.markPercent}
+                  onChange={(e) => handleMarkChange(item.id, e.target.value)}
+                  min={0}
+                  max={100}
+                  step={0.01}
+                  disabled={autoDistribute}
+                  className="w-full h-8 rounded-md border border-input bg-background pe-6 ps-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <span className="pointer-events-none absolute inset-y-0 end-2 flex items-center text-xs text-muted-foreground">
+                  %
+                </span>
+              </div>
 
-              <IconButton
-                size="small"
+              <button
+                type="button"
                 onClick={() => handleDeleteRow(item.id)}
                 disabled={items.length <= 2}
-                className="shrink-0"
-                sx={{ color: 'error.main', '&:disabled': { opacity: 0.3 } }}
+                className="shrink-0 p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label={t('editor.text_sequencing.drag_handle_label', { index: index + 1 })}
               >
-                <DeleteOutlineIcon fontSize="small" />
-              </IconButton>
-            </RowCard>
+                <Trash2 size={15} />
+              </button>
+            </div>
           );
         })}
-      </Box>
+      </div>
 
-      <Button
-        variant="text"
-        startIcon={<AddIcon />}
+      <button
+        type="button"
+        className="self-start flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
         onClick={handleAddRow}
-        className="self-start normal-case text-sm"
       >
+        <Plus size={15} />
         {t('editor.text_sequencing.add_row')}
-      </Button>
+      </button>
 
-      
+      {/* Validation alerts */}
       {hasTooFewRows && (
-        <Alert severity="error" variant="outlined" className="text-sm">
-          {t('editor.text_sequencing.error_min_rows')}
-        </Alert>
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/[0.05] p-3 text-sm text-destructive">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <span>{t('editor.text_sequencing.error_min_rows')}</span>
+        </div>
       )}
       {hasEmptyText && (
-        <Alert severity="warning" variant="outlined" className="text-sm">
-          {t('editor.text_sequencing.error_empty_rows')}
-        </Alert>
+        <div className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-500/[0.05] p-3 text-sm text-amber-700 dark:text-amber-400">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <span>{t('editor.text_sequencing.error_empty_rows')}</span>
+        </div>
       )}
       {!autoDistribute && !isTotalValid && items.length > 0 && (
-        <Alert severity="error" variant="outlined" className="text-sm">
-          {t('editor.text_sequencing.error_total_not_100', {
-            total: new Intl.NumberFormat(i18n.language).format(totalMark),
-          })}
-        </Alert>
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/[0.05] p-3 text-sm text-destructive">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <span>
+            {t('editor.text_sequencing.error_total_not_100', {
+              total: new Intl.NumberFormat(i18n.language).format(totalMark),
+            })}
+          </span>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
