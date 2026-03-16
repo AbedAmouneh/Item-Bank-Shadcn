@@ -12,7 +12,7 @@ function Add() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm font-medium text-foreground">
-        {t('editor.true_false.correct_answer_label')} *
+        {t('editor.correct_answer')} *
       </p>
       <div className="flex gap-3">
         {(['True', 'False'] as const).map((val) => (
@@ -27,7 +27,7 @@ function Add() {
                 : 'border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/[0.04]'
             )}
           >
-            {t(`editor.true_false.${val.toLowerCase()}`)}
+            {t(`editor.${val.toLowerCase()}`)}
           </button>
         ))}
       </div>

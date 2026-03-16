@@ -95,8 +95,8 @@
     --choice-feedback-background: 210 40% 98%;
 
     /* ── Choice item ── */
-    --choice-item-background: 0 0% 100%;
-    --choice-item-border: 214 32% 91%;
+    --choice-item-background: 210 40% 98%;
+    --choice-item-border: 214 32% 82%;
 
     /* ── Question view question text ── */
     --question-view-question-text: 215 16% 47%;
