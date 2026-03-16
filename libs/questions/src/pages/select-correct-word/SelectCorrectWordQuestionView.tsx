@@ -102,7 +102,7 @@ const SelectCorrectWordQuestionView = ({ question }: SelectCorrectWordQuestionVi
           return (
             <span
               key={index}
-              className="inline-flex items-center flex-wrap gap-0.5 mx-1"
+              className="inline-flex items-center flex-wrap gap-0.5 ms-1 me-1"
             >
               {keyOptions.map((opt, i) => (
                 <span
@@ -110,10 +110,10 @@ const SelectCorrectWordQuestionView = ({ question }: SelectCorrectWordQuestionVi
                   className="inline-flex items-center gap-0.5"
                 >
                   {i > 0 && (
-                    <span className="px-0.5 text-xs text-muted-foreground/60">|</span>
+                    <span className="ps-0.5 pe-0.5 text-xs text-muted-foreground/60">|</span>
                   )}
-                  <span
-                    role="button"
+                  <button
+                    type="button"
                     tabIndex={checked ? -1 : 0}
                     onClick={() => handleSelect(part.key, opt.id)}
                     onKeyDown={(e: React.KeyboardEvent) => {
@@ -126,6 +126,7 @@ const SelectCorrectWordQuestionView = ({ question }: SelectCorrectWordQuestionVi
                       'inline-flex items-center px-2 py-0.5 rounded-lg border text-sm transition-all duration-150 select-none',
                       checked ? 'cursor-default' : 'cursor-pointer',
                       !checked && 'hover:bg-primary/[0.08] hover:border-primary/50',
+                      checked && 'pointer-events-none',
                       getOptionChipClass(
                         selectedByKey[part.key] === opt.id,
                         opt.isCorrect,
@@ -135,7 +136,7 @@ const SelectCorrectWordQuestionView = ({ question }: SelectCorrectWordQuestionVi
                     )}
                   >
                     {opt.text}
-                  </span>
+                  </button>
                 </span>
               ))}
             </span>
