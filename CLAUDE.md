@@ -265,3 +265,4 @@ Never modify these regardless of context:
 
 - Never commit `.md` files — documentation and notes stay out of version control
 - Exception: `CLAUDE.md` itself is the only `.md` file that may be committed
+- Never add `Co-Authored-By` trailers to commit messages — keep Abed as the sole author
