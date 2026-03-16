@@ -86,15 +86,20 @@
 
     /* ── Editor ── */
     --editor-wrapper-background: 210 40% 98%;
+    --editor-background: 0 0% 100%;
     --editor-asterisk: 351 95% 61%;       /* rose */
 
     /* ── Choice editor ── */
     --choice-editor-background: 210 40% 98%;
     --choice-editor-border: 214 32% 88%;
+    --choice-feedback-background: 210 40% 98%;
 
     /* ── Choice item ── */
     --choice-item-background: 0 0% 100%;
     --choice-item-border: 214 32% 91%;
+
+    /* ── Question view question text ── */
+    --question-view-question-text: 215 16% 47%;
 
     /* ── Table ── */
     --table-head-color: 222 47% 11%;
@@ -182,15 +187,20 @@
 
     /* ── Editor ── */
     --editor-wrapper-background: 217 33% 13%;
+    --editor-background: 217 33% 13%;
     --editor-asterisk: 351 95% 61%;
 
     /* ── Choice editor ── */
     --choice-editor-background: 217 33% 15%;
     --choice-editor-border: 217 33% 22%;
+    --choice-feedback-background: 217 33% 17%;
 
     /* ── Choice item ── */
     --choice-item-background: 217 33% 17%;
     --choice-item-border: 217 33% 22%;
+
+    /* ── Question view question text ── */
+    --question-view-question-text: 215 20% 65%;
 
     /* ── Table ── */
     --table-head-color: 210 40% 98%;

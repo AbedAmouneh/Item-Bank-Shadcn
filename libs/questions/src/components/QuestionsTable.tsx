@@ -1,12 +1,21 @@
-import { Box, Typography, Chip, IconButton, Paper, useTheme, alpha, styled, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
-import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef } from 'material-react-table'
-import { MRT_Localization_AR } from 'material-react-table/locales/ar'
 import { useTranslation } from 'react-i18next'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { ActionButton } from '@item-bank/ui'
+import { ActionButton, cn } from '@item-bank/ui'
 import { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { type QuestionType } from '../domain/types'
 import AddQuestionModal from './AddQuestionModal'
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortingRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from '@tanstack/react-table'
+import { MoreVertical, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react'
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
+import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
+
 type QuestionStatus = 'Draft' | 'Published' | 'In Review'
 
 export type QuestionChoice = {
@@ -174,382 +183,339 @@ type QuestionsTableProps = {
   onDeleteQuestion?: (row: QuestionRow) => void
 }
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.semantic.surface.card,
-  backgroundImage: 'none',
-  backdropFilter: theme.palette.mode === 'dark' ? 'blur(20px) saturate(120%)' : 'none',
-  border: `1px solid ${theme.palette.semantic.border.card}`,
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 8px 32px ${alpha(theme.palette.background.default, 0.5)}, 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`
-    : theme.shadows[1],
-}))
+const TYPE_COLORS: Record<QuestionType, string> = {
+  multiple_choice: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
+  short_answer: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+  essay: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  true_false: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
+  fill_in_blanks: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+  record_audio: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  drag_drop_image: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+  drag_drop_text: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+  free_hand_drawing: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  image_sequencing: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+  multiple_hotspots: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+  numerical: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+  select_correct_word: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+  text_sequencing: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  fill_in_blanks_image: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  highlight_correct_word: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+  text_classification: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+  image_classification: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  matching: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+}
 
-const StyledChip = styled(Chip)({
-  '& .MuiChip-label': {
-    padding: '0 12px',
-  },
-})
+const STATUS_COLORS: Record<QuestionStatus, string> = {
+  Draft: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  Published: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  'In Review': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+}
 
 const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionViewOpen, onEditQuestion, onDeleteQuestion }: QuestionsTableProps) => {
-  const { t, i18n } = useTranslation('questions')
-  const theme = useTheme()
+  const { t } = useTranslation('questions')
 
   const [addModalOpen, setAddModalOpen] = useState(false)
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [rowMenuOpen, setRowMenuOpen] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [questionToDelete, setQuestionToDelete] = useState<QuestionRow | null>(null)
+  const [sorting, setSorting] = useState<SortingState>([])
   const selectedRow = useRef<QuestionRow | null>(null)
 
-  const handleClick = useCallback((event: React.MouseEvent<HTMLElement>, row: QuestionRow) => {
-    event.stopPropagation()
-    setAnchorEl(event.currentTarget)
+  const openRowMenu = useCallback((id: string, row: QuestionRow) => {
+    setRowMenuOpen(id)
     selectedRow.current = row
   }, [])
 
-  const handleClose = useCallback(() => {
-    setAnchorEl(null)
+  const closeRowMenu = useCallback(() => {
+    setRowMenuOpen(null)
     selectedRow.current = null
   }, [])
 
   const viewQuestion = useCallback(() => {
     if (!selectedRow.current) return
     handleQuestionViewOpen?.(selectedRow.current)
-    handleClose()
-  }, [handleClose, handleQuestionViewOpen])
+    closeRowMenu()
+  }, [closeRowMenu, handleQuestionViewOpen])
 
   const openEdit = useCallback(() => {
     if (!selectedRow.current) return
     onEditQuestion?.(selectedRow.current)
-    handleClose()
-  }, [handleClose, onEditQuestion])
+    closeRowMenu()
+  }, [closeRowMenu, onEditQuestion])
 
   const openDeleteDialog = useCallback(() => {
     if (!selectedRow.current) return
     setQuestionToDelete(selectedRow.current)
     setDeleteDialogOpen(true)
-    handleClose()
-  }, [handleClose])
-
-  const closeDeleteDialog = useCallback(() => {
-    setDeleteDialogOpen(false)
-    setQuestionToDelete(null)
-  }, [])
+    closeRowMenu()
+  }, [closeRowMenu])
 
   const confirmDelete = useCallback(() => {
     if (!questionToDelete) return
     onDeleteQuestion?.(questionToDelete)
-    closeDeleteDialog()
-  }, [questionToDelete, onDeleteQuestion, closeDeleteDialog])
+    setDeleteDialogOpen(false)
+    setQuestionToDelete(null)
+  }, [questionToDelete, onDeleteQuestion])
 
-  const getTypeChipSx = useCallback((type: QuestionType) => {
-    const isDark = theme.palette.mode === 'dark'
-    const p = theme.palette
-    const chip = (main: string, light?: string, dark?: string) => ({
-      backgroundColor: isDark ? alpha(main, 0.22) : alpha(main, 0.12),
-      color: isDark ? (light ?? main) : (dark ?? main),
-    })
-    const chipStyles: Record<QuestionType, object> = {
-      multiple_choice: chip(p.primary.main, p.primary.light, p.primary.dark),
-      short_answer: chip(p.secondary.main, p.secondary.light, p.secondary.dark),
-      essay: chip(p.success.main, p.success.light, p.success.dark),
-      true_false: chip(p.info.main, p.info.light, p.info.dark),
-      fill_in_blanks: chip(p.warning.main, p.warning.light, p.warning.dark),
-      record_audio: chip(p.error.main, p.error.light, p.error.dark),
-      drag_drop_image: chip(p.primary.dark, p.primary.light, p.primary.dark),
-      drag_drop_text: chip(p.secondary.dark, p.secondary.light, p.secondary.dark),
-      free_hand_drawing: chip(p.grey[700], p.grey[400], p.grey[800]),
-      image_sequencing: chip(p.success.dark, p.success.light, p.success.dark),
-      multiple_hotspots: chip(p.info.dark, p.info.light, p.info.dark),
-      numerical: chip(p.warning.dark, p.warning.light, p.warning.dark),
-      select_correct_word: chip(p.error.dark, p.error.light, p.error.dark),
-      text_sequencing: chip(p.grey[600], p.grey[300], p.grey[700]),
-      fill_in_blanks_image: chip(p.grey[500], p.grey[300], p.grey[700]),
-      highlight_correct_word: chip(p.grey[400], p.grey[200], p.grey[600]),
-      text_classification: chip(p.info.main, p.info.light, p.info.dark),
-      image_classification: chip(p.success.main, p.success.light, p.success.dark),
-      matching: chip(p.warning.main, p.warning.light, p.warning.dark),
-    }
-    return chipStyles[type]
-  }, [theme])
-
-  const getStatusChipSx = useCallback((status: QuestionStatus) => {
-    const isDark = theme.palette.mode === 'dark'
-    const chipStyles: Record<QuestionStatus, object> = {
-      Draft: {
-        backgroundColor: isDark ? alpha(theme.palette.grey[400], 0.2) : alpha(theme.palette.grey[400], 0.1),
-        color: isDark ? theme.palette.grey[400] : theme.palette.grey[700],
-      },
-      Published: {
-        backgroundColor: isDark ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.success.main, 0.1),
-        color: isDark ? theme.palette.success.light : theme.palette.success.dark,
-      },
-      'In Review': {
-        backgroundColor: isDark ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.warning.main, 0.1),
-        color: isDark ? theme.palette.warning.light : theme.palette.warning.dark,
-      },
-    }
-    return chipStyles[status]
-  }, [theme])
-
-  const columns = useMemo<MRT_ColumnDef<QuestionRow>[]>(
+  const columns = useMemo<ColumnDef<QuestionRow>[]>(
     () => [
       {
         accessorKey: 'questionName',
         header: t('question_name'),
         size: 300,
-        minSize: 300,
-        grow: true,
-        muiTableHeadCellProps: { align: 'left' },
-        muiTableBodyCellProps: { align: 'left' },
-        Cell: ({ cell }) => cell.getValue<string>() ?? '',
+        cell: ({ getValue }) => (
+          <span className="text-sm text-foreground">{getValue<string>() ?? ''}</span>
+        ),
       },
       {
         accessorKey: 'type',
         header: t('type'),
         size: 180,
-        enableSorting: true,
-        muiTableHeadCellProps: { align: 'left' },
-        muiTableBodyCellProps: { align: 'left' },
-        Cell: ({ cell }) => {
-          const typeValue = cell.getValue<string>();
-          const typeKey = typeValue.toLowerCase().replace(/ /g, '_');
+        cell: ({ getValue }) => {
+          const type = getValue<QuestionType>()
+          const typeKey = type.toLowerCase().replace(/ /g, '_')
           return (
-            <Box className="flex items-center h-full">
-              <StyledChip
-                className="font-medium text-[0.6875rem] h-[22px] rounded-[10px]"
-                label={t(`types.${typeKey}`)}
-                size="small"
-                sx={getTypeChipSx(cell.getValue<QuestionType>())}
-              />
-            </Box>
-          );
+            <span className={cn(
+              'inline-flex items-center px-2 py-0.5 rounded-lg text-[0.6875rem] font-medium',
+              TYPE_COLORS[type]
+            )}>
+              {t(`types.${typeKey}`)}
+            </span>
+          )
         },
       },
       {
         accessorKey: 'mark',
         header: t('mark'),
         size: 100,
-        muiTableHeadCellProps: { align: 'left' },
-        muiTableBodyCellProps: { align: 'left' },
+        cell: ({ getValue }) => (
+          <span className="text-sm text-foreground">{getValue<number>()}</span>
+        ),
       },
       {
         accessorKey: 'status',
         header: t('status'),
         size: 130,
-        muiTableHeadCellProps: { align: 'left' },
-        muiTableBodyCellProps: { align: 'left' },
-        Cell: ({ cell }) => {
-          const statusValue = cell.getValue<string>();
-          const statusKey = statusValue.toLowerCase().replace(/ /g, '_');
+        cell: ({ getValue }) => {
+          const status = getValue<QuestionStatus>()
+          const statusKey = status.toLowerCase().replace(/ /g, '_')
           return (
-            <Box className="flex items-center h-full">
-              <StyledChip
-                className="font-medium text-[0.6875rem] h-[22px] rounded-[10px]"
-                label={t(`statuses.${statusKey}`)}
-                size="small"
-                sx={getStatusChipSx(cell.getValue<QuestionStatus>())}
-              />
-            </Box>
-          );
+            <span className={cn(
+              'inline-flex items-center px-2 py-0.5 rounded-lg text-[0.6875rem] font-medium',
+              STATUS_COLORS[status]
+            )}>
+              {t(`statuses.${statusKey}`)}
+            </span>
+          )
         },
       },
       {
         accessorKey: 'lastModified',
         header: t('last_modified'),
         size: 140,
-        muiTableHeadCellProps: { align: 'left' },
-        muiTableBodyCellProps: { align: 'left' },
+        cell: ({ getValue }) => (
+          <span className="text-sm text-foreground">{getValue<string>()}</span>
+        ),
       },
       {
         id: 'actions',
-        accessorFn: () => '',
         header: t('actions'),
-        size: 80,
+        size: 70,
         enableSorting: false,
-        muiTableHeadCellProps: { align: 'center' },
-        muiTableBodyCellProps: { align: 'center' },
-        Cell: ({ cell }) => (
-          <Box className="flex items-center h-full justify-center">
-            <IconButton 
-              size="small" 
-              sx={{ color: 'text.secondary' }} 
-              onClick={(e) => handleClick(e, cell.row.original)}
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center">
+            <DropdownMenuPrimitive.Root
+              open={rowMenuOpen === row.id}
+              onOpenChange={(open) => {
+                if (open) openRowMenu(row.id, row.original)
+                else closeRowMenu()
+              }}
             >
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
-          </Box>
+              <DropdownMenuPrimitive.Trigger asChild>
+                <button
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical size={16} />
+                </button>
+              </DropdownMenuPrimitive.Trigger>
+              <DropdownMenuPrimitive.Portal>
+                <DropdownMenuPrimitive.Content
+                  align="end"
+                  sideOffset={4}
+                  className="z-50 min-w-[140px] rounded-xl border border-border bg-card shadow-lg p-1 text-sm"
+                >
+                  <DropdownMenuPrimitive.Item
+                    className="px-3 py-2 rounded-lg cursor-pointer text-foreground hover:bg-muted outline-none"
+                    onSelect={viewQuestion}
+                  >
+                    {t('preview')}
+                  </DropdownMenuPrimitive.Item>
+                  <DropdownMenuPrimitive.Item
+                    className="px-3 py-2 rounded-lg cursor-pointer text-foreground hover:bg-muted outline-none"
+                    onSelect={openEdit}
+                  >
+                    {t('edit')}
+                  </DropdownMenuPrimitive.Item>
+                  <DropdownMenuPrimitive.Item
+                    className="px-3 py-2 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 outline-none"
+                    onSelect={openDeleteDialog}
+                  >
+                    {t('delete')}
+                  </DropdownMenuPrimitive.Item>
+                </DropdownMenuPrimitive.Content>
+              </DropdownMenuPrimitive.Portal>
+            </DropdownMenuPrimitive.Root>
+          </div>
         ),
       },
     ],
-    [t, getTypeChipSx, getStatusChipSx, handleClick]
+    [t, rowMenuOpen, openRowMenu, closeRowMenu, viewQuestion, openEdit, openDeleteDialog]
   )
 
-  const table = useMaterialReactTable({
-    columns,
+  const table = useReactTable({
     data: questions,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortingRowModel: getSortingRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageSize: 10, pageIndex: 0 } },
     getRowId: (row) => String(row.id),
-    localization: i18n.language === 'ar' ? MRT_Localization_AR : undefined,
-    enableTopToolbar: true,
-    enableRowSelection: false,
-    enableColumnActions: false,
-    enableColumnResizing: true,
-    layoutMode: 'grid',
-    initialState: {
-      pagination: { pageSize: 10, pageIndex: 0 },
-    },
-    muiPaginationProps: {
-      rowsPerPageOptions: [10, 20, 50],
-      showFirstButton: false,
-      showLastButton: false,
-    },
-    muiTablePaperProps: ({ table: tableInst }) => ({
-      elevation: 0,
-      sx: {
-        backgroundColor: tableInst.getState().isFullScreen
-          ? theme.palette.semantic.surface.card
-          : 'transparent',
-        boxShadow: 'none',
-        border: 'none',
-      },
-    }),
-    muiTableContainerProps: ({ table: tableInst }) => ({
-      sx: {
-        width: '100%',
-        overflow: tableInst.getState().isFullScreen ? 'auto' : 'visible',
-      },
-    }),
-    muiTableHeadCellProps: {
-      sx: {
-        fontWeight: 600,
-        fontSize: '0.6875rem',
-        textTransform: 'uppercase',
-        letterSpacing: '0.8px',
-        color: theme.palette.semantic.table.headColor,
-        lineHeight: 1,
-        px: 2,
-        borderBottom: theme.palette.semantic.table.headBorder,
-      },
-    },
-    muiTableBodyRowProps: ({ row }) => ({
-      sx: {
-        cursor: 'pointer',
-        border: 'none',
-        borderBottom: theme.palette.semantic.table.rowBorder,
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, 0.06),
-        },
-        ...(row.getIsSelected() && {
-          backgroundColor: alpha(theme.palette.primary.main, 0.12),
-          borderLeft: `3px solid ${theme.palette.primary.main}`,
-          '&:hover': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.18),
-          },
-        }),
-      },
-    }),
-    muiTableBodyCellProps: {
-      sx: {
-        border: 'none',
-        px: 2,
-        fontSize: '0.875rem',
-        color: theme.palette.text.primary,
-        '&:focus, &:focus-within': {
-          outline: 'none',
-        },
-      },
-    },
-    muiBottomToolbarProps: {
-      sx: {
-        borderTop: `1px solid ${theme.palette.divider}`,
-        height: 56,
-        marginTop: theme.spacing(2),
-        color: theme.palette.text.secondary,
-        '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-          fontSize: '0.8125rem',
-        },
-      },
-    },
   })
 
-  const isFullScreen = table.getState().isFullScreen
-
   return (
-    <StyledPaper
-      elevation={0}
-      className="w-full rounded-3xl overflow-hidden"
-      sx={isFullScreen ? { backdropFilter: 'none', overflow: 'visible' } : undefined}
-    >
-      <Box className="pt-6 px-6 pb-4 flex justify-between items-center">
-        <Typography className="font-semibold text-[1.25rem]" variant="h6" color="text.primary">
-          {t('questions')}
-        </Typography>
-        <Box className="flex gap-2 items-center">
-          <ActionButton 
+    <div className="w-full rounded-3xl overflow-hidden border border-border bg-[hsl(var(--surface-card))]">
+
+      {/* Header bar */}
+      <div className="pt-6 px-6 pb-4 flex justify-between items-center">
+        <h2 className="font-semibold text-xl text-foreground">{t('questions')}</h2>
+        <div className="flex gap-2 items-center">
+          <ActionButton
             btnLabel={t('add_question')}
             onClick={() => setAddModalOpen(true)}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box className="w-full pt-0 px-6 pb-4 overflow-auto">
-        <MaterialReactTable table={table} />
-      </Box>
+      {/* Table scroll container */}
+      <div className="w-full px-6 pb-4 overflow-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    style={{ width: header.getSize() }}
+                    className="text-start text-[0.6875rem] font-semibold uppercase tracking-[0.8px] text-[hsl(var(--table-head-color))] px-3 py-3 border-b border-border"
+                  >
+                    {header.isPlaceholder ? null : (
+                      <div
+                        className={cn(
+                          'flex items-center gap-1',
+                          header.column.getCanSort() && 'cursor-pointer select-none hover:text-foreground'
+                        )}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {header.column.getCanSort() && (
+                          <span className="flex flex-col">
+                            <ChevronUp size={10} className={header.column.getIsSorted() === 'asc' ? 'text-primary' : 'opacity-30'} />
+                            <ChevronDown size={10} className={header.column.getIsSorted() === 'desc' ? 'text-primary' : 'opacity-30'} />
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className="border-b border-border cursor-pointer hover:bg-primary/[0.04] transition-colors"
+                  onClick={() => handleQuestionViewOpen?.(row.original)}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-3 py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columns.length} className="py-12 text-center text-sm text-muted-foreground">
+                  {t('no_questions')}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
+      {/* Pagination bar */}
+      <div className="flex items-center justify-between px-6 py-3 border-t border-border">
+        <span className="text-sm text-muted-foreground">
+          {t('page')} {table.getState().pagination.pageIndex + 1} / {Math.max(1, table.getPageCount())}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            className="p-1.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
+          >
+            <ChevronLeft size={16} className="rtl:rotate-180" />
+          </button>
+          <button
+            disabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+            className="p-1.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
+          >
+            <ChevronRight size={16} className="rtl:rotate-180" />
+          </button>
+        </div>
+      </div>
+
+      {/* Add Question Modal */}
       <AddQuestionModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
         onSelectType={(type) => onQuestionTypeChange?.(type)}
       />
 
-      <Menu
-        id='question-actions-menu'
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <MenuItem onClick={viewQuestion}>
-          {t('preview')}
-        </MenuItem>
-        <MenuItem onClick={openEdit}>
-          {t('edit')}
-        </MenuItem>
-        <MenuItem onClick={openDeleteDialog} sx={{ color: 'error.main' }}>
-          {t('delete')}
-        </MenuItem>
-      </Menu>
+      {/* Delete confirmation dialog */}
+      <AlertDialogPrimitive.Root open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogPrimitive.Portal>
+          <AlertDialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50 animate-in fade-in-0" />
+          <AlertDialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl animate-in fade-in-0 zoom-in-95">
+            <AlertDialogPrimitive.Title className="text-lg font-semibold text-foreground">
+              {t('delete_confirm_title')}
+            </AlertDialogPrimitive.Title>
+            <AlertDialogPrimitive.Description className="mt-2 text-sm text-muted-foreground">
+              {t('delete_confirm_message', { name: questionToDelete?.questionName ?? '' })}
+            </AlertDialogPrimitive.Description>
+            <div className="mt-6 flex justify-end gap-3">
+              <AlertDialogPrimitive.Cancel className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground">
+                {t('cancel')}
+              </AlertDialogPrimitive.Cancel>
+              <AlertDialogPrimitive.Action
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+              >
+                {t('delete')}
+              </AlertDialogPrimitive.Action>
+            </div>
+          </AlertDialogPrimitive.Content>
+        </AlertDialogPrimitive.Portal>
+      </AlertDialogPrimitive.Root>
 
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={closeDeleteDialog}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-      >
-        <DialogTitle id="delete-dialog-title">
-          {t('delete_confirm_title')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-dialog-description">
-            {t('delete_confirm_message', { name: questionToDelete?.questionName ?? '' })}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeDeleteDialog} color="inherit">
-            {t('cancel')}
-          </Button>
-          <Button onClick={confirmDelete} color="error" variant="contained" autoFocus>
-            {t('delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </StyledPaper>
+    </div>
   )
 }
 

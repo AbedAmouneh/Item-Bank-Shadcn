@@ -1,41 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Box,
-  TextField,
-  IconButton,
-  Typography,
-  InputAdornment,
-  alpha,
-  styled,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
-import ShortTextIcon from '@mui/icons-material/ShortText';
-import ArticleIcon from '@mui/icons-material/Article';
-import DragHandleIcon from '@mui/icons-material/DragHandle';
-import ImageIcon from '@mui/icons-material/Image';
-import GestureIcon from '@mui/icons-material/Gesture';
-import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
-import PlaceIcon from '@mui/icons-material/Place';
-import CalculateIcon from '@mui/icons-material/Calculate';
-import NoteAltIcon from '@mui/icons-material/NoteAlt';
-import SpellcheckIcon from '@mui/icons-material/Spellcheck';
-import ReorderIcon from '@mui/icons-material/Reorder';
-import FindInPageIcon from '@mui/icons-material/FindInPage';
-import HighlightIcon from '@mui/icons-material/Highlight';
-import MicIcon from '@mui/icons-material/Mic';
-import CategoryIcon from '@mui/icons-material/Category';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { useTranslation } from 'react-i18next';
 import QuestionTypeTile from './QuestionTypeTile';
 import { PICKER_QUESTION_TYPES } from './questionTypePickerData';
 import type { QuestionType } from '../domain/types';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import {
+  CheckCheck, ListChecks, AlignLeft, FileText, GripHorizontal, Image,
+  Pen, GalleryHorizontal, MapPin, Calculator, PenLine, SpellCheck,
+  List, ScanSearch, Highlighter, Mic, Tags, Images, GitMerge, X, Search
+} from 'lucide-react';
+import { cn } from '@item-bank/ui';
 
 interface AddQuestionModalProps {
   open: boolean;
@@ -44,56 +18,26 @@ interface AddQuestionModalProps {
 }
 
 const TILE_ICONS: Record<QuestionType, React.ReactElement> = {
-  true_false: <CheckCircleOutlineIcon />,
-  multiple_choice: <PlaylistAddCheckIcon />,
-  short_answer: <ShortTextIcon />,
-  essay: <ArticleIcon />,
-  drag_drop_text: <DragHandleIcon />,
-  drag_drop_image: <ImageIcon />,
-  free_hand_drawing: <GestureIcon />,
-  image_sequencing: <ViewCarouselIcon />,
-  multiple_hotspots: <PlaceIcon />,
-  numerical: <CalculateIcon />,
-  fill_in_blanks: <NoteAltIcon />,
-  select_correct_word: <SpellcheckIcon />,
-  text_sequencing: <ReorderIcon />,
-  fill_in_blanks_image: <FindInPageIcon />,
-  highlight_correct_word: <HighlightIcon />,
-  record_audio: <MicIcon />,
-  text_classification: <CategoryIcon />,
-  image_classification: <PhotoLibraryIcon />,
-  matching: <AccountTreeIcon />,
+  true_false: <CheckCheck />,
+  multiple_choice: <ListChecks />,
+  short_answer: <AlignLeft />,
+  essay: <FileText />,
+  drag_drop_text: <GripHorizontal />,
+  drag_drop_image: <Image />,
+  free_hand_drawing: <Pen />,
+  image_sequencing: <GalleryHorizontal />,
+  multiple_hotspots: <MapPin />,
+  numerical: <Calculator />,
+  fill_in_blanks: <PenLine />,
+  select_correct_word: <SpellCheck />,
+  text_sequencing: <List />,
+  fill_in_blanks_image: <ScanSearch />,
+  highlight_correct_word: <Highlighter />,
+  record_audio: <Mic />,
+  text_classification: <Tags />,
+  image_classification: <Images />,
+  matching: <GitMerge />,
 };
-
-const ModalHeader = styled(Box)(({ theme }) => ({
-  gap: theme.spacing(2),
-  padding: theme.spacing(2.5, 3, 2),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
-}));
-
-const SearchField = styled(TextField)(({ theme }) => ({
-  width: 220,
-  '& .MuiOutlinedInput-root': {
-    borderRadius: theme.spacing(1.5),
-    fontSize: '0.875rem',
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? alpha(theme.palette.background.paper, 0.6)
-        : alpha(theme.palette.action.hover, 0.5),
-    '& fieldset': {
-      borderColor: alpha(theme.palette.divider, 0.5),
-    },
-    '&:hover fieldset': {
-      borderColor: theme.palette.primary.main,
-    },
-  },
-}));
-
-const TileGrid = styled(Box)(({ theme }) => ({
-  [theme.breakpoints.down('sm')]: {
-    gridTemplateColumns: 'repeat(2, 1fr)',
-  },
-}));
 
 export default function AddQuestionModal({
   open,
@@ -123,72 +67,61 @@ export default function AddQuestionModal({
     : PICKER_QUESTION_TYPES;
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          maxHeight: '85vh',
-        },
-      }}
-    >
-      {/* Custom header — title + search + close */}
-      <DialogTitle component="div" className="p-0">
-        <ModalHeader className="flex items-center justify-between">
-          <Typography variant="h6" fontWeight={600} component="span">
-            {t('add_questions_title')}
-          </Typography>
+    <DialogPrimitive.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50 animate-in fade-in-0" />
+        <DialogPrimitive.Content className={cn(
+          "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50",
+          "w-full max-w-3xl max-h-[85vh] bg-card border border-border rounded-2xl shadow-xl",
+          "flex flex-col animate-in fade-in-0 zoom-in-95 focus:outline-none"
+        )}>
 
-          <Box className="flex items-center gap-2">
-            <SearchField
-              size="small"
-              placeholder={t('search_question_types')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" sx={{ color: 'text.disabled' }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <IconButton
-              onClick={onClose}
-              size="small"
-              aria-label={t('cancel')}
-              className="ml-1"
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        </ModalHeader>
-      </DialogTitle>
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+            <DialogPrimitive.Title className="text-lg font-semibold text-foreground">
+              {t('add_questions_title')}
+            </DialogPrimitive.Title>
 
-      {/* Scrollable tile grid */}
-      <DialogContent className="p-6 overflow-y-auto">
-        {filteredTypes.length > 0 ? (
-          <TileGrid className="grid grid-cols-4 gap-1">
-            {filteredTypes.map((type) => (
-              <QuestionTypeTile
-                key={type}
-                label={t(`types.${type}`)}
-                icon={TILE_ICONS[type]}
-                onClick={() => handleSelect(type)}
-              />
-            ))}
-          </TileGrid>
-        ) : (
-          <Box className="py-12 text-center">
-            <Typography color="text.secondary" variant="body2">
-              {t('no_types_found')}
-            </Typography>
-          </Box>
-        )}
-      </DialogContent>
-    </Dialog>
+            <div className="flex items-center gap-3">
+              {/* Search input */}
+              <div className="relative">
+                <Search size={13} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <input
+                  className="ps-8 pe-3 py-1.5 text-sm rounded-xl border border-border bg-muted/50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary w-52 placeholder:text-muted-foreground text-foreground"
+                  placeholder={t('search_question_types')}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <DialogPrimitive.Close className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                <X size={16} />
+              </DialogPrimitive.Close>
+            </div>
+          </div>
+
+          {/* Tile grid */}
+          <div className="p-6 overflow-y-auto">
+            {filteredTypes.length > 0 ? (
+              <div className="grid grid-cols-4 gap-1">
+                {filteredTypes.map((type) => (
+                  <QuestionTypeTile
+                    key={type}
+                    label={t(`types.${type}`)}
+                    icon={TILE_ICONS[type]}
+                    onClick={() => handleSelect(type)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-sm text-muted-foreground">
+                {t('no_types_found')}
+              </div>
+            )}
+          </div>
+
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

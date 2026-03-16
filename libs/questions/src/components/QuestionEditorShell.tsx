@@ -1,24 +1,3 @@
-import {
-  Box,
-  TextField,
-  Typography,
-  Paper,
-  useTheme,
-  alpha,
-  styled,
-  Popover,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  DialogContentText,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CampaignIcon from '@mui/icons-material/Campaign';
 import { Editor } from '@tinymce/tinymce-react';
 import type { Editor as TinyMCEEditor } from 'tinymce';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +26,19 @@ import HighlightCorrectWordEditor from '../pages/highlight-correct-word/Highligh
 import JustificationInput from './JustificationInput';
 import TextClassificationEditor from '../pages/text-classification/TextClassificationEditor';
 import ImageClassificationEditor from '../pages/image-classification/ImageClassificationEditor';
+import {
+  Input,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  cn,
+} from '@item-bank/ui';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Megaphone } from 'lucide-react';
 
 type AnswerGroup = { key: string; answers: AnswerEntry[] };
 
@@ -270,146 +262,6 @@ export type QuestionFormData = {
   partiallyCorrectAnswerFeedback?: string;
   incorrectAnswerFeedback?: string;
 };
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  '& .tox-tinymce': {
-    border: 'none !important',
-    borderRadius: '0 !important',
-    overflow: 'hidden',
-  },
-  '& .tox .tox-toolbar': {
-    borderBottom: `1px solid ${alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.1 : 0.08)} !important`,
-  },
-  '& .tox .tox-toolbar__group': {
-    border: 'none !important',
-  },
-}));
-
-const StyledTextField = styled(TextField, {
-  shouldForwardProp: (prop) => prop !== 'accent' && prop !== 'layout',
-})<{ accent?: 'primary' | 'warning'; layout?: 'flex' | 'fixed' }>(({
-  theme,
-  accent = 'primary',
-  layout = 'flex',
-}) => {
-  const accentColor = theme.palette[accent].main;
-  const isDark = theme.palette.mode === 'dark';
-
-  return {
-    ...(layout === 'flex'
-      ? {
-          flex: 1,
-          minWidth: '100%',
-          [theme.breakpoints.up('sm')]: {
-            minWidth: 'auto',
-          },
-        }
-      : {
-          width: '100%',
-          [theme.breakpoints.up('sm')]: {
-            width: 140,
-          },
-        }),
-    '& .MuiOutlinedInput-root': {
-      backgroundColor: isDark
-        ? alpha(theme.palette.background.paper, 0.6)
-        : alpha(accentColor, accent === 'primary' ? 0.04 : 0.08),
-      borderRadius: theme.spacing(2.5),
-      transition: 'all 0.2s ease',
-      '& fieldset': {
-        borderColor: isDark
-          ? alpha(accentColor, 0.6)
-          : alpha(accentColor, accent === 'primary' ? 0.15 : 0.2),
-        borderWidth: isDark ? 1.5 : 1,
-      },
-      '&:hover fieldset': {
-        borderColor: isDark
-          ? alpha(accentColor, 0.8)
-          : alpha(accentColor, accent === 'primary' ? 0.3 : 0.35),
-      },
-      '&.Mui-focused': {
-        backgroundColor: isDark
-          ? alpha(theme.palette.background.paper, 0.7)
-          : alpha(accentColor, accent === 'primary' ? 0.06 : 0.12),
-        boxShadow: isDark
-          ? `0 0 0 2px ${alpha(accentColor, 0.3)}, 0 0 12px ${alpha(accentColor, 0.4)}`
-          : `0 0 0 3px ${alpha(accentColor, accent === 'primary' ? 0.1 : 0.15)}`,
-        '& fieldset': {
-          borderColor: isDark
-            ? accentColor
-            : accent === 'primary'
-              ? alpha(accentColor, 0.6)
-              : accentColor,
-          borderWidth: 2,
-        },
-      },
-    },
-    '& .MuiInputLabel-root': {
-      fontSize: '0.875rem',
-      fontWeight: 500,
-      color: alpha(theme.palette.text.primary, isDark ? 0.85 : 0.7),
-      '&.Mui-focused': {
-        color: isDark
-          ? accentColor
-          : accent === 'primary'
-            ? theme.palette.primary.main
-            : theme.palette.warning.main,
-      },
-    },
-    '& .MuiInputLabel-asterisk': {
-      color: isDark
-        ? theme.palette.warning.main
-        : accent === 'primary'
-          ? theme.palette.warning.dark
-          : theme.palette.warning.main,
-    },
-    '& .MuiInputBase-input': {
-      color: alpha(theme.palette.text.primary, isDark ? 0.95 : 0.87),
-    },
-  };
-});
-
-const RequiredAsterisk = styled('span')(({ theme }) => ({
-  color: theme.palette.semantic.editor.asteriskColor,
-}));
-
-const EditorWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(3),
-  overflow: 'hidden',
-  border:
-    theme.palette.mode === 'dark'
-      ? `1.5px solid ${alpha(theme.palette.primary.main, 0.6)}`
-      : `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? `0 0 12px ${alpha(theme.palette.primary.main, 0.25)}, inset 0 2px 8px ${alpha(theme.palette.background.default, 0.4)}`
-      : `inset 0 1px 4px ${alpha(theme.palette.text.primary, 0.06)}`,
-  transition: 'all 0.2s ease',
-  backgroundColor: theme.palette.semantic.editor.wrapperBackground,
-  '&:focus-within': {
-    borderColor: alpha(theme.palette.primary.main, 0.6),
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.3)}, 0 0 16px ${alpha(theme.palette.primary.main, 0.4)}, inset 0 2px 8px ${alpha(theme.palette.background.default, 0.4)}`
-        : `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}, inset 0 1px 4px ${alpha(theme.palette.text.primary, 0.06)}`,
-  },
-}));
-
-const FieldsRow = styled(Box)(({ theme }) => ({
-  [theme.breakpoints.up('sm')]: {
-    flexWrap: 'nowrap',
-  },
-}));
-
-const PopoverTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    fontSize: '0.875rem',
-    backgroundColor: theme.palette.background.paper,
-  },
-  '& .MuiOutlinedInput-input': {
-    padding: theme.spacing(1, 1.5),
-  },
-}));
 
 const defaultToolbar =
   'styles | fontfamily | fontsize | forecolor backcolor | bold italic underline strikethrough | superscript subscript | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | link image | removeformat';
@@ -667,8 +519,7 @@ function QuestionEditorShellForm({
   showJustification,
 }: QuestionEditorShellProps) {
   const { t, i18n } = useTranslation(['questions', 'common']);
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
+  const isDarkMode = document.documentElement.classList.contains('dark');
 
   const defaultValues = initialData ?? getInitialValues(questionType);
   const methods = useForm<QuestionFormData>({
@@ -822,16 +673,15 @@ function QuestionEditorShellForm({
 
   const [isKeyDialogOpen, setIsKeyDialogOpen] = useState(false);
   const [keyInputValue, setKeyInputValue] = useState('');
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const editorRef = useRef<TinyMCEEditor | null>(null);
   const editorWrapperRef = useRef<HTMLDivElement | null>(null);
+  const popoverAnchorRef = useRef<HTMLSpanElement | null>(null);
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string>('');
   const [newKeyName, setNewKeyName] = useState<string>('');
   const [keyNameError, setKeyNameError] = useState<string>('');
-  const [feedbackExpanded, setFeedbackExpanded] = useState(false);
 
   const escapeHtml = useCallback(
     (value: string) =>
@@ -893,23 +743,12 @@ function QuestionEditorShellForm({
   }, [t]);
 
   const handleKeyDialogOpen = useCallback(() => {
-    const toolbarButton = getKeyToolbarButton();
-    const activeEl =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    setAnchorEl(
-      (toolbarButton ||
-        activeEl?.closest('.tox-tbtn') ||
-        editorWrapperRef.current) as HTMLElement | null,
-    );
     setIsKeyDialogOpen(true);
-  }, [getKeyToolbarButton]);
+  }, []);
 
   const handleKeyDialogClose = useCallback(() => {
     setIsKeyDialogOpen(false);
     setKeyInputValue('');
-    setAnchorEl(null);
     // Return keyboard focus to the editor body so space/enter work immediately after
     requestAnimationFrame(() => editorRef.current?.focus());
   }, []);
@@ -933,20 +772,17 @@ function QuestionEditorShellForm({
     }
 
     // Auto-populate the answer with the key value BEFORE inserting the key
-    // This ensures the group exists when FillInBlanksEditor syncs
     if (questionType === 'fill_in_blanks' && keyInputValue.trim()) {
       const currentGroups = watch('answerGroups') || [];
       const existingGroupIndex = currentGroups.findIndex((g) => g.key === key);
 
       if (existingGroupIndex >= 0) {
-        // Update existing group's first answer
         const updatedGroups = [...currentGroups];
         if (updatedGroups[existingGroupIndex].answers[0]) {
           updatedGroups[existingGroupIndex].answers[0].text = key;
           setValue('answerGroups', updatedGroups);
         }
       } else {
-        // Create new group with answer pre-populated
         const newGroup = {
           key,
           answers: [
@@ -963,7 +799,6 @@ function QuestionEditorShellForm({
       }
     }
 
-    // Insert key as a draggable, styled element with action buttons (Edit/Del) shown on hover
     const keyElement = buildKeyTokenHtml(key);
     editorRef.current?.insertContent(keyElement);
     syncEditorText();
@@ -1293,13 +1128,30 @@ function QuestionEditorShellForm({
           }
         : undefined;
 
-    // Styling for draggable keys
+    // Styling for draggable keys — using fixed CSS values for TinyMCE iframe
+    const primaryLight = '#a5b4fc'; // indigo-300
+    const primaryDark = '#4f46e5'; // indigo-600
+    const primaryMain = '#6366f1'; // indigo-500
+    const successMain = '#22c55e';
+    const successLight = '#86efac';
+    const successDark = '#15803d';
+    const errorMain = '#f43f5e';
+    const bgPaper = isDarkMode ? '#1e293b' : '#ffffff';
+    const bgDefault = isDarkMode ? '#0f172a' : '#f8fafc';
+    const textPrimary = isDarkMode ? 'rgba(248,250,252,0.95)' : 'rgba(15,23,42,0.87)';
+    const textSecondary = isDarkMode ? '#94a3b8' : '#64748b';
+    const divider = isDarkMode ? 'rgba(51,65,85,1)' : 'rgba(226,232,240,1)';
+    const primaryAlpha02 = isDarkMode ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.1)';
+    const primaryAlpha04 = isDarkMode ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.15)';
+    const primaryBorder = isDarkMode ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)';
+    const hoverBg = isDarkMode ? 'rgba(51,65,85,0.5)' : 'rgba(241,245,249,0.8)';
+
     const keyStyles = `
       .fill-in-blank-key {
         display: inline-block;
-        background-color: ${isDarkMode ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.primary.main, 0.1)};
-        color: ${isDarkMode ? theme.palette.primary.light : theme.palette.primary.dark};
-        border: 1px solid ${isDarkMode ? alpha(theme.palette.primary.main, 0.4) : alpha(theme.palette.primary.main, 0.3)};
+        background-color: ${primaryAlpha02};
+        color: ${isDarkMode ? primaryLight : primaryDark};
+        border: 1px solid ${primaryBorder};
         border-radius: 6px;
         padding: 2px 8px;
         margin: 0 2px;
@@ -1310,10 +1162,10 @@ function QuestionEditorShellForm({
         transition: all 0.2s ease;
       }
       .fill-in-blank-key:hover {
-        background-color: ${isDarkMode ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.primary.main, 0.15)};
-        border-color: ${theme.palette.primary.main};
+        background-color: ${primaryAlpha04};
+        border-color: ${primaryMain};
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px ${alpha(theme.palette.primary.main, 0.2)};
+        box-shadow: 0 2px 4px rgba(99,102,241,0.2);
       }
       .key-wrapper {
         position: relative;
@@ -1329,10 +1181,10 @@ function QuestionEditorShellForm({
         display: flex;
         align-items: center;
         gap: 4px;
-        background-color: ${theme.palette.background.paper};
+        background-color: ${bgPaper};
         padding: 2px;
         border-radius: 6px;
-        box-shadow: 0 2px 8px ${alpha(theme.palette.common.black, 0.15)};
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         z-index: 1000;
         opacity: 0;
         visibility: hidden;
@@ -1347,27 +1199,27 @@ function QuestionEditorShellForm({
       .key-action-btn {
         padding: 6px 10px;
         margin: 0;
-        background-color: ${theme.palette.background.paper};
-        border: 1px solid ${theme.palette.divider};
+        background-color: ${bgPaper};
+        border: 1px solid ${divider};
         border-radius: 4px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
-        box-shadow: 0 1px 3px ${alpha(theme.palette.common.black, 0.12)};
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         font-size: 13px;
         font-weight: 600;
         line-height: 1;
-        color: ${theme.palette.text.primary};
+        color: ${textPrimary};
         font-family: inherit;
         -webkit-appearance: none;
         appearance: none;
       }
       .key-action-btn:hover {
-        background-color: ${theme.palette.action.hover};
+        background-color: ${hoverBg};
         transform: scale(1.05);
-        box-shadow: 0 2px 6px ${alpha(theme.palette.common.black, 0.16)};
+        box-shadow: 0 2px 6px rgba(0,0,0,0.16);
       }
       .edit-icon::before {
         content: "${t('editor.fill_in_blanks.key_edit_btn')}";
@@ -1376,11 +1228,11 @@ function QuestionEditorShellForm({
         content: "${t('editor.fill_in_blanks.key_delete_btn')}";
       }
       .delete-icon {
-        color: ${theme.palette.text.secondary};
+        color: ${textSecondary};
       }
       .delete-icon:hover {
-        color: ${theme.palette.error.main};
-        background-color: ${alpha(theme.palette.error.main, 0.1)};
+        color: ${errorMain};
+        background-color: rgba(244,63,94,0.1);
       }
     `;
 
@@ -1393,9 +1245,9 @@ function QuestionEditorShellForm({
       }
       .correct-highlight {
         display: inline-block;
-        background-color: ${isDarkMode ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.success.main, 0.12)};
-        color: ${isDarkMode ? theme.palette.success.light : theme.palette.success.dark};
-        border: 1px solid ${alpha(theme.palette.success.main, 0.4)};
+        background-color: ${isDarkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.12)'};
+        color: ${isDarkMode ? successLight : successDark};
+        border: 1px solid rgba(34,197,94,0.4);
         border-radius: 4px;
         padding: 1px 6px;
         cursor: default;
@@ -1409,8 +1261,8 @@ function QuestionEditorShellForm({
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: ${theme.palette.error.main};
-        color: ${theme.palette.common.white};
+        background: ${successMain};
+        color: #ffffff;
         border: none;
         cursor: pointer;
         font-size: 12px;
@@ -1432,7 +1284,7 @@ function QuestionEditorShellForm({
       : '';
 
     const baseContentStyle = isDarkMode
-      ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: ${theme.palette.background.default}; color: ${alpha(theme.palette.text.primary, 0.9)}; } p:first-child { margin-top: 0; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { color: rgba(255, 255, 255, 0.7) !important; top: 16px !important; left: 16px !important; right: 16px !important; }`
+      ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: ${bgDefault}; color: ${textPrimary}; } p:first-child { margin-top: 0; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { color: rgba(255, 255, 255, 0.7) !important; top: 16px !important; left: 16px !important; right: 16px !important; }`
       : 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; } p:first-child { margin-top: 0; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { top: 16px !important; left: 16px !important; right: 16px !important; }';
     const overflowVisibleForKeys =
       isKeyBased || isHighlightBased
@@ -1469,21 +1321,6 @@ function QuestionEditorShellForm({
     questionType,
     isDarkMode,
     i18n.language,
-    theme.palette.background.default,
-    theme.palette.background.paper,
-    theme.palette.text.primary,
-    theme.palette.text.secondary,
-    theme.palette.primary.main,
-    theme.palette.primary.light,
-    theme.palette.primary.dark,
-    theme.palette.success.main,
-    theme.palette.success.light,
-    theme.palette.success.dark,
-    theme.palette.action.hover,
-    theme.palette.common.black,
-    theme.palette.common.white,
-    theme.palette.divider,
-    theme.palette.error.main,
     t,
     handleKeyDialogOpen,
     handleKeyActionClick,
@@ -1508,73 +1345,109 @@ function QuestionEditorShellForm({
 
   return (
     <FormProvider {...methods}>
-      <StyledPaper
-        elevation={0}
-        className="p-8 relative rounded-[40px] bg-transparent"
-      >
-        <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="rounded-3xl border border-border bg-card overflow-hidden">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 relative">
           {questionType && (
-            <Typography
-              className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] mb-4"
-              sx={{ color: theme.palette.semantic.text.faint }}
-            >
-              {/* Issue 5: show localized type name, fall back to raw key if translation missing */}
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] mb-4 text-muted-foreground">
               {t(`types.${questionType}`, { defaultValue: questionType })}
-            </Typography>
+            </p>
           )}
-          <Box className="flex flex-col gap-[28px]">
-            <FieldsRow className="flex gap-4 items-start flex-wrap">
-              <StyledTextField
-                {...register('name')}
-                accent="primary"
-                layout="flex"
-                label={t('question_name')}
-                required
-                fullWidth
-                error={!!errors.name}
-                helperText={errors.name?.message}
-                slotProps={{ htmlInput: { required: false } }}
-              />
-              <StyledTextField
-                {...register('mark')}
-                accent="warning"
-                layout="fixed"
-                label={t('mark')}
-                type="number"
-                required
-                error={!!errors.mark}
-                helperText={errors.mark?.message}
-                slotProps={{
-                  htmlInput: {
-                    min: 1,
-                    step: 1,
-                    required: false,
-                  },
-                }}
-              />
-            </FieldsRow>
+          <div className="flex flex-col gap-[28px]">
+            <div className="flex gap-4 items-start flex-wrap">
+              <div className="flex-1 min-w-full sm:min-w-0 flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground/75">
+                  {t('question_name')}
+                  <span className="ml-1 font-bold text-destructive">*</span>
+                </label>
+                <Input
+                  {...register('name')}
+                  placeholder={t('question_name')}
+                  className={cn('text-base', errors.name && 'border-destructive')}
+                />
+                {errors.name && (
+                  <p className="text-xs text-destructive mt-0.5">{errors.name.message}</p>
+                )}
+              </div>
+              <div className="w-full sm:w-36 flex flex-col gap-1">
+                <label className="text-sm font-medium text-foreground/75">
+                  {t('mark')}
+                  <span className="ml-1 font-bold text-destructive">*</span>
+                </label>
+                <Input
+                  {...register('mark')}
+                  type="number"
+                  placeholder={t('mark')}
+                  min={1}
+                  step={1}
+                  className={cn('text-sm', errors.mark && 'border-destructive')}
+                />
+                {errors.mark && (
+                  <p className="text-xs text-destructive mt-0.5">{errors.mark.message}</p>
+                )}
+              </div>
+            </div>
 
-            <Box>
-              <Typography
-                className="text-sm mb-3 font-medium"
-                sx={{
-                  color: alpha(
-                    theme.palette.text.primary,
-                    theme.palette.mode === 'dark' ? 0.9 : 0.75,
-                  ),
-                }}
-                variant="body2"
-              >
+            <div>
+              <p className="text-sm mb-3 font-medium text-foreground/75">
                 {questionType === 'fill_in_blanks' || questionType === 'text_classification'
                   ? t('question_instructions', {
                       defaultValue: t('question_text'),
                     })
                   : t('question_text')}
-                <RequiredAsterisk className="ml-1 font-bold">
-                  *
-                </RequiredAsterisk>
-              </Typography>
-              <EditorWrapper ref={editorWrapperRef}>
+                <span className="ml-1 font-bold text-destructive">*</span>
+              </p>
+              <div
+                ref={editorWrapperRef}
+                className="rounded-xl border border-border overflow-hidden bg-[hsl(var(--editor-background))] relative"
+              >
+                {/* Popover anchor — positioned at top of editor wrapper */}
+                <Popover open={isKeyDialogOpen} onOpenChange={(open) => { if (!open) handleKeyDialogClose(); }}>
+                  <PopoverTrigger asChild>
+                    <span ref={popoverAnchorRef} className="absolute top-10 left-1/2 -translate-x-1/2 w-0 h-0 overflow-hidden" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-4 flex flex-col gap-3" side="bottom" align="center">
+                    <Input
+                      autoFocus
+                      placeholder={
+                        questionType === 'highlight_correct_word'
+                          ? t('editor.highlight_correct_word.dialog_placeholder')
+                          : questionType === 'drag_drop_text'
+                            ? t('editor.drag_drop_text.dialog_placeholder')
+                            : t('editor.fill_in_blanks.dialog_placeholder')
+                      }
+                      value={keyInputValue}
+                      onChange={(e) => setKeyInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleKeyInsert();
+                        }
+                      }}
+                      className="text-sm"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={handleKeyDialogClose}
+                        className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-muted transition-colors text-foreground"
+                      >
+                        {questionType === 'highlight_correct_word'
+                          ? t('editor.highlight_correct_word.dialog_cancel_btn')
+                          : t('editor.fill_in_blanks.dialog_cancel_btn')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleKeyInsert}
+                        className="px-3 py-1.5 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        {questionType === 'highlight_correct_word'
+                          ? t('editor.highlight_correct_word.dialog_insert_btn')
+                          : t('editor.fill_in_blanks.dialog_insert_btn')}
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
                 <Editor
                   tinymceScriptSrc="/tinymce/tinymce.min.js"
                   licenseKey="gpl"
@@ -1593,17 +1466,11 @@ function QuestionEditorShellForm({
                   }}
                   init={editorInit}
                 />
-              </EditorWrapper>
+              </div>
               {errors.text && (
-                <Typography
-                  variant="caption"
-                  color="error"
-                  className="mt-1 block"
-                >
-                  {errors.text.message}
-                </Typography>
+                <p className="text-xs text-destructive mt-1">{errors.text.message}</p>
               )}
-            </Box>
+            </div>
 
             {questionType === 'fill_in_blanks' && (
               <FillInBlanksEditor
@@ -1628,112 +1495,79 @@ function QuestionEditorShellForm({
               />
             )}
 
-            <Accordion
-              expanded={feedbackExpanded}
-              onChange={(_, expanded) => setFeedbackExpanded(expanded)}
-              className="overflow-hidden rounded-xl border border-solid border-[var(--mui-palette-divider)] pt-0 shadow-none before:hidden"
-              sx={{
-                '&:before': { display: 'none' },
-                boxShadow: 'none',
-                border: '1px solid',
-                borderColor: 'divider',
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{
-                  flexDirection: 'row-reverse',
-                  '& .MuiAccordionSummary-expandIconWrapper': { mr: 1, ml: 0 },
-                }}
-              >
-                <Box className="flex items-center gap-2">
-                  <CampaignIcon color="action" sx={{ fontSize: 22 }} />
-                  <Typography variant="body2" fontWeight={500}>
-                    {t('editor.feedback_settings', {
-                      defaultValue: t('editor.feedback'),
-                    })}
-                  </Typography>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails className="flex flex-col gap-3 pt-0">
-                {feedbackExpanded && (
-                  <>
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight={500}
-                        className="block mb-2"
-                      >
-                        {t('editor.correct_answer_feedback')}
-                      </Typography>
-                      <EditorWrapper>
-                        <Editor
-                          tinymceScriptSrc="/tinymce/tinymce.min.js"
-                          licenseKey="gpl"
-                          value={correctAnswerFeedback}
-                          onEditorChange={(value) =>
-                            setValue('correctAnswerFeedback', value, {
-                              shouldValidate: true,
-                            })
-                          }
-                          init={feedbackEditorInit}
-                        />
-                      </EditorWrapper>
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight={500}
-                        className="block mb-2"
-                      >
-                        {t('editor.partially_correct_answer_feedback')}
-                      </Typography>
-                      <EditorWrapper>
-                        <Editor
-                          tinymceScriptSrc="/tinymce/tinymce.min.js"
-                          licenseKey="gpl"
-                          value={partiallyCorrectAnswerFeedback}
-                          onEditorChange={(value) =>
-                            setValue('partiallyCorrectAnswerFeedback', value, {
-                              shouldValidate: true,
-                            })
-                          }
-                          init={feedbackEditorInit}
-                        />
-                      </EditorWrapper>
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight={500}
-                        className="block mb-2"
-                      >
-                        {t('editor.incorrect_answer_feedback')}
-                      </Typography>
-                      <EditorWrapper>
-                        <Editor
-                          tinymceScriptSrc="/tinymce/tinymce.min.js"
-                          licenseKey="gpl"
-                          value={incorrectAnswerFeedback}
-                          onEditorChange={(value) =>
-                            setValue('incorrectAnswerFeedback', value, {
-                              shouldValidate: true,
-                            })
-                          }
-                          init={feedbackEditorInit}
-                        />
-                      </EditorWrapper>
-                    </Box>
-                  </>
-                )}
-              </AccordionDetails>
+            <Accordion type="single" collapsible className="rounded-xl border border-border overflow-hidden">
+              <AccordionItem value="feedback" className="border-none">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <Megaphone size={18} className="text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">
+                      {t('editor.feedback_settings', {
+                        defaultValue: t('editor.feedback'),
+                      })}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 flex flex-col gap-4">
+                  <div>
+                    <span className="block text-xs font-medium text-muted-foreground mb-2">
+                      {t('editor.correct_answer_feedback')}
+                    </span>
+                    <div className="rounded-xl border border-border overflow-hidden bg-[hsl(var(--editor-background))]">
+                      <Editor
+                        tinymceScriptSrc="/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
+                        value={correctAnswerFeedback}
+                        onEditorChange={(value) =>
+                          setValue('correctAnswerFeedback', value, {
+                            shouldValidate: true,
+                          })
+                        }
+                        init={feedbackEditorInit}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-medium text-muted-foreground mb-2">
+                      {t('editor.partially_correct_answer_feedback')}
+                    </span>
+                    <div className="rounded-xl border border-border overflow-hidden bg-[hsl(var(--editor-background))]">
+                      <Editor
+                        tinymceScriptSrc="/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
+                        value={partiallyCorrectAnswerFeedback}
+                        onEditorChange={(value) =>
+                          setValue('partiallyCorrectAnswerFeedback', value, {
+                            shouldValidate: true,
+                          })
+                        }
+                        init={feedbackEditorInit}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="block text-xs font-medium text-muted-foreground mb-2">
+                      {t('editor.incorrect_answer_feedback')}
+                    </span>
+                    <div className="rounded-xl border border-border overflow-hidden bg-[hsl(var(--editor-background))]">
+                      <Editor
+                        tinymceScriptSrc="/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
+                        value={incorrectAnswerFeedback}
+                        onEditorChange={(value) =>
+                          setValue('incorrectAnswerFeedback', value, {
+                            shouldValidate: true,
+                          })
+                        }
+                        init={feedbackEditorInit}
+                      />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
 
             {/* Question-specific components */}
-            <Box className="mt-6">
+            <div className="mt-6">
               {questionType === 'fill_in_blanks' && (
                 <FillInBlanksEditor
                   layout="answers"
@@ -1777,133 +1611,98 @@ function QuestionEditorShellForm({
               {questionType === 'image_classification' && (
                 <ImageClassificationEditor />
               )}
-            </Box>
+            </div>
 
             {/* Action buttons */}
-            <Box
-              className="flex justify-end gap-4 mt-8 pt-6"
-              sx={{
-                borderTop: '1px solid',
-                borderColor: 'divider',
-              }}
-            >
-              <Button onClick={onCancel} variant="outlined" size="large">
+            <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-border">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-6 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+              >
                 {t('common:profile.cancel')}
-              </Button>
-              <Button type="submit" variant="contained" size="large">
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+              >
                 {t('common:profile.save')}
-              </Button>
-            </Box>
-          </Box>
+              </button>
+            </div>
+          </div>
         </form>
-      </StyledPaper>
-      {(questionType === 'select_correct_word' ||
-        questionType === 'highlight_correct_word' ||
-        questionType === 'drag_drop_text' ||
-        questionType === 'fill_in_blanks_image') && (
-        <Popover
-          open={isKeyDialogOpen}
-          anchorEl={anchorEl}
-          onClose={handleKeyDialogClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-        >
-          <Box className="p-4 flex flex-col gap-3 min-w-[280px] max-w-[320px]">
-            <PopoverTextField
+      </div>
+
+      {/* Rename key dialog */}
+      <DialogPrimitive.Root open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
+            <DialogPrimitive.Title className="text-base font-semibold text-foreground mb-4">
+              {t('rename_key')}
+            </DialogPrimitive.Title>
+            <Input
               autoFocus
-              placeholder={
-                questionType === 'highlight_correct_word'
-                  ? t('editor.highlight_correct_word.dialog_placeholder')
-                  : questionType === 'drag_drop_text'
-                    ? t('editor.drag_drop_text.dialog_placeholder')
-                    : t('editor.fill_in_blanks.dialog_placeholder')
-              }
-              fullWidth
-              variant="outlined"
-              size="small"
-              value={keyInputValue}
-              onChange={(e) => setKeyInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleKeyInsert();
-                }
+              value={newKeyName}
+              onChange={(e) => {
+                setNewKeyName(e.target.value);
+                setKeyNameError('');
               }}
+              className={cn('text-sm', keyNameError && 'border-destructive')}
+              placeholder={t('new_key_name')}
             />
-            <Box className="flex gap-2 justify-end">
-              <Button
-                className="normal-case text-sm py-1 px-3"
-                onClick={handleKeyDialogClose}
-                size="small"
+            {keyNameError && <p className="text-xs text-destructive mt-1">{keyNameError}</p>}
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                type="button"
+                onClick={handleCloseRenameDialog}
+                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
               >
-                {questionType === 'highlight_correct_word'
-                  ? t('editor.highlight_correct_word.dialog_cancel_btn')
-                  : t('editor.fill_in_blanks.dialog_cancel_btn')}
-              </Button>
-              <Button
-                className="normal-case text-sm py-1 px-3"
-                onClick={handleKeyInsert}
-                variant="contained"
-                size="small"
+                {t('cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRename}
+                className="px-4 py-2 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                {questionType === 'highlight_correct_word'
-                  ? t('editor.highlight_correct_word.dialog_insert_btn')
-                  : t('editor.fill_in_blanks.dialog_insert_btn')}
-              </Button>
-            </Box>
-          </Box>
-        </Popover>
-      )}
+                {t('rename_key')}
+              </button>
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
 
-      <Dialog open={renameDialogOpen} onClose={handleCloseRenameDialog}>
-        <DialogTitle>{t('rename_key')}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label={t('new_key_name')}
-            fullWidth
-            value={newKeyName}
-            onChange={(e) => {
-              setNewKeyName(e.target.value);
-              setKeyNameError('');
-            }}
-            error={!!keyNameError}
-            helperText={keyNameError}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseRenameDialog}>{t('cancel')}</Button>
-          <Button onClick={handleConfirmRename} variant="contained">
-            {t('rename_key')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Delete key dialog */}
+      <DialogPrimitive.Root open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
+            <DialogPrimitive.Title className="text-base font-semibold text-foreground mb-4">
+              {t('delete_key_title')}
+            </DialogPrimitive.Title>
+            <p className="text-sm text-muted-foreground">
+              {t('delete_key_confirm', { key: selectedKey })}
+            </p>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                type="button"
+                onClick={handleCloseDeleteDialog}
+                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+              >
+                {t('delete')}
+              </button>
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
 
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>{t('delete_key_title')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t('delete_key_confirm', { key: selectedKey })}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>{t('cancel')}</Button>
-          <Button
-            onClick={handleConfirmDelete}
-            variant="contained"
-            color="error"
-          >
-            {t('delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </FormProvider>
   );
 }
