@@ -68,9 +68,12 @@
     --sidebar-accent: 210 40% 96%;
 
     /* ── Auth ── */
-    --auth-page-background: 210 40% 95%;
-    --auth-card-background: 0 0% 100%;
+    --auth-page-background: linear-gradient(135deg, hsl(239 84% 97%) 0%, hsl(210 40% 96%) 100%);
+    --auth-card-background: 0 0% 100% / 0.95;
+    --auth-card-shadow: 220 13% 18% / 0.12;
     --auth-field-background: 210 40% 98%;
+    --auth-utility-button-bg: 0 0% 100% / 0.75;
+    --avatar-background: 239 68% 90%;
 
     /* ── Question view ── */
     --question-view-background: 210 40% 98%;
@@ -161,9 +164,12 @@
     --sidebar-accent: 217 33% 17%;
 
     /* ── Auth ── */
-    --auth-page-background: 222 47% 5%;
+    --auth-page-background: linear-gradient(135deg, hsl(222 47% 9%) 0%, hsl(222 47% 12%) 100%);
     --auth-card-background: 217 33% 13%;
+    --auth-card-shadow: 0 0% 0% / 0.5;
     --auth-field-background: 217 33% 17%;
+    --auth-utility-button-bg: 222 47% 18%;
+    --avatar-background: 239 50% 25%;
 
     /* ── Question view ── */
     --question-view-background: 217 33% 13%;
