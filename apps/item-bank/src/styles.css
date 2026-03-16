@@ -225,3 +225,24 @@
     font-family: 'Segoe UI', 'Tahoma', 'Arial', system-ui, sans-serif;
   }
 }
+
+@keyframes wrongFlash {
+  0%   { border-color: hsl(var(--border)); box-shadow: none; }
+  20%  { border-color: hsl(var(--destructive)); box-shadow: 0 0 0 2px hsl(var(--destructive) / 0.3); }
+  70%  { border-color: hsl(var(--destructive)); box-shadow: 0 0 0 2px hsl(var(--destructive) / 0.3); }
+  100% { border-color: hsl(var(--border)); box-shadow: none; }
+}
+
+@layer utilities {
+  .animate-wrong-flash {
+    animation: wrongFlash 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-wrong-flash {
+      animation: none;
+      border-color: hsl(var(--destructive));
+      box-shadow: 0 0 0 2px hsl(var(--destructive) / 0.3);
+    }
+  }
+}
