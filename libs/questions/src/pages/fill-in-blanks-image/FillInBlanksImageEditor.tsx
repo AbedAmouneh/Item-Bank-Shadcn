@@ -1,31 +1,24 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import {
-  Box,
-  IconButton,
-  Chip,
-  Typography,
-  useTheme,
-  styled,
-  Button,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Switch,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Stage, Layer, Rect, Text, Image as KonvaImage, Group, Circle } from 'react-konva';
 import type Konva from 'konva';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutline';
+import { ImagePlus, Trash2, Plus, ChevronDown } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Badge,
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  cn,
+} from '@item-bank/ui';
 import { createEmptyAnswer } from '../../domain/factory';
 import type { AnswerEntry } from '../../domain/types';
 
@@ -37,18 +30,6 @@ type TextInputArea = {
   height: number;
   answers: AnswerEntry[];
 };
-
-const DropZone = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'dragOver',
-})<{ dragOver?: boolean }>(({ theme, dragOver }) => ({
-  border: `2px dashed ${dragOver ? theme.palette.primary.main : theme.palette.divider}`,
-  backgroundColor: dragOver ? theme.palette.action.hover : theme.palette.action.selected,
-  cursor: 'pointer',
-  transition: theme.transitions.create(['border-color', 'background-color'], {
-    duration: theme.transitions.duration.short,
-  }),
-}));
-
 
 const MARK_OPTIONS = [0, 5, 10, 15, 20, 25, 33.3, 30, 40, 50, 60, 75, 80, 90, 100];
 
@@ -68,7 +49,6 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function FillInBlanksImageEditor() {
   const { t } = useTranslation('questions');
-  const theme = useTheme();
   const { watch, setValue } = useFormContext();
 
   const background_image: string | null = watch('background_image') ?? null;
@@ -277,18 +257,17 @@ export default function FillInBlanksImageEditor() {
 
   if (!background_image) {
     return (
-      <Box className="flex flex-col gap-4">
-        <Typography
-          className="block text-[0.8125rem] font-normal leading-tight"
-          sx={(theme) => ({ color: theme.palette.text.secondary })}
-          variant="body2"
-          component="label"
-        >
+      <div className="flex flex-col gap-4">
+        <p className="block text-[0.8125rem] font-normal leading-tight text-muted-foreground">
           {t('editor.background_image')}
-        </Typography>
-        <DropZone
-          className="cursor-pointer min-h-[160px] flex flex-col items-center justify-center gap-2 rounded-lg"
-          dragOver={dragOver}
+        </p>
+        <div
+          className={cn(
+            'cursor-pointer min-h-[160px] flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors',
+            dragOver
+              ? 'border-primary bg-accent'
+              : 'border-border bg-muted/40'
+          )}
           onDrop={handleDrop}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -301,59 +280,42 @@ export default function FillInBlanksImageEditor() {
             accept="image/*"
             onChange={handleFileChange}
           />
-          <AddPhotoAlternateOutlinedIcon
-            className="text-5xl"
-            sx={(theme) => ({ color: theme.palette.text.secondary })}
-          />
-          <Typography
-            className="text-sm"
-            sx={(theme) => ({ color: theme.palette.text.secondary })}
-            variant="body2"
-          >
+          <ImagePlus className="w-12 h-12 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
             {t('editor.drag_and_drop')}
-          </Typography>
+          </p>
           <Button
-            className="font-medium normal-case"
-            variant="contained"
-            color="primary"
-            size="small"
+            type="button"
+            size="sm"
             onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
           >
             {t('editor.browse')}
           </Button>
-        </DropZone>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box className="flex flex-col gap-4">
-      <Box className="flex items-center justify-between">
-        <Typography
-          className="text-[0.8125rem] font-normal leading-tight"
-          sx={(theme) => ({ color: theme.palette.text.secondary })}
-          variant="body2"
-        >
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[0.8125rem] font-normal leading-tight text-muted-foreground">
           {t('editor.background_image')}
-        </Typography>
+        </p>
         <Button
-          size="small"
-          variant="outlined"
-          color="error"
-          startIcon={<DeleteOutlinedIcon fontSize="small" />}
-          className="normal-case text-xs"
+          type="button"
+          size="sm"
+          variant="outline"
+          className="text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive text-xs gap-1.5"
           onClick={handleRemoveImage}
         >
+          <Trash2 size={14} />
           {t('editor.remove_image')}
         </Button>
-      </Box>
+      </div>
 
-
-      <Box
-        className="overflow-hidden rounded"
-        sx={{ border: `1px solid ${theme.palette.divider}` }}
-      >
-        <Box className="flex justify-center p-4 overflow-auto">
+      <div className="overflow-hidden rounded border border-border">
+        <div className="flex justify-center p-4 overflow-auto">
           <Stage
             ref={stageRef}
             width={canvasWidth}
@@ -369,7 +331,7 @@ export default function FillInBlanksImageEditor() {
                 width={canvasWidth}
                 height={canvasHeight}
                 fill="#ffffff"
-                stroke={theme.palette.divider}
+                stroke="#e5e7eb"
                 strokeWidth={1}
               />
 
@@ -444,8 +406,8 @@ export default function FillInBlanksImageEditor() {
                       x={12}
                       y={12}
                       radius={12}
-                      fill={theme.palette.error.main}
-                      stroke={theme.palette.error.dark}
+                      fill="#ef4444"
+                      stroke="#dc2626"
                       strokeWidth={2}
                     />
                     <Text
@@ -458,131 +420,131 @@ export default function FillInBlanksImageEditor() {
               })()}
             </Layer>
           </Stage>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box className="flex flex-col gap-2">
-        <Box className="flex items-center justify-between">
-          <Typography
-            variant="body2"
-            className="text-[0.8125rem]"
-            sx={{ color: theme.palette.text.secondary }}
-          >
-            Zones
-          </Typography>
-          <Button
-            variant="text"
-            startIcon={<AddIcon />}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <p className="text-[0.8125rem] text-muted-foreground">Zones</p>
+          <button
+            type="button"
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             onClick={handleAddZone}
-            className="normal-case text-sm"
           >
+            <Plus size={16} />
             Add zone
-          </Button>
-        </Box>
-        {inputAreas.map((zone, zoneIndex) => (
-          <Accordion
-            key={zone.id}
-            expanded={expandedZoneId === zone.id}
-            onChange={(_, expanded) => {
-              setExpandedZoneId(expanded ? zone.id : false);
-              if (expanded) setSelectedId(zone.id);
-            }}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Box className="flex items-center gap-2">
-                <Typography className="font-medium">
-                  Zone {zoneIndex + 1}
-                </Typography>
-                <Chip
-                  size="small"
-                  label={`${Math.round(zone.x)},${Math.round(zone.y)}`}
-                  variant="outlined"
-                />
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box className="flex flex-col gap-3">
-                {zone.answers.map((answer) => (
-                  <Box key={answer.id} className="flex items-center gap-3 p-3 border border-solid border-gray-300 rounded">
-                    <TextField
-                      placeholder={t('editor.add_answer')}
-                      value={answer.text}
-                      onChange={(e) => handleAnswerChange(zone.id, answer.id, 'text', e.target.value)}
-                      size="small"
-                      className="flex-1"
-                      sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8125rem' } }}
-                    />
-                    <FormControl size="small" className="min-w-[82px]">
-                      <InputLabel>{t('mark')} *</InputLabel>
+          </button>
+        </div>
+
+        <Accordion
+          type="single"
+          collapsible
+          value={expandedZoneId !== false ? expandedZoneId : ''}
+          onValueChange={(val) => {
+            const next = val || false;
+            setExpandedZoneId(next);
+            if (next) setSelectedId(next);
+          }}
+        >
+          {inputAreas.map((zone, zoneIndex) => (
+            <AccordionItem key={zone.id} value={zone.id}>
+              <AccordionTrigger className="py-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Zone {zoneIndex + 1}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {Math.round(zone.x)},{Math.round(zone.y)}
+                  </Badge>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-3 pt-1">
+                  {zone.answers.map((answer) => (
+                    <div
+                      key={answer.id}
+                      className="flex items-center gap-3 p-3 border border-border rounded-lg"
+                    >
+                      <Input
+                        placeholder={t('editor.add_answer')}
+                        value={answer.text}
+                        onChange={(e) => handleAnswerChange(zone.id, answer.id, 'text', e.target.value)}
+                        className="flex-1 h-[34px] text-[0.8125rem]"
+                      />
+
                       <Select
-                        value={answer.mark}
-                        label={`${t('mark')} *`}
-                        onChange={(e) => handleAnswerChange(zone.id, answer.id, 'mark', Number(e.target.value))}
-                        sx={{ fontSize: '0.8125rem' }}
+                        value={String(answer.mark)}
+                        onValueChange={(val) => handleAnswerChange(zone.id, answer.id, 'mark', Number(val))}
                       >
-                        {MARK_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt}>
-                            {opt} %
-                          </MenuItem>
-                        ))}
+                        <SelectTrigger className="min-w-[82px] h-[34px] text-[0.8125rem]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MARK_OPTIONS.map((opt) => (
+                            <SelectItem key={opt} value={String(opt)}>
+                              {opt} %
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
                       </Select>
-                    </FormControl>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          size="small"
+
+                      <label className="shrink-0 flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
                           checked={answer.ignoreCasing}
                           onChange={(e) => handleAnswerChange(zone.id, answer.id, 'ignoreCasing', e.target.checked)}
-                          color="primary"
                         />
-                      }
-                      label={t('editor.ignore_casing')}
-                      sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.75rem' } }}
-                    />
-                    {zone.answers.length > 1 && (
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveAnswer(zone.id, answer.id)}
-                        className="p-1"
-                      >
-                        <DeleteOutlinedIcon sx={{ fontSize: 20 }} />
-                      </IconButton>
-                    )}
-                  </Box>
-                ))}
-                <Box className="flex items-center gap-2">
-                  <Button
-                    variant="text"
-                    startIcon={<AddIcon />}
-                    onClick={() => handleAddAnswer(zone.id)}
-                    className="self-start normal-case font-medium text-sm"
-                  >
-                    {t('editor.add_answer')}
-                  </Button>
-                  <Button
-                    variant="text"
-                    color="error"
-                    startIcon={<DeleteOutlinedIcon />}
-                    onClick={() => {
-                      setInputAreas((prev) => prev.filter((entry) => entry.id !== zone.id));
-                      if (selectedId === zone.id) {
-                        setSelectedId(null);
-                        setButtonPos(null);
-                      }
-                      if (expandedZoneId === zone.id) {
-                        setExpandedZoneId(false);
-                      }
-                    }}
-                    className="normal-case text-sm"
-                  >
-                    Delete zone
-                  </Button>
-                </Box>
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </Box>
-    </Box>
+                        <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+                          <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+                        </div>
+                        <span className="text-xs text-foreground">{t('editor.ignore_casing')}</span>
+                      </label>
+
+                      {zone.answers.length > 1 && (
+                        <button
+                          type="button"
+                          aria-label="Remove answer"
+                          className="p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          onClick={() => handleRemoveAnswer(zone.id, answer.id)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 self-start text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      onClick={() => handleAddAnswer(zone.id)}
+                    >
+                      <Plus size={14} />
+                      {t('editor.add_answer')}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors"
+                      onClick={() => {
+                        setInputAreas((prev) => prev.filter((entry) => entry.id !== zone.id));
+                        if (selectedId === zone.id) {
+                          setSelectedId(null);
+                          setButtonPos(null);
+                        }
+                        if (expandedZoneId === zone.id) {
+                          setExpandedZoneId(false);
+                        }
+                      }}
+                    >
+                      <Trash2 size={14} />
+                      Delete zone
+                    </button>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+    </div>
   );
 }
