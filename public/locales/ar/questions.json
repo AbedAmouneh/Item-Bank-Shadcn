@@ -222,6 +222,7 @@
             "options_label": "الخيارات حسب المفتاح",
             "partial_credit": "السماح بالدرجة الجزئية",
             "correct_label": "تحديد كإجابة صحيحة",
+            "delete_option": "حذف الخيار",
             "option_placeholder": "الخيار {{index}}...",
             "add_option": "إضافة خيار",
             "error_no_keys": "استخدم [[مفتاح]] في نص السؤال لإضافة مجموعات كلمات قابلة للاختيار.",
