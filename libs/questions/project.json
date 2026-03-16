@@ -1,0 +1,10 @@
+{
+  "name": "questions",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/questions/src",
+  "projectType": "library",
+  "tags": ["type:lib"],
+  "implicitDependencies": ["ui"],
+  "// targets": "to see all targets run: nx show project questions --web",
+  "targets": {}
+}

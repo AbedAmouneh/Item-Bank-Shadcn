@@ -1,0 +1,211 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ─── LIGHT MODE ─────────────────────────────────────────────── */
+  :root {
+    /* shadcn base tokens */
+    --background: 210 40% 98%;        /* #F8FAFC slate-50 */
+    --foreground: 222 47% 7%;         /* #0F172A slate-900 */
+
+    --card: 0 0% 100%;                /* #FFFFFF */
+    --card-foreground: 222 47% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 7%;
+
+    --primary: 239 84% 67%;           /* #6366F1 indigo-500 */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 226 100% 82%;    /* #A5B4FC indigo-300 */
+    --primary-dark: 243 75% 59%;      /* #4F46E5 indigo-600 */
+
+    --secondary: 210 40% 96%;         /* #F1F5F9 slate-100 */
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;  /* #64748B slate-500 */
+
+    --accent: 210 40% 93%;            /* #E2E8F0 slate-200 */
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 351 95% 61%;       /* #F43F5E rose-500 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;            /* #E2E8F0 slate-200 */
+    --input: 214 32% 91%;
+    --ring: 239 84% 67%;              /* indigo-500 */
+
+    --radius: 0.625rem;
+
+    /* ── Semantic surface tokens ── */
+    --surface-default: 210 40% 98%;   /* page background */
+    --surface-subtle: 210 40% 96%;    /* slight off-white */
+    --surface-card: 0 0% 100%;        /* white card */
+    --surface-input: 0 0% 100%;       /* input bg */
+
+    /* ── Text tokens ── */
+    --text-muted: 215 16% 47%;        /* #64748B */
+    --text-faint: 213 27% 63%;        /* #94A3B8 slate-400 */
+
+    /* ── Shadows ── */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+    --shadow-auth-card: 0 4px 24px 0 rgb(99 102 241 / 0.10), 0 1px 3px 0 rgb(0 0 0 / 0.06);
+    --shadow-nav: 0 2px 16px 0 rgb(0 0 0 / 0.08);
+
+    /* ── Navigation ── */
+    --nav-background: 0 0% 100%;
+    --nav-border: 214 32% 91%;
+    --nav-pill: 239 84% 67%;          /* selected pill bg */
+    --nav-pill-foreground: 0 0% 100%;
+    --nav-pill-unselected-text: 215 16% 47%;
+
+    /* ── Sidebar ── */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-accent: 210 40% 96%;
+
+    /* ── Auth ── */
+    --auth-page-background: 210 40% 95%;
+    --auth-card-background: 0 0% 100%;
+    --auth-field-background: 210 40% 98%;
+
+    /* ── Question view ── */
+    --question-view-background: 210 40% 98%;
+    --question-view-border: 214 32% 91%;
+    --question-view-text: 222 47% 11%;
+
+    /* ── Solution ── */
+    --solution-background: 142 76% 97%;   /* emerald tint */
+    --solution-border: 142 72% 80%;
+
+    /* ── Editor ── */
+    --editor-wrapper-background: 210 40% 98%;
+    --editor-asterisk: 351 95% 61%;       /* rose */
+
+    /* ── Choice editor ── */
+    --choice-editor-background: 210 40% 98%;
+    --choice-editor-border: 214 32% 88%;
+
+    /* ── Choice item ── */
+    --choice-item-background: 0 0% 100%;
+    --choice-item-border: 214 32% 91%;
+
+    /* ── Table ── */
+    --table-head-color: 222 47% 11%;
+    --table-row-border: 214 32% 91%;
+    --table-head-border: 214 32% 85%;
+  }
+
+  /* ─── DARK MODE ──────────────────────────────────────────────── */
+  .dark {
+    --background: 222 47% 7%;         /* #0F172A slate-900 */
+    --foreground: 210 40% 98%;        /* #F8FAFC slate-50 */
+
+    --card: 217 33% 13%;              /* #1E293B slate-800 */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 217 33% 13%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 234 89% 74%;           /* #818CF8 indigo-400 */
+    --primary-foreground: 222 47% 7%;
+    --primary-light: 226 100% 82%;
+    --primary-dark: 239 84% 67%;
+
+    --secondary: 217 33% 17%;         /* #334155 slate-700 */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;  /* #94A3B8 slate-400 */
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 351 95% 61%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 33% 20%;            /* #334155 */
+    --input: 217 33% 17%;
+    --ring: 234 89% 74%;
+
+    /* ── Semantic surface tokens ── */
+    --surface-default: 222 47% 7%;
+    --surface-subtle: 217 33% 11%;
+    --surface-card: 217 33% 13%;
+    --surface-input: 217 33% 15%;
+
+    /* ── Text tokens ── */
+    --text-muted: 215 20% 65%;
+    --text-faint: 215 16% 47%;
+
+    /* ── Shadows ── */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+    --shadow-auth-card: 0 4px 24px 0 rgb(0 0 0 / 0.4);
+    --shadow-nav: 0 2px 16px 0 rgb(0 0 0 / 0.4);
+
+    /* ── Navigation ── */
+    --nav-background: 217 33% 10%;
+    --nav-border: 217 33% 17%;
+    --nav-pill: 234 89% 74%;
+    --nav-pill-foreground: 222 47% 7%;
+    --nav-pill-unselected-text: 215 20% 65%;
+
+    /* ── Sidebar ── */
+    --sidebar-background: 217 33% 10%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-accent: 217 33% 17%;
+
+    /* ── Auth ── */
+    --auth-page-background: 222 47% 5%;
+    --auth-card-background: 217 33% 13%;
+    --auth-field-background: 217 33% 17%;
+
+    /* ── Question view ── */
+    --question-view-background: 217 33% 13%;
+    --question-view-border: 217 33% 20%;
+    --question-view-text: 210 40% 98%;
+
+    /* ── Solution ── */
+    --solution-background: 162 50% 10%;
+    --solution-border: 162 47% 25%;
+
+    /* ── Editor ── */
+    --editor-wrapper-background: 217 33% 13%;
+    --editor-asterisk: 351 95% 61%;
+
+    /* ── Choice editor ── */
+    --choice-editor-background: 217 33% 15%;
+    --choice-editor-border: 217 33% 22%;
+
+    /* ── Choice item ── */
+    --choice-item-background: 217 33% 17%;
+    --choice-item-border: 217 33% 22%;
+
+    /* ── Table ── */
+    --table-head-color: 210 40% 98%;
+    --table-row-border: 217 33% 20%;
+    --table-head-border: 217 33% 22%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* RTL font — use a system Arabic font as fallback */
+  [dir="rtl"] body,
+  [dir="rtl"] {
+    font-family: 'Segoe UI', 'Tahoma', 'Arial', system-ui, sans-serif;
+  }
+}

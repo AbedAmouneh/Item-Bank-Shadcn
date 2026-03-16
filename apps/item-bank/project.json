@@ -1,0 +1,11 @@
+{
+  "name": "item-bank",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "includedScripts": [],
+  "sourceRoot": "apps/item-bank/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "implicitDependencies": ["auth", "questions", "i18n", "ui"],
+  "// targets": "to see all targets run: nx show project item-bank --web",
+  "targets": {}
+}

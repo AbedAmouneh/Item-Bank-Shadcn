@@ -1,0 +1,66 @@
+{
+    "AuthorApp": "AuthorApp",
+    "brand": "AuthorApp Item Bank",
+    "switch_language": "Switch language",
+    "switch_theme": "Switch theme",
+    "nav": {
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "itemBank": "Item Bank",
+        "analytics": "Analytics",
+        "settings": "Settings"
+    },
+    "table_actions": {
+        "notifications": "Notifications",
+        "theme": "Theme",
+        "language": "Language",
+        "logout": "Logout",
+        "fullscreen": "Fullscreen",
+        "menu": "Menu"
+    },
+    "profile": {
+        "edit_profile": "Edit Profile",
+        "change_password": "Change Password",
+        "file_manager": "File Manager",
+        "my_annotations": "My Annotations",
+        "username_placeholder": "J. Smith",
+        "role_admin": "Admin",
+        "field_required": "This field is required",
+        "upload_profile_picture": "Upload profile picture",
+        "remove_photo": "Remove photo",
+        "drag_and_drop": "Drag and drop here, or click to browse files.",
+        "browse": "Browse",
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "username": "Username",
+        "phone_number": "Phone Number",
+        "email": "Email",
+        "cancel": "Cancel",
+        "save": "Save",
+        "save_and_continue": "Save and continue",
+        "save_and_close": "Save and close",
+        "current_password": "Current Password",
+        "new_password": "New Password",
+        "confirm_password": "Confirm",
+        "current_password_required": "Current password is required",
+        "new_password_required": "New password is required",
+        "confirm_password_required": "Please confirm your password",
+        "passwords_do_not_match": "Passwords don't match",
+        "show_password": "Show password",
+        "hide_password": "Hide password"
+    },
+    "datagrid": {
+        "columns": "Columns",
+        "filters": "Filters",
+        "export": "Export",
+        "print": "Print",
+        "download_csv": "Download as CSV",
+        "search": "Search",
+        "search_placeholder": "Search...",
+        "clear_search": "Clear search"
+    },
+    "validation": {
+        "required": "This field is required",
+        "min": "Must be at least {{min}}"
+    }
+}

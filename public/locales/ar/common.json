@@ -1,0 +1,66 @@
+{
+    "AuthorApp": "تطبيق المؤلف",
+    "brand": "بنك العناصر",
+    "switch_language": "تبديل اللغة",
+    "switch_theme": "تبديل المظهر",
+    "nav": {
+        "dashboard": "لوحة التحكم",
+        "projects": "المشاريع",
+        "itemBank": "بنك العناصر",
+        "analytics": "التحليلات",
+        "settings": "الإعدادات"
+    },
+    "table_actions": {
+        "notifications": "الإشعارات",
+        "theme": "المظهر",
+        "language": "اللغة",
+        "logout": "تسجيل الخروج",
+        "fullscreen": "الكامل",
+        "menu": "القائمة"
+    },
+    "profile": {
+        "edit_profile": "تعديل الملف الشخصي",
+        "change_password": "تغيير كلمة المرور",
+        "file_manager": "مدير الملفات",
+        "my_annotations": "تعليقاتي",
+        "username_placeholder": "ج. سميث",
+        "role_admin": "مدير",
+        "field_required": "هذا الحقل مطلوب",
+        "upload_profile_picture": "تحميل صورة الملف الشخصي",
+        "remove_photo": "إزالة الصورة",
+        "drag_and_drop": "اسحب وأفلت هنا، أو انقر لتصفح الملفات.",
+        "browse": "تصفح",
+        "first_name": "الاسم الأول",
+        "last_name": "اسم العائلة",
+        "username": "اسم المستخدم",
+        "phone_number": "رقم الهاتف",
+        "email": "البريد الإلكتروني",
+        "cancel": "إلغاء",
+        "save": "حفظ",
+        "save_and_continue": "حفظ ومتابعة",
+        "save_and_close": "حفظ وإغلاق",
+        "current_password": "كلمة المرور الحالية",
+        "new_password": "كلمة المرور الجديدة",
+        "confirm_password": "تأكيد",
+        "current_password_required": "كلمة المرور الحالية مطلوبة",
+        "new_password_required": "كلمة المرور الجديدة مطلوبة",
+        "confirm_password_required": "يرجى تأكيد كلمة المرور",
+        "passwords_do_not_match": "كلمات المرور غير متطابقة",
+        "show_password": "إظهار كلمة المرور",
+        "hide_password": "إخفاء كلمة المرور"
+    },
+    "datagrid": {
+        "columns": "الأعمدة",
+        "filters": "الفلاتر",
+        "export": "تصدير",
+        "print": "طباعة",
+        "download_csv": "تنزيل كملف CSV",
+        "search": "بحث",
+        "search_placeholder": "بحث...",
+        "clear_search": "مسح البحث"
+    },
+    "validation": {
+        "required": "هذا الحقل مطلوب",
+        "min": "يجب أن يكون على الأقل {{min}}"
+    }
+}
