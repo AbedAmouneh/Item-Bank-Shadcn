@@ -71,31 +71,37 @@ function FillInBlanksEditor({
   const lastSyncedKeysSignature = useRef<string | null>(null);
 
   const editorInit = useMemo(
-    () => ({
-      height: 240,
-      menubar: false,
-      directionality: (i18n.language === 'ar' ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
-      plugins: ['advlist', 'lists', 'link', 'wordcount', 'help'],
-      toolbar:
-        'undo redo | blocks fontfamily fontsize | bullist numlist | key | bold italic underline strikethrough | superscript subscript | outdent indent | link',
-      toolbar_mode: 'floating' as const,
-      statusbar: true,
-      placeholder: t('editor.fill_in_blanks.content_placeholder'),
-      setup: (editor: TinyMCEEditor) => {
-        editor.ui.registry.addButton('key', {
-          text: t('editor.fill_in_blanks.toolbar_key'),
-          onAction: () => {
-            const defaultKey = t('editor.fill_in_blanks.key_default', {
-              defaultValue: 'KeyText',
-            });
-            editor.insertContent(`[[${defaultKey}]]`);
-            editor.focus();
-          },
-        });
-      },
-      content_style:
-        'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; }',
-    }),
+    () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      return {
+        height: 240,
+        menubar: false,
+        directionality: (i18n.language === 'ar' ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
+        plugins: ['advlist', 'lists', 'link', 'wordcount', 'help'],
+        toolbar:
+          'undo redo | blocks fontfamily fontsize | bullist numlist | key | bold italic underline strikethrough | superscript subscript | outdent indent | link',
+        toolbar_mode: 'floating' as const,
+        statusbar: true,
+        placeholder: t('editor.fill_in_blanks.content_placeholder'),
+        setup: (editor: TinyMCEEditor) => {
+          editor.ui.registry.addButton('key', {
+            text: t('editor.fill_in_blanks.toolbar_key'),
+            onAction: () => {
+              const defaultKey = t('editor.fill_in_blanks.key_default', {
+                defaultValue: 'KeyText',
+              });
+              editor.insertContent(`[[${defaultKey}]]`);
+              editor.focus();
+            },
+          });
+        },
+        skin: isDark ? 'oxide-dark' : 'oxide',
+        content_css: isDark ? 'dark' : 'default',
+        content_style: isDark
+          ? 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: #0f172a; color: rgba(248, 250, 252, 0.9); }'
+          : 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; }',
+      };
+    },
     [i18n.language, t]
   );
 
