@@ -220,7 +220,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
                 type="button"
                 onClick={() => handleDeleteOption(group.key, option.id)}
                 disabled={group.options.length <= 2}
-                aria-label={t('editor.select_correct_word.correct_label', { defaultValue: 'Delete option' })}
+                aria-label={t('editor.select_correct_word.delete_option', { defaultValue: 'Delete option' })}
                 className="shrink-0 p-1 rounded-md text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none"
               >
                 <Trash2 className="w-4 h-4" />
