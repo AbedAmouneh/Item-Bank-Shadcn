@@ -1,11 +1,8 @@
-import { Box, Button, Chip, Typography, alpha, styled } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import type { QuestionRow, QuestionChoice } from '../../components/QuestionsTable';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { GripVertical, Check, RotateCcw, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button, cn } from '@item-bank/ui';
+import type { QuestionRow, QuestionChoice } from '../../components/QuestionsTable';
 
 type TextSequencingQuestionViewProps = {
   question: QuestionRow;
@@ -16,88 +13,6 @@ type DisplayItem = {
   text: string;
   markPercent: number;
 };
-
-const ChipList = styled(Box)(({ theme }) => ({
-  border: `1px solid ${alpha(theme.palette.divider, 0.25)}`,
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.4)
-      : alpha(theme.palette.primary.main, 0.02),
-  minHeight: theme.spacing(6),
-  touchAction: 'none',
-  '@keyframes wrongFlash': {
-    '0%': { borderColor: alpha(theme.palette.divider, 0.25), boxShadow: 'none' },
-    '20%': {
-      borderColor: theme.palette.error.main,
-      boxShadow: `0 0 0 2px ${alpha(theme.palette.error.main, 0.3)}`,
-    },
-    '70%': {
-      borderColor: theme.palette.error.main,
-      boxShadow: `0 0 0 2px ${alpha(theme.palette.error.main, 0.3)}`,
-    },
-    '100%': { borderColor: alpha(theme.palette.divider, 0.25), boxShadow: 'none' },
-  },
-  '&[data-flash-wrong="true"]': {
-    animation: 'wrongFlash 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-    '@media (prefers-reduced-motion: reduce)': {
-      animation: 'none',
-      borderColor: theme.palette.error.main,
-      boxShadow: `0 0 0 2px ${alpha(theme.palette.error.main, 0.3)}`,
-    },
-  },
-}));
-
-const DraggableChip = styled(Box, {
-  shouldForwardProp: (prop) =>
-    prop !== 'isDragOver' &&
-    prop !== 'isDragging' &&
-    prop !== 'dragOffsetX' &&
-    prop !== 'dragOffsetY',
-})<{
-  isDragOver?: boolean;
-  isDragging?: boolean;
-  dragOffsetX?: number;
-  dragOffsetY?: number;
-}>(({ theme, isDragOver, isDragging, dragOffsetX = 0, dragOffsetY = 0 }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-  padding: theme.spacing(0.75, 1.5, 0.75, 0.75),
-  borderRadius: 9999,
-  border: `1px solid ${
-    isDragOver ? theme.palette.primary.main : alpha(theme.palette.divider, 0.5)
-  }`,
-  backgroundColor: isDragOver
-    ? alpha(theme.palette.primary.main, 0.1)
-    : theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.7)
-      : alpha(theme.palette.primary.main, 0.05),
-  cursor: isDragging ? 'grabbing' : 'grab',
-  userSelect: 'none',
-  touchAction: 'none',
-  willChange: 'transform',
-  opacity: isDragging ? 0.82 : 1,
-  boxShadow: isDragging ? theme.shadows[8] : 'none',
-  transform: isDragging
-    ? `translate3d(${dragOffsetX}px, ${dragOffsetY}px, 0) scale(1.08)`
-    : 'translate3d(0, 0, 0) scale(1)',
-  zIndex: isDragging ? 30 : undefined,
-  pointerEvents: isDragging ? 'none' : undefined,
-  transition: isDragging
-    ? 'border-color 0.12s ease, background-color 0.12s ease, opacity 0.1s ease, box-shadow 0.1s ease'
-    : 'border-color 0.12s ease, background-color 0.12s ease, opacity 0.15s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s ease',
-  '&:focus-visible': {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: 2,
-  },
-}));
-
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -115,7 +30,6 @@ function moveItem<T>(list: T[], from: number, to: number): T[] {
   next.splice(to, 0, removed);
   return next;
 }
-
 
 function shuffleUnique(arr: DisplayItem[], current: DisplayItem[]): DisplayItem[] {
   if (arr.length <= 1) return [...arr];
@@ -170,6 +84,7 @@ const TextSequencingQuestionView = ({ question }: TextSequencingQuestionViewProp
   const rafIdsRef = useRef<number[]>([]);
   const timerIdsRef = useRef<number[]>([]);
   const lastSwapRef = useRef<{ from: number; to: number; time: number } | null>(null);
+
   useEffect(() => {
     if (!flashWrong) return;
     const id = setTimeout(() => setFlashWrong(false), 820);
@@ -256,6 +171,7 @@ const TextSequencingQuestionView = ({ question }: TextSequencingQuestionViewProp
 
     previousRectsRef.current = nextRects;
   }, [items]);
+
   const formatNum = useCallback(
     (n: number) => new Intl.NumberFormat(i18n.language).format(n),
     [i18n.language]
@@ -379,8 +295,13 @@ const TextSequencingQuestionView = ({ question }: TextSequencingQuestionViewProp
 
   return (
     <>
-      <ChipList
-        className="flex flex-wrap gap-2 p-4 rounded-2xl mb-6"
+      {/* Chip list */}
+      <div
+        className={cn(
+          'flex flex-wrap gap-2 p-4 rounded-2xl mb-6 border touch-none min-h-[3rem] transition-colors',
+          'border-border bg-card',
+          flashWrong && 'animate-wrong-flash'
+        )}
         ref={chipListRef}
         role="list"
         data-flash-wrong={flashWrong ? 'true' : undefined}
@@ -394,18 +315,14 @@ const TextSequencingQuestionView = ({ question }: TextSequencingQuestionViewProp
           const isDragOver = dragOverIndex === index && dragSource.current !== index;
 
           return (
-            <DraggableChip
+            <div
               key={item.canonicalId}
               data-chip-index={index}
               data-dragging={isDragging ? 'true' : undefined}
-              isDragOver={isDragOver}
-              isDragging={isDragging}
-              dragOffsetX={isDragging ? dragOffset.x : 0}
-              dragOffsetY={isDragging ? dragOffset.y : 0}
               role="listitem"
               tabIndex={0}
               aria-label={`${item.text} — ${t('text_sequencing.chip_hint')}`}
-              onKeyDown={(e) => handleChipKeyDown(e as React.KeyboardEvent, index)}
+              onKeyDown={(e) => handleChipKeyDown(e, index)}
               ref={(el: HTMLDivElement | null) => {
                 if (el) {
                   chipRefs.current.set(item.canonicalId, el);
@@ -413,54 +330,75 @@ const TextSequencingQuestionView = ({ question }: TextSequencingQuestionViewProp
                   chipRefs.current.delete(item.canonicalId);
                 }
               }}
+              className={cn(
+                'inline-flex items-center gap-1 py-1.5 ps-1.5 pe-3 rounded-full border select-none touch-none will-change-transform',
+                'focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2',
+                isDragging
+                  ? 'border-primary bg-primary/10 cursor-grabbing opacity-[0.82] shadow-lg z-30 pointer-events-none'
+                  : isDragOver
+                    ? 'border-primary bg-primary/10 cursor-grab'
+                    : 'border-border bg-card dark:bg-card cursor-grab hover:border-primary/40',
+                isDragging
+                  ? 'transition-[border-color,background-color,opacity,box-shadow] duration-100'
+                  : 'transition-[border-color,background-color,opacity,transform,box-shadow] duration-200'
+              )}
+              style={
+                isDragging
+                  ? {
+                      transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) scale(1.08)`,
+                    }
+                  : { transform: 'translate3d(0, 0, 0) scale(1)' }
+              }
             >
-              <DragIndicatorIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} />
-              <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                {item.text}
-              </Typography>
-            </DraggableChip>
+              <GripVertical size={14} className="text-muted-foreground shrink-0" />
+              <span className="text-sm text-foreground">{item.text}</span>
+            </div>
           );
         })}
-      </ChipList>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3 flex-wrap">
+      {/* Controls row */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
+            variant="default"
+            className="rounded-xl font-semibold gap-1.5"
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
           >
+            {checked ? <RotateCcw size={15} /> : <Check size={15} />}
             {checked ? t('retry') : t('check')}
           </Button>
 
           {checked && score && !score.isFullyCorrect && (
             <Button
-              variant="contained"
-              startIcon={<LightbulbIcon />}
+              variant="default"
+              className="rounded-xl font-semibold gap-1.5"
               onClick={handleShowSolution}
-              className="normal-case font-semibold"
-              sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
             >
+              <Lightbulb size={15} />
               {t('show_solution')}
             </Button>
           )}
 
           {checked && score && (
-            <Chip
-              className="font-semibold text-sm rounded-xl"
-              label={`${formatNum(score.earned)} / ${formatNum(question.mark)}`}
-              color={score.isFullyCorrect ? 'success' : 'default'}
-              variant={score.isFullyCorrect ? 'filled' : 'outlined'}
-            />
+            <span
+              className={cn(
+                'inline-flex items-center rounded-xl border px-3 py-1 text-sm font-semibold',
+                score.isFullyCorrect
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400'
+                  : 'border-border text-foreground'
+              )}
+            >
+              {formatNum(score.earned)} / {formatNum(question.mark)}
+            </span>
           )}
-        </Box>
+        </div>
 
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        {/* Mark badge */}
+        <div className="py-2 px-4 rounded-xl border border-border bg-card text-foreground font-semibold text-[0.95rem]">
           {formatNum(question.mark)}
-        </MarkBox>
-      </Box>
+        </div>
+      </div>
     </>
   );
 };
