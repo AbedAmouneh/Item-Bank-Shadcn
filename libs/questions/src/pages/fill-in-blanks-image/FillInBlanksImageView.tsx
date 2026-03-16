@@ -158,7 +158,7 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
             return (
               <div
                 key={zone.id}
-                className="absolute flex items-center px-1"
+                className="absolute flex items-center ps-1 pe-1"
                 style={{
                   left: zone.x,
                   top: zone.y,
