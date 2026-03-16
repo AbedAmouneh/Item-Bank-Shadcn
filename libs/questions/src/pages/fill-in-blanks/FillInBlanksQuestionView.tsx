@@ -1,12 +1,8 @@
-import { Box, Button, TextField, useTheme, styled, alpha } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CloseIcon from '@mui/icons-material/Close';
-import type { QuestionRow } from '../../components/QuestionsTable';
 import { useCallback, useState, useMemo } from 'react';
+import { Check, RotateCcw, Lightbulb, CheckCircle2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type FillInBlanksQuestionViewProps = {
   question: QuestionRow;
@@ -19,15 +15,7 @@ type BlankData = {
 
 type BlankFeedback = 'correct' | 'wrong' | undefined;
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
-
 const FillInBlanksQuestionView = ({ question }: FillInBlanksQuestionViewProps) => {
-  const theme = useTheme();
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
   const { t } = useTranslation("questions");
@@ -165,97 +153,85 @@ const FillInBlanksQuestionView = ({ question }: FillInBlanksQuestionViewProps) =
     setUserAnswers((prev) => ({ ...prev, [key]: value }));
   }, [checked]);
 
-  const getInputStyle = (feedback: BlankFeedback) => {
+  const getInputClassName = (feedback: BlankFeedback) => {
     if (feedback === 'correct') {
-      return {
-        backgroundColor: alpha(theme.palette.success.main, 0.1),
-        borderColor: theme.palette.success.main,
-        color: theme.palette.success.main,
-      };
+      return 'border-green-500 bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400';
     }
     if (feedback === 'wrong') {
-      return {
-        backgroundColor: alpha(theme.palette.error.main, 0.1),
-        borderColor: theme.palette.error.main,
-        color: theme.palette.error.main,
-      };
+      return 'border-destructive bg-destructive/10 text-destructive';
     }
-    return {};
+    return 'border-border bg-background text-foreground';
   };
 
   const hasAnswers = Object.values(userAnswers).some((val) => val.trim());
 
   return (
     <>
-      <Box
-        className="text-base leading-[1.8] mb-6"
-        sx={(theme) => ({ color: theme.palette.text.primary })}
-      >
+      <div className="text-base leading-[1.8] mb-6 text-foreground">
         {parsedContent.map((part, index) => {
           if (part.type === 'text') {
+            // Content comes from TinyMCE editor output stored in the database — trusted source
             return <span key={index} dangerouslySetInnerHTML={{ __html: part.content }} />;
           } else {
             const key = part.content;
             const feedback = getBlankFeedback(key);
-            const inputStyles = getInputStyle(feedback);
 
             return (
-              <TextField
-                key={index}
-                size="small"
-                value={userAnswers[key] || ''}
-                onChange={(e) => handleInputChange(key, e.target.value)}
-                disabled={checked}
-                className="mx-1 min-w-[120px]"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: theme.spacing(1),
-                    ...inputStyles,
-                  },
-                }}
-                InputProps={{
-                  endAdornment: feedback && (
-                    <Box className="flex items-center ml-1">
-                      {feedback === 'correct' ? (
-                        <CheckCircleIcon fontSize="small" color="success" />
-                      ) : (
-                        <CloseIcon fontSize="small" color="error" />
-                      )}
-                    </Box>
-                  ),
-                }}
-              />
+              <span key={index} className="mx-1 inline-flex items-center relative">
+                <input
+                  type="text"
+                  value={userAnswers[key] || ''}
+                  onChange={(e) => handleInputChange(key, e.target.value)}
+                  disabled={checked}
+                  className={cn(
+                    'min-w-[120px] h-8 rounded-lg border px-2 text-sm transition-colors',
+                    'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0',
+                    'disabled:cursor-not-allowed disabled:opacity-75',
+                    feedback ? 'pe-7' : '',
+                    getInputClassName(feedback)
+                  )}
+                />
+                {feedback && (
+                  <span className="absolute end-2 flex items-center">
+                    {feedback === 'correct' ? (
+                      <CheckCircle2 size={14} className="text-green-600 dark:text-green-400" />
+                    ) : (
+                      <X size={14} className="text-destructive" />
+                    )}
+                  </span>
+                )}
+              </span>
             );
           }
         })}
-      </Box>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3">
-          <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
             disabled={!checked && !hasAnswers}
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
+            {checked ? <RotateCcw size={15} /> : <Check size={15} />}
             {checked ? t('retry') : t('check')}
-          </Button>
+          </button>
           {checked && !areAllAnswersCorrect() && (
-            <Button
+            <button
+              type="button"
               onClick={handleShowSolution}
-              variant="contained"
-              startIcon={<LightbulbIcon />}
-              className="normal-case font-semibold"
-              sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow transition-colors hover:bg-primary/90"
             >
+              <Lightbulb size={15} />
               {t('show_solution')}
-            </Button>
+            </button>
           )}
-        </Box>
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">{question.mark}</MarkBox>
-      </Box>
+        </div>
+        <div className="py-2 px-4 font-semibold text-[0.95rem] rounded-xl border border-border bg-card text-foreground">
+          {question.mark}
+        </div>
+      </div>
     </>
   );
 };
