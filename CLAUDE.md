@@ -260,3 +260,8 @@ Never modify these regardless of context:
 - `libs/i18n/` — translation infrastructure is stable
 - `tsconfig.base.json` — path aliases; changes break all workspace imports
 - `node_modules/`, `.nx/` — never touch generated or cache directories
+
+## Commit Rules
+
+- Never commit `.md` files — documentation and notes stay out of version control
+- Exception: `CLAUDE.md` itself is the only `.md` file that may be committed
