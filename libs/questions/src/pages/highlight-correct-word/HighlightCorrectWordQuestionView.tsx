@@ -1,9 +1,7 @@
-import { Box, Button, Chip, Typography, alpha, styled, useTheme } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import { useCallback, useMemo, useState } from 'react';
+import { Check, RotateCcw, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@item-bank/ui';
 import type { HighlightCorrectWordQuestionViewProps } from './types';
 import {
   sanitizeHighlightHtml,
@@ -15,16 +13,32 @@ import {
   computeScore,
 } from './utils';
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
+/** Resolves Tailwind classes for a single token based on its interaction state. */
+function getTokenClass(
+  idx: number,
+  checked: boolean,
+  showSolution: boolean,
+  selectedIndices: Set<number>,
+  solutionIndices: Set<number>,
+  runCorrectnessMap: Map<number, boolean>
+): string {
+  if (showSolution && solutionIndices.has(idx)) {
+    return 'bg-green-500/15 border-green-500 text-green-600 dark:text-green-400 font-semibold';
+  }
+  if (checked && runCorrectnessMap.has(idx)) {
+    const isCorrect = runCorrectnessMap.get(idx) === true;
+    return isCorrect
+      ? 'bg-green-500/15 border-green-500 text-green-600 dark:text-green-400 font-semibold'
+      : 'bg-red-500/15 border-red-500 text-red-600 dark:text-red-400 font-semibold';
+  }
+  if (!checked && selectedIndices.has(idx)) {
+    return 'bg-primary/[0.12] border-primary text-primary font-semibold';
+  }
+  return 'border-transparent text-foreground';
+}
 
 const HighlightCorrectWordQuestionView = ({ question }: HighlightCorrectWordQuestionViewProps) => {
   const { t, i18n } = useTranslation('questions');
-  const theme = useTheme();
 
   const penaltyPercent = question.highlightPenaltyPercent ?? 25;
 
@@ -115,47 +129,24 @@ const HighlightCorrectWordQuestionView = ({ question }: HighlightCorrectWordQues
   return (
     <>
       {/* Clickable token text */}
-      <Box
-        className="text-base leading-loose mb-6"
-        sx={{ color: theme.palette.text.primary, wordBreak: 'break-word' }}
-      >
+      <div className="text-base leading-loose mb-6 text-foreground break-words">
         {tokens.map((token, idx) => {
-          // Determine per-token visual state
-          let bg = 'transparent';
-          let borderColor = 'transparent';
-          let color = 'inherit';
-          let fontWeight = 400;
-
-          if (showSolution && solutionIndices.has(idx)) {
-            bg = alpha(theme.palette.success.main, 0.15);
-            borderColor = theme.palette.success.main;
-            color = theme.palette.success.main;
-            fontWeight = 600;
-          } else if (checked && runCorrectnessMap.has(idx)) {
-            const isCorrect = runCorrectnessMap.get(idx) === true;
-            bg = alpha(
-              isCorrect ? theme.palette.success.main : theme.palette.error.main,
-              0.15
-            );
-            borderColor = isCorrect ? theme.palette.success.main : theme.palette.error.main;
-            color = isCorrect ? theme.palette.success.main : theme.palette.error.main;
-            fontWeight = 600;
-          } else if (!checked && selectedIndices.has(idx)) {
-            bg = alpha(theme.palette.primary.main, 0.12);
-            borderColor = theme.palette.primary.main;
-            color = theme.palette.primary.main;
-            fontWeight = 600;
-          }
-
           const isInteractive = !checked && !showSolution;
+          const tokenClass = getTokenClass(
+            idx,
+            checked,
+            showSolution,
+            selectedIndices,
+            solutionIndices,
+            runCorrectnessMap
+          );
 
           return (
-            <Box
+            <button
               key={idx}
-              component="span"
+              type="button"
               onClick={() => handleTokenClick(idx)}
-              role={isInteractive ? 'button' : undefined}
-              tabIndex={isInteractive ? 0 : undefined}
+              tabIndex={isInteractive ? 0 : -1}
               onKeyDown={
                 isInteractive
                   ? (e: React.KeyboardEvent) => {
@@ -166,76 +157,68 @@ const HighlightCorrectWordQuestionView = ({ question }: HighlightCorrectWordQues
                     }
                   : undefined
               }
-              className="inline-block px-0.5 py-[0.125rem] mx-0.5 rounded-[0.1875rem]"
-              sx={{
-                border: `1px solid ${borderColor}`,
-                backgroundColor: bg,
-                color,
-                fontWeight,
-                cursor: isInteractive ? 'pointer' : 'default',
-                transition: 'all 0.15s ease',
-                userSelect: 'none',
-                lineHeight: 1.8,
-                ...(isInteractive && {
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                    borderColor: alpha(theme.palette.primary.main, 0.5),
-                  },
-                }),
-              }}
+              className={cn(
+                'inline-block px-0.5 py-[0.125rem] ms-0.5 me-0.5 rounded-[0.1875rem] border',
+                'transition-all duration-150 select-none leading-[1.8]',
+                isInteractive
+                  ? 'cursor-pointer hover:bg-primary/[0.08] hover:border-primary/50'
+                  : 'cursor-default pointer-events-none',
+                tokenClass
+              )}
             >
               {token}
-            </Box>
+            </button>
           );
         })}
 
         {tokens.length === 0 && (
-          <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-            —
-          </Typography>
+          <span className="text-sm text-muted-foreground italic">—</span>
         )}
-      </Box>
+      </div>
 
       {/* Controls row */}
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3 flex-wrap">
-          <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            type="button"
             onClick={checked ? handleRetry : handleCheck}
             disabled={!checked && !hasSelection}
-            className="normal-case font-semibold"
-            sx={{ borderRadius: theme.spacing(1.5) }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
           >
+            {checked ? <RotateCcw className="w-4 h-4" /> : <Check className="w-4 h-4" />}
             {checked ? t('retry') : t('check')}
-          </Button>
+          </button>
 
           {checked && !isFullyCorrect && !showSolution && (
-            <Button
-              variant="contained"
-              startIcon={<LightbulbIcon />}
+            <button
+              type="button"
               onClick={handleShowSolution}
-              className="normal-case font-semibold"
-              sx={{ borderRadius: theme.spacing(1.5) }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-colors hover:bg-primary/90"
             >
+              <Lightbulb className="w-4 h-4" />
               {t('show_solution')}
-            </Button>
+            </button>
           )}
 
           {checked && score && (
-            <Chip
-              className="font-semibold text-sm rounded-xl"
-              label={`${formatNum(score.earned)} / ${formatNum(question.mark)}`}
-              color={isFullyCorrect ? 'success' : 'default'}
-              variant={isFullyCorrect ? 'filled' : 'outlined'}
-            />
+            <span
+              className={cn(
+                'inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold border',
+                isFullyCorrect
+                  ? 'bg-green-500/15 border-green-500 text-green-600 dark:text-green-400'
+                  : 'bg-muted border-border text-muted-foreground'
+              )}
+            >
+              {formatNum(score.earned)} / {formatNum(question.mark)}
+            </span>
           )}
-        </Box>
+        </div>
 
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        {/* Mark badge */}
+        <div className="py-2 px-4 rounded-xl border border-border bg-background font-semibold text-[0.95rem] text-foreground">
           {formatNum(question.mark)}
-        </MarkBox>
-      </Box>
+        </div>
+      </div>
     </>
   );
 };
