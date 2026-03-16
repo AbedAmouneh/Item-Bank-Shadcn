@@ -1,27 +1,10 @@
 import { memo, useCallback, useMemo, useEffect, useRef } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Button,
-  IconButton,
-  styled,
-  Alert,
-  alpha,
-  useTheme,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { Editor } from '@tinymce/tinymce-react';
 import type { Editor as TinyMCEEditor } from 'tinymce';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import { Plus, Trash2, Info } from 'lucide-react';
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@item-bank/ui';
 import { createEmptyAnswer } from '../../domain/factory';
 import { type AnswerEntry } from '../../domain/types';
 
@@ -60,21 +43,6 @@ type FillInBlanksEditorProps = {
   layout?: 'full' | 'content' | 'answers';
 };
 
-const AnswerRow = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.action.hover,
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.spacing(1),
-}));
-
-const ContentEditorWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.35)}`,
-  '& .tox-tinymce': {
-    border: 'none !important',
-  },
-}));
-
 function FillInBlanksEditor({
   questionContent = '',
   contentError,
@@ -82,7 +50,6 @@ function FillInBlanksEditor({
 }: FillInBlanksEditorProps) {
   const { watch, setValue } = useFormContext();
   const { t, i18n } = useTranslation('questions');
-  const theme = useTheme();
 
   const watchedAnswerGroups = watch('answerGroups');
   const answerGroups = useMemo<AnswerGroup[]>(
@@ -107,8 +74,6 @@ function FillInBlanksEditor({
     () => ({
       height: 240,
       menubar: false,
-      skin: theme.palette.mode === 'dark' ? 'oxide-dark' : 'oxide',
-      content_css: theme.palette.mode === 'dark' ? 'dark' : 'default',
       directionality: (i18n.language === 'ar' ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
       plugins: ['advlist', 'lists', 'link', 'wordcount', 'help'],
       toolbar:
@@ -129,11 +94,9 @@ function FillInBlanksEditor({
         });
       },
       content_style:
-        theme.palette.mode === 'dark'
-          ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: ${theme.palette.background.default}; color: ${alpha(theme.palette.text.primary, 0.9)}; }`
-          : 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; }',
+        'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; }',
     }),
-    [i18n.language, t, theme]
+    [i18n.language, t]
   );
 
   useEffect(() => {
@@ -230,18 +193,15 @@ function FillInBlanksEditor({
   const answersLocked = manualMarking;
 
   return (
-    <Box className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {showContentSection && (
-        <Box>
-          <Typography
-            className="text-sm mb-3 font-medium"
-            sx={{ color: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.9 : 0.75) }}
-            variant="body2"
-          >
+        <div>
+          <p className="text-sm mb-3 font-medium text-foreground/75">
             {t('editor.fill_in_blanks.question_content')}
-            <span className="ml-1 font-bold" style={{ color: theme.palette.semantic.editor.asteriskColor }}>*</span>
-          </Typography>
-          <ContentEditorWrapper>
+            <span className="ms-1 font-bold text-destructive">*</span>
+          </p>
+          {/* ContentEditorWrapper — overflow hidden so TinyMCE border stays inside rounded container */}
+          <div className="rounded-xl overflow-hidden border border-border/35 [&_.tox-tinymce]:!border-none">
             <Editor
               tinymceScriptSrc="/tinymce/tinymce.min.js"
               licenseKey="gpl"
@@ -249,176 +209,168 @@ function FillInBlanksEditor({
               onEditorChange={(newValue) => setValue('content', newValue, { shouldValidate: true })}
               init={editorInit}
             />
-          </ContentEditorWrapper>
+          </div>
           {contentError && (
-            <Typography variant="caption" color="error" className="mt-1 block">
+            <span className="text-xs font-medium text-destructive mt-1 block">
               {contentError}
-            </Typography>
+            </span>
           )}
-        </Box>
+        </div>
       )}
 
       {showAnswersSection && (
         <>
-          <Box className="flex items-center mb-2 flex-wrap gap-2">
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={manualMarking}
-                  onChange={handleManualMarkingChange}
-                  color="primary"
-                />
-              }
-              label={t('editor.fill_in_blanks.manual_marking_mode', {
-                defaultValue: t('editor.fill_in_blanks.manual_marking'),
-              })}
-              sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  size="small"
-                  checked={requireUniqueKeyAnswers}
-                  onChange={handleRequireUniqueKeyAnswersChange}
-                  color="primary"
-                />
-              }
-              label={t('editor.fill_in_blanks.require_unique_answers', {
-                defaultValue: t('editor.fill_in_blanks.require_unique_key_answers'),
-              })}
-              sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-            />
-          </Box>
+          {/* Toggle switches row */}
+          <div className="flex items-center mb-2 flex-wrap gap-2">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={manualMarking}
+                onChange={handleManualMarkingChange}
+              />
+              <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+                <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+              </div>
+              <span className="text-sm text-foreground">
+                {t('editor.fill_in_blanks.manual_marking_mode', {
+                  defaultValue: t('editor.fill_in_blanks.manual_marking'),
+                })}
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={requireUniqueKeyAnswers}
+                onChange={handleRequireUniqueKeyAnswersChange}
+              />
+              <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+                <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+              </div>
+              <span className="text-sm text-foreground">
+                {t('editor.fill_in_blanks.require_unique_answers', {
+                  defaultValue: t('editor.fill_in_blanks.require_unique_key_answers'),
+                })}
+              </span>
+            </label>
+          </div>
 
           {manualMarking && (
-            <Alert severity="info" variant="outlined" className="mb-2">
-              {t('editor.fill_in_blanks.manual_marking_answers_locked')}
-            </Alert>
+            <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800/50 dark:bg-blue-950/40 dark:text-blue-300 mb-2">
+              <Info size={16} className="mt-0.5 shrink-0" />
+              <span>{t('editor.fill_in_blanks.manual_marking_answers_locked')}</span>
+            </div>
           )}
 
           {showNoKeyError && (
-            <Typography
-              role="alert"
-              className="text-sm mb-2"
-              sx={(muiTheme) => ({ color: muiTheme.palette.error.main })}
-            >
+            <p role="alert" className="text-sm mb-2 text-destructive">
               {t('editor.fill_in_blanks.error_no_key')}
-            </Typography>
+            </p>
           )}
 
           {hasKeys && (
             <>
-              <Typography
-                component="span"
-                className="block text-[0.8125rem] font-normal mb-2"
-                sx={(muiTheme) => ({ color: muiTheme.palette.text.secondary })}
-              >
+              <span className="block text-[0.8125rem] font-normal mb-2 text-muted-foreground">
                 {t('editor.fill_in_blanks.answers_by_key')}
-              </Typography>
+              </span>
 
               {answerGroups.map((group) => (
-                <Box key={group.key} className="mb-6">
-                  <Typography
-                    variant="body2"
-                    className="font-semibold text-sm mb-4"
-                    sx={(muiTheme) => ({ color: muiTheme.palette.text.secondary })}
-                  >
+                <div key={group.key} className="mb-6">
+                  <p className="font-semibold text-sm mb-4 text-muted-foreground">
                     {group.key}
-                  </Typography>
+                  </p>
                   {group.answers.map((answer) => (
-                    <AnswerRow
+                    <div
                       key={answer.id}
-                      className="flex items-center gap-3 p-3 w-full box-border min-w-0"
+                      className={cn(
+                        'flex items-center gap-3 p-3 w-full box-border min-w-0',
+                        'rounded-lg border border-border bg-muted/30 mb-2'
+                      )}
                     >
-                      <TextField
+                      <Input
                         placeholder={t('editor.add_answer')}
                         value={answer.text}
-                        onChange={(e) => handleAnswerFieldChange(group.key, answer.id, 'text', e.target.value)}
-                        size="small"
+                        onChange={(e) =>
+                          handleAnswerFieldChange(group.key, answer.id, 'text', e.target.value)
+                        }
                         disabled={answersLocked}
-                        className="flex-[0_0_36%] min-w-0 [&_.MuiOutlinedInput-root]:text-[0.8125rem] [&_.MuiOutlinedInput-root]:h-[34px] [&_.MuiOutlinedInput-input]:py-1.5 [&_.MuiOutlinedInput-input]:px-2.5"
-                        sx={(muiTheme) => ({
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: muiTheme.palette.background.paper,
-                          },
-                        })}
+                        className="flex-[0_0_36%] min-w-0 h-[34px] text-[0.8125rem]"
                       />
-                      <Box className="flex-1 flex items-center justify-between gap-2 min-w-0">
-                        <FormControl size="small" className="min-w-[82px]">
-                          <InputLabel id={`mark-${group.key}-${answer.id}`}>{t('mark')} *</InputLabel>
-                          <Select
-                            labelId={`mark-${group.key}-${answer.id}`}
-                            value={answer.mark}
-                            label={`${t('mark')} *`}
-                            disabled={answersLocked || requireUniqueKeyAnswers}
-                            onChange={(e) =>
-                              handleAnswerFieldChange(group.key, answer.id, 'mark', Number(e.target.value))
-                            }
-                            className="h-[34px]"
-                            sx={(muiTheme) => ({
-                              fontSize: '0.8125rem',
-                              '& .MuiSelect-select': {
-                                paddingTop: muiTheme.spacing(0.6),
-                                paddingBottom: muiTheme.spacing(0.6),
-                              },
-                            })}
-                          >
-                            {MARK_OPTIONS.map((opt) => (
-                              <MenuItem key={opt} value={opt}>
-                                {opt} %
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                        <FormControlLabel
-                          className="shrink-0"
-                          control={
-                            <Switch
-                              size="small"
-                              checked={answer.ignoreCasing}
-                              disabled={answersLocked}
-                              onChange={(e) =>
-                                handleAnswerFieldChange(group.key, answer.id, 'ignoreCasing', e.target.checked)
-                              }
-                              color="primary"
-                            />
+                      <div className="flex-1 flex items-center justify-between gap-2 min-w-0">
+                        <Select
+                          value={String(answer.mark)}
+                          disabled={answersLocked || requireUniqueKeyAnswers}
+                          onValueChange={(val) =>
+                            handleAnswerFieldChange(group.key, answer.id, 'mark', Number(val))
                           }
-                          label={t('editor.ignore_casing')}
-                          sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.75rem' } }}
-                        />
+                        >
+                          <SelectTrigger className="min-w-[82px] h-[34px] text-[0.8125rem]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MARK_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={String(opt)}>
+                                {opt} %
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <label className="shrink-0 flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={answer.ignoreCasing}
+                            disabled={answersLocked}
+                            onChange={(e) =>
+                              handleAnswerFieldChange(
+                                group.key,
+                                answer.id,
+                                'ignoreCasing',
+                                e.target.checked
+                              )
+                            }
+                          />
+                          <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative peer-disabled:opacity-50">
+                            <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+                          </div>
+                          <span className="text-xs text-foreground">{t('editor.ignore_casing')}</span>
+                        </label>
+
                         {group.answers.length > 1 ? (
-                          <IconButton
-                            size="small"
-                            className="shrink-0 p-1"
+                          <button
+                            type="button"
+                            className="shrink-0 p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             onClick={() => handleRemoveAnswer(group.key, answer.id)}
                             disabled={answersLocked}
                             aria-label={t('editor.remove_answer')}
                           >
-                            <DeleteOutlineIcon sx={{ fontSize: 20 }} />
-                          </IconButton>
+                            <Trash2 size={16} />
+                          </button>
                         ) : (
-                          <Box className="w-8 shrink-0" />
+                          <div className="w-8 shrink-0" />
                         )}
-                      </Box>
-                    </AnswerRow>
+                      </div>
+                    </div>
                   ))}
-                  <Button
-                    variant="text"
-                    startIcon={<AddIcon />}
+                  <button
+                    type="button"
                     onClick={() => handleAddAnswer(group.key)}
                     disabled={answersLocked}
-                    className="self-start normal-case font-medium text-sm mt-3"
+                    className="self-start flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium mt-3 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
+                    <Plus size={15} />
                     {t('editor.add_answer')}
-                  </Button>
-                </Box>
+                  </button>
+                </div>
               ))}
             </>
           )}
         </>
       )}
-    </Box>
+    </div>
   );
 }
 
