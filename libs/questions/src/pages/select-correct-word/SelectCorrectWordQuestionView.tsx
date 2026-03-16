@@ -1,74 +1,30 @@
-import { Box, Button, Chip, Typography, alpha, styled } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import { useCallback, useMemo, useState } from 'react';
+import { Check, RotateCcw, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@item-bank/ui';
 import type { SelectCorrectWordQuestionViewProps } from './types';
 import { decodeGroups, sanitizeKeyHtml, parseQuestionText } from './utils';
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
-
-const OptionChip = styled(Box, {
-  shouldForwardProp: (prop) =>
-    !['isSelected', 'isCorrect', 'isChecked', 'showSolution'].includes(prop as string),
-})<{
-  component?: React.ElementType;
-  isSelected?: boolean;
-  isCorrect?: boolean;
-  isChecked?: boolean;
-  showSolution?: boolean;
-}>(({ theme, isSelected, isCorrect, isChecked, showSolution }) => {
-  let backgroundColor = 'transparent';
-  let borderColor = alpha(theme.palette.divider, 0.5);
-  let color = theme.palette.text.primary;
-
+/** Resolves the Tailwind colour variant for an option chip based on interaction state. */
+function getOptionChipClass(
+  isSelected: boolean,
+  isCorrect: boolean,
+  isChecked: boolean,
+  showSolution: boolean
+): string {
   if (showSolution && isCorrect) {
-    backgroundColor = alpha(theme.palette.success.main, 0.15);
-    borderColor = theme.palette.success.main;
-    color = theme.palette.success.main;
-  } else if (isChecked && isSelected) {
-    if (isCorrect) {
-      backgroundColor = alpha(theme.palette.success.main, 0.15);
-      borderColor = theme.palette.success.main;
-      color = theme.palette.success.main;
-    } else {
-      backgroundColor = alpha(theme.palette.error.main, 0.15);
-      borderColor = theme.palette.error.main;
-      color = theme.palette.error.main;
-    }
-  } else if (isSelected) {
-    backgroundColor = alpha(theme.palette.primary.main, 0.12);
-    borderColor = theme.palette.primary.main;
-    color = theme.palette.primary.main;
+    return 'bg-green-500/15 border-green-500 text-green-600 dark:text-green-400 font-semibold';
   }
-
-  return {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: theme.spacing(0.25, 1),
-    borderRadius: theme.spacing(1),
-    border: `1px solid ${borderColor}`,
-    backgroundColor,
-    color,
-    cursor: isChecked ? 'default' : 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: isSelected ? 600 : 400,
-    transition: 'all 0.15s ease',
-    userSelect: 'none',
-    ...(!isChecked && {
-      '&:hover': {
-        backgroundColor: alpha(theme.palette.primary.main, 0.08),
-        borderColor: alpha(theme.palette.primary.main, 0.5),
-      },
-    }),
-  };
-});
+  if (isChecked && isSelected) {
+    return isCorrect
+      ? 'bg-green-500/15 border-green-500 text-green-600 dark:text-green-400 font-semibold'
+      : 'bg-red-500/15 border-red-500 text-red-600 dark:text-red-400 font-semibold';
+  }
+  if (isSelected) {
+    return 'bg-primary/12 border-primary text-primary font-semibold';
+  }
+  return 'bg-transparent border-border/50 text-foreground';
+}
 
 const SelectCorrectWordQuestionView = ({ question }: SelectCorrectWordQuestionViewProps) => {
   const { t, i18n } = useTranslation('questions');
@@ -137,101 +93,98 @@ const SelectCorrectWordQuestionView = ({ question }: SelectCorrectWordQuestionVi
 
   return (
     <>
-      <Box
-        className="text-base leading-[2] mb-6"
-        sx={(theme) => ({ color: theme.palette.text.primary })}
-      >
+      <div className="text-base leading-[2] mb-6 text-foreground">
         {parsedParts.map((part, index) => {
           if (part.type === 'text') {
             return <span key={index} dangerouslySetInnerHTML={{ __html: part.content }} />;
           }
           const keyOptions = groups[part.key]?.options ?? [];
           return (
-            <Box
+            <span
               key={index}
-              component="span"
               className="inline-flex items-center flex-wrap gap-0.5 mx-1"
             >
               {keyOptions.map((opt, i) => (
-                <Box
+                <span
                   key={opt.id}
-                  component="span"
                   className="inline-flex items-center gap-0.5"
                 >
                   {i > 0 && (
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      className="px-0.5"
-                      sx={(theme) => ({ color: theme.palette.text.disabled })}
-                    >
-                      |
-                    </Typography>
+                    <span className="px-0.5 text-xs text-muted-foreground/60">|</span>
                   )}
-                  <OptionChip
-                    component="span"
-                    isSelected={selectedByKey[part.key] === opt.id}
-                    isCorrect={opt.isCorrect}
-                    isChecked={checked}
-                    showSolution={showSolution}
-                    onClick={() => handleSelect(part.key, opt.id)}
+                  <span
                     role="button"
                     tabIndex={checked ? -1 : 0}
+                    onClick={() => handleSelect(part.key, opt.id)}
                     onKeyDown={(e: React.KeyboardEvent) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         handleSelect(part.key, opt.id);
                       }
                     }}
+                    className={cn(
+                      'inline-flex items-center px-2 py-0.5 rounded-lg border text-sm transition-all duration-150 select-none',
+                      checked ? 'cursor-default' : 'cursor-pointer',
+                      !checked && 'hover:bg-primary/[0.08] hover:border-primary/50',
+                      getOptionChipClass(
+                        selectedByKey[part.key] === opt.id,
+                        opt.isCorrect,
+                        checked,
+                        showSolution
+                      )
+                    )}
                   >
                     {opt.text}
-                  </OptionChip>
-                </Box>
+                  </span>
+                </span>
               ))}
-            </Box>
+            </span>
           );
         })}
-      </Box>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3 flex-wrap">
-          <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            type="button"
             onClick={checked ? handleRetry : handleCheck}
             disabled={!checked && !hasAllSelections}
-            className="normal-case font-semibold"
-            sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
           >
+            {checked ? <RotateCcw className="w-4 h-4" /> : <Check className="w-4 h-4" />}
             {checked ? t('retry') : t('check')}
-          </Button>
+          </button>
 
           {checked && !isAllCorrect && !showSolution && (
-            <Button
-              variant="contained"
-              startIcon={<LightbulbIcon />}
+            <button
+              type="button"
               onClick={handleShowSolution}
-              className="normal-case font-semibold"
-              sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-colors hover:bg-primary/90"
             >
+              <Lightbulb className="w-4 h-4" />
               {t('show_solution')}
-            </Button>
+            </button>
           )}
 
           {checked && score && (
-            <Chip
-              className="font-semibold text-sm rounded-xl"
-              label={`${formatNum(score.earned)} / ${formatNum(question.mark)}`}
-              color={score.isFullyCorrect ? 'success' : 'default'}
-              variant={score.isFullyCorrect ? 'filled' : 'outlined'}
-            />
+            <span
+              className={cn(
+                'inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold border',
+                score.isFullyCorrect
+                  ? 'bg-green-500/15 border-green-500 text-green-600 dark:text-green-400'
+                  : 'bg-muted border-border text-muted-foreground'
+              )}
+            >
+              {formatNum(score.earned)} / {formatNum(question.mark)}
+            </span>
           )}
-        </Box>
+        </div>
 
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        {/* Mark badge */}
+        <div className="py-2 px-4 rounded-xl border border-border bg-background font-semibold text-[0.95rem] text-foreground">
           {formatNum(question.mark)}
-        </MarkBox>
-      </Box>
+        </div>
+      </div>
     </>
   );
 };
