@@ -222,6 +222,7 @@
             "options_label": "Options by key",
             "partial_credit": "Allow partial credit",
             "correct_label": "Mark as correct",
+            "delete_option": "Delete option",
             "option_placeholder": "Option {{index}}...",
             "add_option": "Add option",
             "error_no_keys": "Use [[key]] in the question text to add selectable word groups.",
