@@ -113,6 +113,8 @@ Remove MUI Box from ProtectedRoute
 
 No `feat:`, `fix:`, `chore:` prefixes.
 
+**Atomic commits — one commit per file or logical unit.** Never batch multiple component migrations into a single commit. Each migrated file, each bug fix, each i18n update, and each test change gets its own commit. This applies to all migration phases and ongoing work.
+
 ---
 
 ## Branching
