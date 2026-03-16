@@ -378,6 +378,10 @@
             "zones_count_one": "منطقة واحدة",
             "zones_count_other": "{{count}} منطقة"
         },
+        "fill_in_blanks_image": {
+            "zones": "المناطق",
+            "delete_zone": "حذف المنطقة"
+        },
         "matching": {
             "step_1_label": "تفاصيل السؤال",
             "step_2_label": "الربط",

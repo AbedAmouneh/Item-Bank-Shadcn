@@ -378,6 +378,10 @@
             "zones_count_one": "{{count}} zone",
             "zones_count_other": "{{count}} zones"
         },
+        "fill_in_blanks_image": {
+            "zones": "Zones",
+            "delete_zone": "Delete zone"
+        },
         "matching": {
             "step_1_label": "Question details",
             "step_2_label": "Linking",

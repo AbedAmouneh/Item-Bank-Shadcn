@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Text, Image as KonvaImage, Group, Circle } from 're
 import type Konva from 'konva';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { ImagePlus, Trash2, Plus, ChevronDown } from 'lucide-react';
+import { ImagePlus, Trash2, Plus } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -224,8 +224,8 @@ export default function FillInBlanksImageEditor() {
         const dataUrl = await fileToDataUrl(file);
         setValue('background_image', dataUrl);
         setInputAreas([]);
-      } catch (err) {
-        console.error('Failed to read image', err);
+      } catch {
+        // silent failure — the image simply won't be set
       }
     },
     [setValue]
@@ -372,7 +372,7 @@ export default function FillInBlanksImageEditor() {
                       y={area.y + 6}
                       width={area.width - 16}
                       height={area.height - 12}
-                      text={`Zone ${i + 1}`}
+                      text={t('editor.drag_drop_image.zone_label', { index: i + 1 })}
                       fontSize={14}
                       fill="#0f172a"
                       align="center"
@@ -425,14 +425,14 @@ export default function FillInBlanksImageEditor() {
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-[0.8125rem] text-muted-foreground">Zones</p>
+          <p className="text-[0.8125rem] text-muted-foreground">{t('editor.fill_in_blanks_image.zones')}</p>
           <button
             type="button"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             onClick={handleAddZone}
           >
             <Plus size={16} />
-            Add zone
+            {t('editor.drag_drop_image.add_zone')}
           </button>
         </div>
 
@@ -450,7 +450,7 @@ export default function FillInBlanksImageEditor() {
             <AccordionItem key={zone.id} value={zone.id}>
               <AccordionTrigger className="py-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">Zone {zoneIndex + 1}</span>
+                  <span className="font-medium">{t('editor.drag_drop_image.zone_label', { index: zoneIndex + 1 })}</span>
                   <Badge variant="outline" className="text-xs">
                     {Math.round(zone.x)},{Math.round(zone.y)}
                   </Badge>
@@ -489,12 +489,12 @@ export default function FillInBlanksImageEditor() {
                       <label className="shrink-0 flex items-center gap-2 cursor-pointer select-none">
                         <input
                           type="checkbox"
-                          className="sr-only peer"
+                          className="sr-only peer/toggle"
                           checked={answer.ignoreCasing}
                           onChange={(e) => handleAnswerChange(zone.id, answer.id, 'ignoreCasing', e.target.checked)}
                         />
-                        <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
-                          <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+                        <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked/toggle:bg-primary relative">
+                          <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/toggle:translate-x-4 rtl:peer-checked/toggle:-translate-x-4" />
                         </div>
                         <span className="text-xs text-foreground">{t('editor.ignore_casing')}</span>
                       </label>
@@ -536,7 +536,7 @@ export default function FillInBlanksImageEditor() {
                       }}
                     >
                       <Trash2 size={14} />
-                      Delete zone
+                      {t('editor.fill_in_blanks_image.delete_zone')}
                     </button>
                   </div>
                 </div>
