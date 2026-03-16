@@ -1,21 +1,8 @@
 import { memo, useCallback, useRef } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Button,
-  IconButton,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@item-bank/ui';
+import { Plus, Trash2 } from 'lucide-react';
 
 const MARK_OPTIONS = [0, 5, 10, 15, 20, 25, 33.3, 30, 40, 50, 60, 75, 80, 90, 100];
 
@@ -37,183 +24,134 @@ export function createEmptyAnswer(id?: string): AnswerEntry {
   };
 }
 
-type AnswerRowProps = {
-  answer: AnswerEntry;
-  onChange: (id: string, field: keyof AnswerEntry, value: unknown) => void;
-  onRemove: (id: string) => void;
-  canRemove: boolean;
-};
-
-const AnswerRow = memo(function AnswerRow({
-  answer,
-  onChange,
-  onRemove,
-  canRemove,
-}: AnswerRowProps) {
-  const { t } = useTranslation('questions');
-  const id = answer.id;
-  return (
-    <Box
-      className="flex items-center gap-3 p-3 w-full box-border min-w-0 rounded border"
-      sx={(theme) => ({
-        backgroundColor: theme.palette.action.hover,
-        borderColor: theme.palette.divider,
-      })}
-    >
-      <TextField
-        placeholder={t('editor.add_answer')}
-        value={answer.text}
-        onChange={(e) => onChange(id, 'text', e.target.value)}
-        size="small"
-        className="flex-[0_0_36%] min-w-0 [&_.MuiOutlinedInput-root]:text-[0.8125rem] [&_.MuiOutlinedInput-root]:h-[34px] [&_.MuiOutlinedInput-input]:py-1.5 [&_.MuiOutlinedInput-input]:px-2.5"
-        sx={(theme) => ({
-          '& .MuiOutlinedInput-root': { backgroundColor: theme.palette.background.paper },
-        })}
-      />
-
-      <Box className="flex-1 flex items-center justify-between gap-2 min-w-0">
-        <FormControl size="small" className="min-w-[82px]">
-          <InputLabel id={`mark-label-${id}`}>{t('mark')} *</InputLabel>
-          <Select
-            labelId={`mark-label-${id}`}
-            value={answer.mark}
-            label={`${t('mark')} *`}
-            onChange={(e) => onChange(id, 'mark', Number(e.target.value))}
-            className="h-[34px]"
-            sx={(theme) => ({
-              fontSize: '0.8125rem',
-              '& .MuiSelect-select': { py: 0.6 },
-            })}
-          >
-            {MARK_OPTIONS.map((opt) => (
-              <MenuItem key={opt} value={opt}>
-                {opt} %
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControlLabel
-          className="shrink-0"
-          control={
-            <Switch
-              size="small"
-              checked={answer.ignoreCasing}
-              onChange={(e) => onChange(id, 'ignoreCasing', e.target.checked)}
-              color="primary"
-              sx={{ '& .MuiSwitch-root': { p: 0.5 } }}
-            />
-          }
-          label={t('editor.ignore_casing')}
-          sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.75rem' } }}
-        />
-
-        <FormControlLabel
-          className="shrink-0"
-          control={
-            <Switch
-              size="small"
-              checked={answer.feedback}
-              onChange={(e) => onChange(id, 'feedback', e.target.checked)}
-              color="primary"
-              sx={{ '& .MuiSwitch-root': { p: 0.5 } }}
-            />
-          }
-          label={t('editor.feedback')}
-          sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.75rem' } }}
-        />
-
-        {canRemove ? (
-          <IconButton
-            size="small"
-            className="shrink-0 p-1"
-            onClick={() => onRemove(id)}
-            aria-label={t('editor.remove_answer')}
-          >
-            <DeleteOutlineIcon sx={{ fontSize: 20 }} />
-          </IconButton>
-        ) : (
-          <Box className="w-8 shrink-0" />
-        )}
-      </Box>
-    </Box>
-  );
-});
-
 function Add() {
-  const { watch, setValue, formState: { errors } } = useFormContext();
+  const { watch, setValue } = useFormContext();
   const { t } = useTranslation('questions');
 
   const answers = (watch('answers') || [createEmptyAnswer()]) as AnswerEntry[];
+  const ignoreCasing = watch('ignoreCasing') ?? true;
+  const requireUniqueAnswers = watch('requireUniqueAnswers') ?? false;
+
   const answersRef = useRef<AnswerEntry[]>(answers);
   answersRef.current = answers;
 
-  const onAnswerChange = useCallback(
-    (id: string, field: keyof AnswerEntry, newValue: unknown) => {
-      setValue(
-        'answers',
-        answersRef.current.map((a) =>
-          a.id === id ? { ...a, [field]: newValue } : a
-        )
-      );
-    },
-    [setValue]
-  );
-
-  const onAnswerRemove = useCallback(
-    (id: string) => {
-      setValue(
-        'answers',
-        answersRef.current.filter((a) => a.id !== id)
-      );
-    },
-    [setValue]
-  );
-
   const handleAddAnswer = useCallback(() => {
-    setValue('answers', [
-      ...answersRef.current,
-      createEmptyAnswer(),
-    ]);
+    setValue('answers', [...answersRef.current, createEmptyAnswer()]);
   }, [setValue]);
-  const canRemove = answers.length > 1;
+
+  const handleDeleteAnswer = useCallback((id: string) => {
+    setValue('answers', answersRef.current.filter((a) => a.id !== id));
+  }, [setValue]);
+
+  const handleAnswerChange = useCallback((id: string, text: string) => {
+    setValue(
+      'answers',
+      answersRef.current.map((a) => (a.id === id ? { ...a, text } : a))
+    );
+  }, [setValue]);
+
+  const handleMarkChange = useCallback((answerId: string, value: string) => {
+    setValue(
+      'answers',
+      answersRef.current.map((a) =>
+        a.id === answerId ? { ...a, mark: Number(value) } : a
+      )
+    );
+  }, [setValue]);
+
+  const handleCasingToggle = useCallback((checked: boolean) => {
+    setValue('ignoreCasing', checked);
+  }, [setValue]);
+
+  const handleUniqueToggle = useCallback((checked: boolean) => {
+    setValue('requireUniqueAnswers', checked);
+  }, [setValue]);
 
   return (
-    <Box className="flex flex-col gap-4">
-      <Typography
-        variant="body2"
-        component="label"
-        className="block text-[0.8125rem] font-normal leading-tight"
-        sx={{ color: 'text.secondary' }}
-      >
-        {t('editor.answers')} <Box component="span" className="text-red-600">*</Box>
-      </Typography>
-      {errors.answers?.message && (
-        <Typography variant="caption" color="error" className="block -mt-2">
-          {errors.answers.message}
-        </Typography>
-      )}
+    <div className="flex flex-col gap-6">
 
-      {answers.map((answer) => (
-        <AnswerRow
-          key={answer.id}
-          answer={answer}
-          onChange={onAnswerChange}
-          onRemove={onAnswerRemove}
-          canRemove={canRemove}
-        />
-      ))}
+      {/* Answer rows */}
+      <div className="flex flex-col gap-3">
+        {answers.map((answer, index) => (
+          <div
+            key={answer.id}
+            className="flex items-start gap-2 p-3 rounded-xl border border-border bg-muted/20"
+          >
+            {/* Answer index badge */}
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center mt-2">
+              {index + 1}
+            </span>
 
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
+            {/* Answer text input */}
+            <Input
+              value={answer.text}
+              onChange={(e) => handleAnswerChange(answer.id, e.target.value)}
+              placeholder={t('editor.short_answer.answer_placeholder')}
+              className="flex-1 text-sm"
+            />
+
+            {/* Mark select */}
+            <Select
+              value={String(answer.mark)}
+              onValueChange={(val) => handleMarkChange(answer.id, val)}
+            >
+              <SelectTrigger className="w-24 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MARK_OPTIONS.map((m) => (
+                  <SelectItem key={m} value={String(m)}>
+                    {m}%
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Delete */}
+            <button
+              type="button"
+              onClick={() => handleDeleteAnswer(answer.id)}
+              disabled={answers.length <= 1}
+              className="p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed mt-0.5"
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Add answer button */}
+      <button
+        type="button"
         onClick={handleAddAnswer}
-        className="self-start normal-case font-medium"
+        className="self-start flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
       >
-        {t('editor.add_answer')}
-      </Button>
-    </Box>
+        <Plus size={15} />
+        {t('editor.short_answer.add_answer')}
+      </button>
+
+      <hr className="border-border" />
+
+      {/* Options toggles */}
+      <div className="flex flex-col gap-3">
+        <label className="flex items-center gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" className="sr-only peer" checked={ignoreCasing} onChange={(e) => handleCasingToggle(e.target.checked)} />
+          <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+            <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+          </div>
+          <span className="text-sm text-foreground">{t('editor.short_answer.ignore_casing')}</span>
+        </label>
+
+        <label className="flex items-center gap-2.5 cursor-pointer select-none">
+          <input type="checkbox" className="sr-only peer" checked={requireUniqueAnswers} onChange={(e) => handleUniqueToggle(e.target.checked)} />
+          <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+            <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+          </div>
+          <span className="text-sm text-foreground">{t('editor.short_answer.require_unique_answers')}</span>
+        </label>
+      </div>
+
+    </div>
   );
 }
 

@@ -1,15 +1,9 @@
 import { memo } from 'react';
-import {
-  Box,
-  Switch,
-  FormControlLabel,
-  IconButton,
-  styled,
-} from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTranslation } from 'react-i18next';
 import ChoiceEditor from './ChoiceEditor';
 import ChoiceFeedback from './ChoiceFeedback';
+import { cn } from '@item-bank/ui';
+import { Trash2 } from 'lucide-react';
 
 type Choice = {
   id: string;
@@ -30,12 +24,6 @@ type ChoiceItemProps = {
   onDelete: (id: string) => void;
 };
 
-const ChoiceCard = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(2),
-  backgroundColor: theme.palette.semantic.choiceItem.background,
-  border: `1px solid ${theme.palette.semantic.choiceItem.border}`,
-}));
-
 function ChoiceItem({
   choice,
   index,
@@ -49,7 +37,16 @@ function ChoiceItem({
   const { t } = useTranslation('questions');
 
   return (
-    <ChoiceCard className="flex flex-col gap-4 p-5 relative">
+    <div
+      className={cn(
+        'flex flex-col gap-4 p-5 rounded-2xl border-2 transition-colors duration-150',
+        'bg-[hsl(var(--choice-item-background))]',
+        choice.isCorrect
+          ? 'border-primary/60'
+          : 'border-[hsl(var(--choice-item-border))]'
+      )}
+    >
+      {/* Choice editor (TinyMCE) */}
       <ChoiceEditor
         value={choice.text}
         onChange={(value) => onTextChange(choice.id, value)}
@@ -58,45 +55,51 @@ function ChoiceItem({
         variant="choice"
       />
 
-      <Box className="flex justify-between items-center flex-wrap gap-2">
-        <Box className="flex gap-4 items-center">
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={choice.isCorrect}
-                onChange={(e) => onCorrectToggle(choice.id, e.target.checked)}
-              />
-            }
-            label={t('editor.correct')}
-            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={choice.feedbackEnabled}
-                onChange={(e) => onFeedbackToggle(choice.id, e.target.checked)}
-              />
-            }
-            label={t('editor.feedback')}
-            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-          />
-        </Box>
+      {/* Controls row */}
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <div className="flex gap-4 items-center">
+          {/* Correct toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={choice.isCorrect}
+              onChange={(e) => onCorrectToggle(choice.id, e.target.checked)}
+            />
+            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+              <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+            </div>
+            <span className="text-sm text-foreground">{t('editor.correct')}</span>
+          </label>
 
-        <IconButton
-          size="small"
+          {/* Feedback toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={choice.feedbackEnabled}
+              onChange={(e) => onFeedbackToggle(choice.id, e.target.checked)}
+            />
+            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+              <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+            </div>
+            <span className="text-sm text-foreground">{t('editor.feedback')}</span>
+          </label>
+        </div>
+
+        {/* Delete button */}
+        <button
+          type="button"
           onClick={() => onDelete(choice.id)}
           disabled={!canDelete}
           aria-label={t('editor.delete_choice')}
-          sx={{
-            color: canDelete ? 'error.main' : 'action.disabled',
-          }}
+          className="p-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-destructive hover:bg-destructive/10"
         >
-          <DeleteOutlineIcon fontSize="small" />
-        </IconButton>
-      </Box>
+          <Trash2 size={15} />
+        </button>
+      </div>
 
+      {/* Conditional feedback editor */}
       {choice.feedbackEnabled && (
         <ChoiceFeedback
           feedbackText={choice.feedbackText}
@@ -104,7 +107,7 @@ function ChoiceItem({
           choiceId={choice.id}
         />
       )}
-    </ChoiceCard>
+    </div>
   );
 }
 

@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import { Box, styled, alpha } from '@mui/material';
 import { Editor } from '@tinymce/tinymce-react';
 import { useEditorConfig } from '../hooks/useEditorConfig';
+import { cn } from '@item-bank/ui';
 
 type EditorVariant = 'choice' | 'feedback';
 
@@ -13,18 +13,6 @@ type ChoiceEditorProps = {
   variant?: EditorVariant;
 };
 
-const ChoiceEditorWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  border: `1px solid ${theme.palette.semantic.choiceEditor.border}`,
-  backgroundColor: theme.palette.semantic.choiceEditor.background,
-  '& .tox-tinymce': {
-    border: 'none !important',
-  },
-  '& .tox .tox-toolbar': {
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)} !important`,
-  },
-}));
-
 function ChoiceEditor({
   value,
   onChange,
@@ -35,15 +23,26 @@ function ChoiceEditor({
   const editorConfig = useEditorConfig(height, placeholder, variant);
 
   return (
-    <ChoiceEditorWrapper className="overflow-hidden">
+    <div
+      className={cn(
+        'rounded-xl border overflow-hidden',
+        variant === 'feedback'
+          ? 'border-[hsl(var(--choice-editor-border))] bg-[hsl(var(--choice-feedback-background))]'
+          : 'border-[hsl(var(--choice-editor-border))] bg-[hsl(var(--choice-editor-background))]'
+      )}
+    >
       <Editor
         tinymceScriptSrc="/tinymce/tinymce.min.js"
         licenseKey="gpl"
         value={value}
         onEditorChange={onChange}
-        init={editorConfig}
+        init={{
+          ...editorConfig,
+          height,
+          placeholder,
+        }}
       />
-    </ChoiceEditorWrapper>
+    </div>
   );
 }
 

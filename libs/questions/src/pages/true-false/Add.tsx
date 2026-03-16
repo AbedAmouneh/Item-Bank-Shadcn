@@ -1,14 +1,7 @@
-import { useCallback, memo } from 'react';
-import {
-  Box,
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Typography,
-} from '@mui/material';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import { cn } from '@item-bank/ui';
 
 function Add() {
   const { watch, setValue } = useFormContext();
@@ -16,54 +9,29 @@ function Add() {
 
   const correctAnswer = watch('correctAnswer') || 'True';
 
-  const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue('correctAnswer', event.target.value as 'True' | 'False');
-  }, [setValue]);
-
   return (
-    <Box className="flex flex-col gap-3">
-      <Typography
-        variant="body2"
-        component="label"
-        className="block text-[0.8125rem] font-normal leading-tight"
-        sx={{ color: 'text.secondary' }}
-      >
-        {t('editor.correct_answer')}
-      </Typography>
-
-      <FormControl component="fieldset">
-        <RadioGroup
-          row
-          name="correct-answer-group"
-          value={correctAnswer}
-          onChange={handleChange}
-          className="gap-4"
-        >
-          <FormControlLabel
-            value="True"
-            control={<Radio color="primary" />}
-            label={t('editor.true')}
-            sx={{
-              '& .MuiFormControlLabel-label': {
-                fontSize: '0.875rem',
-                color: 'text.secondary',
-              },
-            }}
-          />
-          <FormControlLabel
-            value="False"
-            control={<Radio color="primary" />}
-            label={t('editor.false')}
-            sx={{
-              '& .MuiFormControlLabel-label': {
-                fontSize: '0.875rem',
-                color: 'text.secondary',
-              },
-            }}
-          />
-        </RadioGroup>
-      </FormControl>
-    </Box>
+    <div className="flex flex-col gap-4">
+      <p className="text-sm font-medium text-foreground">
+        {t('editor.true_false.correct_answer_label')} *
+      </p>
+      <div className="flex gap-3">
+        {(['True', 'False'] as const).map((val) => (
+          <button
+            key={val}
+            type="button"
+            onClick={() => setValue('correctAnswer', val)}
+            className={cn(
+              'flex-1 py-4 rounded-2xl border-2 text-sm font-semibold transition-all duration-150',
+              correctAnswer === val
+                ? 'border-primary bg-primary/10 dark:bg-primary/20 text-primary'
+                : 'border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/[0.04]'
+            )}
+          >
+            {t(`editor.true_false.${val.toLowerCase()}`)}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -1,18 +1,6 @@
 import { memo } from 'react';
-import {
-  Box,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Typography,
-  Divider,
-  Alert,
-  Collapse,
-  SelectChangeEvent,
-} from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@item-bank/ui';
 
 type ChoiceNumbering = 'none' | 'numeric' | 'upper_alpha' | 'lower_alpha' | 'roman';
 
@@ -20,7 +8,7 @@ type SelectionControlsProps = {
   choiceNumbering: ChoiceNumbering;
   minSelections: number;
   maxSelections: number;
-  onChoiceNumberingChange: (event: SelectChangeEvent) => void;
+  onChoiceNumberingChange: (value: string) => void;
   onMinSelectionsChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onMaxSelectionsChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   minError: boolean;
@@ -44,94 +32,87 @@ function SelectionControls({
   const { t } = useTranslation('questions');
 
   return (
-    <>
-      <Collapse in={validationErrors.length > 0}>
-        <Alert severity="error" className="mb-6">
-          <Typography variant="body2" fontWeight={600} gutterBottom>
-            {t('editor.validation_errors')}
-          </Typography>
-          <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+    <div className="flex flex-col gap-6">
+
+      {/* Validation errors */}
+      {validationErrors.length > 0 && (
+        <div className="flex flex-col gap-1 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+          <p className="font-semibold text-xs">{t('editor.validation_errors')}</p>
+          <ul className="list-disc ps-5 space-y-0.5">
             {validationErrors.map((error, index) => (
-              <li key={index}>
-                <Typography variant="body2">{error}</Typography>
-              </li>
+              <li key={index} className="text-xs">{error}</li>
             ))}
           </ul>
-        </Alert>
-      </Collapse>
+        </div>
+      )}
 
-      <Box className="flex gap-6 flex-wrap items-end mb-6 justify-between">
-        <FormControl className="min-w-[200px]" size="small">
-          <InputLabel id="choice-numbering-label">
+      <div className="flex gap-6 flex-wrap items-end justify-between">
+
+        {/* Choice numbering select */}
+        <div className="min-w-[200px] flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-muted-foreground">
             {t('editor.choice_numbering')} *
-          </InputLabel>
-          <Select
-            labelId="choice-numbering-label"
-            value={choiceNumbering}
-            label={`${t('editor.choice_numbering')} *`}
-            onChange={onChoiceNumberingChange}
-          >
-            <MenuItem value="none">{t('editor.no_numbering')}</MenuItem>
-            <MenuItem value="numeric">{t('editor.numbering_numeric')}</MenuItem>
-            <MenuItem value="upper_alpha">{t('editor.numbering_upper_alpha')}</MenuItem>
-            <MenuItem value="lower_alpha">{t('editor.numbering_lower_alpha')}</MenuItem>
-            <MenuItem value="roman">{t('editor.numbering_roman')}</MenuItem>
+          </label>
+          <Select value={choiceNumbering} onValueChange={onChoiceNumberingChange}>
+            <SelectTrigger className="text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{t('editor.no_numbering')}</SelectItem>
+              <SelectItem value="numeric">{t('editor.numbering_numeric')}</SelectItem>
+              <SelectItem value="upper_alpha">{t('editor.numbering_upper_alpha')}</SelectItem>
+              <SelectItem value="lower_alpha">{t('editor.numbering_lower_alpha')}</SelectItem>
+              <SelectItem value="roman">{t('editor.numbering_roman')}</SelectItem>
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
 
-        <Box className="flex items-center gap-4">
-          <Typography
-            variant="body2"
-            className="text-sm whitespace-nowrap min-w-fit"
-            sx={{ color: 'text.secondary' }}
-          >
+        {/* Min/max selections */}
+        <div className="flex items-end gap-4">
+          <span className="text-sm text-muted-foreground whitespace-nowrap pb-2">
             {t('editor.num_selections_allowed')}
-          </Typography>
-          <Box className="flex gap-3 items-start">
-            <TextField
-              label={`${t('editor.min')} *`}
-              type="number"
-              size="small"
-              value={minSelections}
-              onChange={onMinSelectionsChange}
-              error={minError || rangeError}
-              helperText={
-                minError
-                  ? t('editor.error_min_gte_one')
-                  : rangeError
-                  ? t('editor.error_min_lte_max')
-                  : ''
-              }
-              slotProps={{
-                htmlInput: { min: 1, step: 1 },
-              }}
-              className="w-20 [&_.MuiInputBase-root]:text-sm [&_.MuiInputLabel-root]:text-sm"
-            />
-            <TextField
-              label={`${t('editor.max')} *`}
-              type="number"
-              size="small"
-              value={maxSelections}
-              onChange={onMaxSelectionsChange}
-              error={maxError || rangeError}
-              helperText={
-                maxError
-                  ? t('editor.error_max_gte_one')
-                  : rangeError
-                  ? t('editor.error_max_gte_min')
-                  : ''
-              }
-              slotProps={{
-                htmlInput: { min: 1, step: 1 },
-              }}
-              className="w-20 [&_.MuiInputBase-root]:text-sm [&_.MuiInputLabel-root]:text-sm"
-            />
-          </Box>
-        </Box>
-      </Box>
+          </span>
+          <div className="flex gap-3 items-start">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-muted-foreground">{t('editor.min')} *</label>
+              <Input
+                type="number"
+                value={minSelections}
+                onChange={onMinSelectionsChange}
+                min={1}
+                step={1}
+                className={`w-20 text-sm ${(minError || rangeError) ? 'border-destructive' : ''}`}
+              />
+              {(minError || rangeError) && (
+                <p className="text-xs text-destructive">
+                  {minError ? t('editor.error_min_gte_one') : t('editor.error_min_lte_max')}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-muted-foreground">{t('editor.max')} *</label>
+              <Input
+                type="number"
+                value={maxSelections}
+                onChange={onMaxSelectionsChange}
+                min={1}
+                step={1}
+                className={`w-20 text-sm ${(maxError || rangeError) ? 'border-destructive' : ''}`}
+              />
+              {(maxError || rangeError) && (
+                <p className="text-xs text-destructive">
+                  {maxError ? t('editor.error_max_gte_one') : t('editor.error_max_gte_min')}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
 
-      <Divider />
-    </>
+      </div>
+
+      <hr className="border-border" />
+
+    </div>
   );
 }
 

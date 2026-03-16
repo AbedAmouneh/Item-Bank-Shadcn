@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import ChoiceEditor from './ChoiceEditor';
 
@@ -13,15 +12,10 @@ function ChoiceFeedback({ feedbackText, onChange, choiceId }: ChoiceFeedbackProp
   const { t } = useTranslation('questions');
 
   return (
-    <Box className="mt-2">
-      <Typography
-        variant="caption"
-        component="span"
-        className="block mb-2 font-medium"
-        sx={{ color: 'text.secondary' }}
-      >
+    <div className="mt-1">
+      <span className="block mb-2 text-xs font-medium text-muted-foreground">
         {t('editor.choice_feedback')}
-      </Typography>
+      </span>
       <ChoiceEditor
         value={feedbackText}
         onChange={onChange}
@@ -29,7 +23,7 @@ function ChoiceFeedback({ feedbackText, onChange, choiceId }: ChoiceFeedbackProp
         placeholder={t('editor.feedback_placeholder')}
         variant="feedback"
       />
-    </Box>
+    </div>
   );
 }
 

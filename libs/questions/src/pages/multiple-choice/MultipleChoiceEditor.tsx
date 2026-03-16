@@ -1,22 +1,11 @@
-import { memo, useCallback, useState, useMemo } from 'react';
-import {
-  Box,
-  Stack,
-  Switch,
-  FormControlLabel,
-  Button,
-  Divider,
-  Typography,
-  Snackbar,
-  Alert,
-  SelectChangeEvent,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { memo, useCallback, useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
 import SelectionControls from './components/SelectionControls';
 import ChoiceItem from './components/ChoiceItem';
 import { useChoiceValidation } from './hooks/useChoiceValidation';
+import { cn } from '@item-bank/ui';
+import { Plus } from 'lucide-react';
 
 type ChoiceNumbering = 'none' | 'numeric' | 'upper_alpha' | 'lower_alpha' | 'roman';
 
@@ -31,7 +20,14 @@ type Choice = {
 function AddMultipleChoice() {
   const { watch, setValue } = useFormContext();
   const { t } = useTranslation('questions');
-  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   const watchedChoices = watch('choices');
   const choices: Choice[] = useMemo(() => watchedChoices || [], [watchedChoices]);
@@ -47,8 +43,8 @@ function AddMultipleChoice() {
   const canAdd = useMemo(() => choices.length < 8, [choices.length]);
 
   const handleChoiceNumberingChange = useCallback(
-    (event: SelectChangeEvent) => {
-      setValue('choiceNumbering', event.target.value);
+    (value: string) => {
+      setValue('choiceNumbering', value);
     },
     [setValue]
   );
@@ -114,7 +110,7 @@ function AddMultipleChoice() {
         const effectiveMaxSelections = allowPartialCredit ? choices.length : maxSelections;
         const currentCorrectCount = choices.filter((c) => c.isCorrect).length;
         if (currentCorrectCount >= effectiveMaxSelections) {
-          setSnackbarMessage(
+          setToastMessage(
             t('editor.error_max_selections_exceeded', {
               max: effectiveMaxSelections,
               count: effectiveMaxSelections,
@@ -197,7 +193,18 @@ function AddMultipleChoice() {
   }, [setValue, choices]);
 
   return (
-    <Box className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
+
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-6 end-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-card border border-border shadow-lg text-sm text-foreground animate-in fade-in-0 slide-in-from-bottom-2">
+          <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.072 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          {toastMessage}
+        </div>
+      )}
+
       <SelectionControls
         choiceNumbering={choiceNumbering}
         minSelections={minSelections}
@@ -211,79 +218,58 @@ function AddMultipleChoice() {
         validationErrors={validation.validationErrors}
       />
 
-      <Box className="flex justify-between items-center mb-4 flex-wrap gap-4">
-        <Typography variant="body2" className="font-semibold" sx={{ color: 'text.primary' }}>
+      {/* Choices header row */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <p className="text-sm font-semibold text-foreground">
           {t('editor.choices')} *
-        </Typography>
-        <Box className="flex gap-4 items-center flex-wrap">
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={allowPartialCredit}
-                onChange={handleAllowPartialCreditChange}
-              />
-            }
-            label={t('editor.allow_partial_credit')}
-            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={allowShuffle}
-                onChange={handleAllowShuffleChange}
-              />
-            }
-            label={t('editor.allow_shuffle')}
-            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-          />
-        </Box>
-      </Box>
+        </p>
+        <div className="flex gap-4 items-center flex-wrap">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" className="sr-only peer" checked={allowPartialCredit} onChange={handleAllowPartialCreditChange} />
+            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+              <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+            </div>
+            <span className="text-sm text-foreground">{t('editor.allow_partial_credit')}</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" className="sr-only peer" checked={allowShuffle} onChange={handleAllowShuffleChange} />
+            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+              <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+            </div>
+            <span className="text-sm text-foreground">{t('editor.allow_shuffle')}</span>
+          </label>
+        </div>
+      </div>
 
-      <Stack spacing={2}>
+      {/* Choice list */}
+      <div className="flex flex-col gap-3">
         {choices.map((choice, index) => (
-          <Box key={choice.id}>
-            <ChoiceItem
-              choice={choice}
-              index={index}
-              canDelete={canDelete}
-              onTextChange={handleChoiceTextChange}
-              onCorrectToggle={handleChoiceCorrectToggle}
-              onFeedbackToggle={handleChoiceFeedbackToggle}
-              onFeedbackTextChange={handleChoiceFeedbackTextChange}
-              onDelete={handleDeleteChoice}
-            />
-            {index < choices.length - 1 && <Divider className="my-2" />}
-          </Box>
+          <ChoiceItem
+            key={choice.id}
+            choice={choice}
+            index={index}
+            canDelete={canDelete}
+            onTextChange={handleChoiceTextChange}
+            onCorrectToggle={handleChoiceCorrectToggle}
+            onFeedbackToggle={handleChoiceFeedbackToggle}
+            onFeedbackTextChange={handleChoiceFeedbackTextChange}
+            onDelete={handleDeleteChoice}
+          />
         ))}
-      </Stack>
+      </div>
 
-      <Button
-        variant="text"
-        startIcon={<AddIcon />}
+      {/* Add choice */}
+      <button
+        type="button"
         onClick={handleAddChoice}
         disabled={!canAdd}
-        className="self-start normal-case text-sm"
+        className="self-start flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
+        <Plus size={15} />
         {t('editor.add_choice')}
-      </Button>
+      </button>
 
-      <Snackbar
-        open={!!snackbarMessage}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarMessage(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSnackbarMessage(null)}
-          severity="warning"
-          variant="filled"
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+    </div>
   );
 }
 
