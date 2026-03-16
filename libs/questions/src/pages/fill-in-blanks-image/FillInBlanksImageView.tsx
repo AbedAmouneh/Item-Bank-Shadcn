@@ -1,23 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Button, TextField, Typography, alpha, styled, useTheme } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import type { QuestionRow } from '../../components/QuestionsTable';
+import { Check, RotateCcw, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button, cn } from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type FillInBlanksImageViewProps = {
   question: QuestionRow;
 };
 
 const MAX_CANVAS_WIDTH = 800;
-
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
 
 function isAnswerCorrect(
   zone: NonNullable<QuestionRow['inputAreas']>[number],
@@ -54,7 +45,6 @@ function getZoneCredit(
 }
 
 export default function FillInBlanksImageView({ question }: FillInBlanksImageViewProps) {
-  const theme = useTheme();
   const { t } = useTranslation('questions');
   const [canvasWidth, setCanvasWidth] = useState(MAX_CANVAS_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(600);
@@ -106,6 +96,7 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
     () => zones.length > 0 && zones.every((zone) => isAnswerCorrect(zone, userAnswers[zone.id] ?? '')),
     [userAnswers, zones]
   );
+
   const earnedMark = useMemo(() => {
     if (!checked || zones.length === 0) return null;
     const totalCredit = zones.reduce(
@@ -132,22 +123,20 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
 
   if (!question.background_image) {
     return (
-      <Typography variant="body2" color="text.secondary">
+      <p className="text-sm text-muted-foreground">
         {t('editor.background_image', { defaultValue: 'Background image' })}: {t('common:not_available', { defaultValue: 'Not available' })}
-      </Typography>
+      </p>
     );
   }
 
   return (
-    <Box className="flex flex-col gap-3">
-      <Box
-        className="overflow-hidden w-fit max-w-full"
-        sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 1 }}
-      >
-        <Box
+    <div className="flex flex-col gap-3">
+      <div className="overflow-hidden w-fit max-w-full border border-border rounded">
+        <div
           className="relative"
-          style={{ width: canvasWidth, height: canvasHeight }}
-          sx={{
+          style={{
+            width: canvasWidth,
+            height: canvasHeight,
             backgroundImage: `url(${question.background_image})`,
             backgroundSize: 'cover',
             backgroundPosition: 'top left',
@@ -158,16 +147,16 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
             const borderColor = !checked
               ? '#1976d2'
               : correct
-                ? theme.palette.success.main
-                : theme.palette.error.main;
+                ? '#22c55e'
+                : '#ef4444';
             const bgColor = !checked
               ? 'rgba(255, 255, 255, 0.9)'
               : correct
-                ? alpha(theme.palette.success.main, 0.16)
-                : alpha(theme.palette.error.main, 0.16);
+                ? 'rgba(34, 197, 94, 0.16)'
+                : 'rgba(239, 68, 68, 0.16)';
 
             return (
-              <Box
+              <div
                 key={zone.id}
                 className="absolute flex items-center px-1"
                 style={{
@@ -175,64 +164,55 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
                   top: zone.y,
                   width: zone.width,
                   height: zone.height,
-                }}
-                sx={{
-                  borderRadius: 1,
+                  borderRadius: 4,
                   border: `2px solid ${borderColor}`,
                   backgroundColor: bgColor,
                 }}
               >
-                <TextField
+                <input
                   value={userAnswers[zone.id] ?? ''}
                   onChange={(e) => setUserAnswers((prev) => ({ ...prev, [zone.id]: e.target.value }))}
                   disabled={checked}
-                  size="small"
                   placeholder={`Zone ${index + 1}`}
-                  variant="standard"
-                  fullWidth
-                  sx={{
-                    '& .MuiInputBase-root': { fontSize: '0.75rem', lineHeight: 1.1 },
-                    '& .MuiInputBase-input': { p: 0, textAlign: 'center' },
-                    '& .MuiInput-underline:before, & .MuiInput-underline:after': { display: 'none' },
-                  }}
+                  className={cn(
+                    'w-full bg-transparent text-[0.75rem] leading-[1.1] text-center outline-none',
+                    'disabled:opacity-70 disabled:cursor-not-allowed'
+                  )}
                 />
-              </Box>
+              </div>
             );
           })}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
+            variant="default"
             disabled={!checked && !hasAnyAnswer}
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={(muiTheme) => ({ borderRadius: muiTheme.spacing(1.5) })}
+            className="font-semibold rounded-xl gap-1.5"
           >
+            {checked ? <RotateCcw size={16} /> : <Check size={16} />}
             {checked ? t('retry') : t('check')}
           </Button>
 
           {checked && !allCorrect && (
             <Button
-              variant="contained"
-              startIcon={<LightbulbIcon />}
+              variant="default"
               onClick={handleShowSolution}
-              className="normal-case font-semibold"
-              sx={(muiTheme) => ({ borderRadius: muiTheme.spacing(1.5) })}
+              className="font-semibold rounded-xl gap-1.5"
             >
+              <Lightbulb size={16} />
               {t('show_solution')}
             </Button>
           )}
+        </div>
 
-        </Box>
-
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        <div className="py-2 px-4 font-semibold text-[0.95rem] rounded-xl bg-card border border-border text-foreground">
           {checked && earnedMark !== null ? `${earnedMark} / ${question.mark}` : question.mark}
-        </MarkBox>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }
