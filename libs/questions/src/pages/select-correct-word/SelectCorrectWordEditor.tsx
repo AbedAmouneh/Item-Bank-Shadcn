@@ -1,21 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  FormControlLabel,
-  IconButton,
-  Radio,
-  Switch,
-  TextField,
-  Typography,
-  alpha,
-  styled,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import { cn, Input } from '@item-bank/ui';
 
 type SelectWordOption = { id: string; text: string; isCorrect: boolean };
 type SelectWordGroup = { key: string; options: SelectWordOption[] };
@@ -46,11 +33,6 @@ function createDefaultGroup(key: string): SelectWordGroup {
     ],
   };
 }
-
-const GroupCard = styled(Box)(({ theme }) => ({
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  backgroundColor: theme.palette.action.hover,
-}));
 
 function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
   const { watch, setValue, register, unregister } = useFormContext();
@@ -177,97 +159,97 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
 
   if (!hasKeys) {
     return (
-      <Typography
-        role="alert"
-        className="text-sm"
-        sx={(theme) => ({ color: theme.palette.error.main })}
-      >
+      <p role="alert" className="text-sm text-destructive">
         {t('editor.select_correct_word.error_no_keys', { defaultValue: 'Use [[key]] in the question text to add selectable word groups.' })}
-      </Typography>
+      </p>
     );
   }
 
   return (
-    <Box className="flex flex-col gap-6">
-      <Box className="flex justify-between items-center flex-wrap gap-4">
-        <Typography variant="body2" className="font-semibold" sx={{ color: 'text.primary' }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <p className="text-sm font-semibold text-foreground">
           {t('editor.select_correct_word.options_label', { defaultValue: 'Options by key' })} *
-        </Typography>
-        <FormControlLabel
-          control={
-            <Switch
-              size="small"
-              checked={allowPartialCredit}
-              onChange={(e) => setValue('allowPartialCreditScoring', e.target.checked)}
-            />
-          }
-          label={t('editor.select_correct_word.partial_credit', { defaultValue: 'Allow partial credit' })}
-          sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-        />
-      </Box>
+        </p>
+
+        {/* Partial credit toggle using named peer pattern */}
+        <label className="inline-flex items-center gap-2 cursor-pointer select-none text-sm">
+          <input
+            type="checkbox"
+            className="sr-only peer/toggle"
+            checked={allowPartialCredit}
+            onChange={(e) => setValue('allowPartialCreditScoring', e.target.checked)}
+          />
+          <div className="w-9 h-5 rounded-full bg-muted peer-checked/toggle:bg-primary relative transition-colors">
+            <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/toggle:translate-x-4 rtl:peer-checked/toggle:-translate-x-4" />
+          </div>
+          {t('editor.select_correct_word.partial_credit', { defaultValue: 'Allow partial credit' })}
+        </label>
+      </div>
 
       {groups.map((group) => (
-        <GroupCard className="flex flex-col gap-2 p-4 rounded-2xl" key={group.key}>
-          <Typography
-            variant="body2"
-            className="font-semibold text-sm"
-            sx={(theme) => ({ color: theme.palette.text.secondary })}
-          >
-            {group.key}
-          </Typography>
+        <div
+          key={group.key}
+          className="flex flex-col gap-2 p-4 rounded-2xl border border-border/15 bg-muted/30"
+        >
+          <p className="text-sm font-semibold text-muted-foreground">{group.key}</p>
+
           {group.options.map((option, optIndex) => (
-            <Box key={option.id} className="flex items-center gap-2">
-              <Radio
-                size="small"
+            <div key={option.id} className="flex items-center gap-2">
+              {/* Radio input — marks an option as the correct answer */}
+              <input
+                type="radio"
+                name={`correct-${group.key}`}
                 checked={option.isCorrect}
                 onChange={() => handleSetCorrect(group.key, option.id)}
-                className="shrink-0"
+                className="shrink-0 w-4 h-4 accent-primary cursor-pointer"
                 title={t('editor.select_correct_word.correct_label', { defaultValue: 'Mark as correct' })}
               />
-              <TextField
+
+              <Input
                 value={option.text}
                 onChange={(e) => handleOptionText(group.key, option.id, e.target.value)}
                 placeholder={t('editor.select_correct_word.option_placeholder', {
                   index: optIndex + 1,
                   defaultValue: 'Option {{index}}...',
                 })}
-                size="small"
-                className="flex-1"
-                error={!option.text.trim()}
+                className={cn('flex-1 h-8 text-sm', !option.text.trim() && 'border-destructive focus-visible:ring-destructive')}
               />
-              <IconButton
-                size="small"
+
+              <button
+                type="button"
                 onClick={() => handleDeleteOption(group.key, option.id)}
                 disabled={group.options.length <= 2}
-                className="shrink-0"
-                sx={{ color: 'error.main', '&:disabled': { opacity: 0.3 } }}
+                aria-label={t('editor.select_correct_word.correct_label', { defaultValue: 'Delete option' })}
+                className="shrink-0 p-1 rounded-md text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none"
               >
-                <DeleteOutlineIcon fontSize="small" />
-              </IconButton>
-            </Box>
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           ))}
-          <Button
-            variant="text"
-            startIcon={<AddIcon />}
+
+          <button
+            type="button"
             onClick={() => handleAddOption(group.key)}
-            className="self-start normal-case text-sm"
+            className="self-start inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
           >
+            <Plus className="w-4 h-4" />
             {t('editor.select_correct_word.add_option', { defaultValue: 'Add option' })}
-          </Button>
-        </GroupCard>
+          </button>
+        </div>
       ))}
 
       {hasGroupErrors && (
-        <Alert severity="error" variant="outlined" className="text-sm">
+        <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {t('editor.select_correct_word.error_no_correct')}
-        </Alert>
+        </div>
       )}
       {hasEmptyOptions && (
-        <Alert severity="warning" variant="outlined" className="text-sm">
+        <div role="alert" className="flex items-start gap-2 rounded-lg border border-amber-400/40 bg-amber-400/5 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
           {t('editor.select_correct_word.error_empty_options')}
-        </Alert>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
