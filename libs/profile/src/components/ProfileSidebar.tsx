@@ -1,17 +1,8 @@
 // libs/profile/src/components/ProfileSidebar.tsx
-import { Avatar, Box, Typography } from '@mui/material';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import LockIcon from '@mui/icons-material/Lock';
-import FolderIcon from '@mui/icons-material/Folder';
-import EditNoteIcon from '@mui/icons-material/EditNote';
+import { UserCircle, Lock, Folder, FileEdit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { styled } from '@mui/material/styles';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar, type SidebarItem } from '@item-bank/ui';
-
-const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  backgroundColor: theme.palette.semantic.avatar.background,
-}));
 
 export default function ProfileSidebar() {
   const { t } = useTranslation('common');
@@ -23,53 +14,53 @@ export default function ProfileSidebar() {
     {
       id: 'edit',
       label: t('profile.edit_profile'),
-      icon: PersonOutlineIcon,
+      icon: UserCircle,
       selected: selectedId === 'edit',
       onClick: () => navigate('/profile/edit'),
     },
     {
       id: 'change-password',
       label: t('profile.change_password'),
-      icon: LockIcon,
+      icon: Lock,
       selected: selectedId === 'change-password',
       onClick: () => navigate('/profile/change-password'),
     },
     {
       id: 'file-manager',
       label: t('profile.file_manager'),
-      icon: FolderIcon,
+      icon: Folder,
       selected: selectedId === 'file-manager',
       onClick: () => navigate('/profile/file-manager'),
     },
     {
       id: 'my-annotations',
       label: t('profile.my_annotations'),
-      icon: EditNoteIcon,
+      icon: FileEdit,
       selected: selectedId === 'my-annotations',
       onClick: () => navigate('/profile/my-annotations'),
     },
   ];
 
   const header = (
-    <Box className="flex items-center p-4 gap-4">
-      <StyledAvatar className="w-12 h-12" />
-      <Box className="min-w-0">
-        <Typography
-          className="font-medium leading-[1.3]"
-          sx={(theme) => ({ color: theme.palette.text.primary })}
-          variant="subtitle1"
-        >
+    <div className="flex items-center p-4 gap-4">
+      {/* Avatar circle — replaces MUI Avatar + StyledAvatar */}
+      <div
+        className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: 'hsl(var(--avatar-background))' }}
+      >
+        <UserCircle className="w-7 h-7 text-primary" />
+      </div>
+
+      {/* User info */}
+      <div className="min-w-0">
+        <p className="font-medium text-[0.9375rem] leading-[1.3] text-foreground truncate">
           {t('profile.username_placeholder')}
-        </Typography>
-        <Typography
-          className="text-[0.8125rem]"
-          sx={(theme) => ({ color: theme.palette.text.secondary })}
-          variant="body2"
-        >
+        </p>
+        <p className="text-[0.8125rem] text-muted-foreground truncate">
           {t('profile.role_admin')}
-        </Typography>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </div>
   );
 
   return <Sidebar header={header} items={items}><Outlet /></Sidebar>;
