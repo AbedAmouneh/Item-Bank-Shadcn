@@ -197,22 +197,22 @@ The platform supports **20 question types**, each with a dedicated **editor** an
 ### Prerequisites
 
 - Node.js 18+
-- npm 9+
+- pnpm
 
 ### Installation
 
 ```bash
 git clone https://github.com/AbedAmouneh/Item-Bank-Shadcn.git
 cd Item-Bank-Shadcn
-npm install
+pnpm install
 ```
 
 ### Dev Commands
 
 ```bash
-npm start        # Serve app at http://localhost:4200
-npm run build    # Production build
-npm test         # Run unit tests
+pnpm start       # Serve app at http://localhost:4200
+pnpm build       # Production build
+pnpm test        # Run unit tests
 ```
 
 ### Using Nx directly
