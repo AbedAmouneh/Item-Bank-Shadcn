@@ -1,28 +1,15 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
-import {
-  Alert,
-  Box,
-  Chip,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography,
-  alpha,
-  styled,
-} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import {
+  cn,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@item-bank/ui';
 import { extractHighlightedPhrases, PENALTY_OPTIONS } from './utils';
-
-const PhraseChip = styled(Chip)(({ theme }) => ({
-  borderRadius: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.success.main, 0.12),
-  color: theme.palette.success.main,
-  border: `1px solid ${alpha(theme.palette.success.main, 0.35)}`,
-  fontWeight: 500,
-  '& .MuiChip-label': { padding: '0 10px' },
-}));
 
 function HighlightCorrectWordEditor({ questionText }: { questionText?: string }) {
   const { watch, setValue, register, unregister } = useFormContext();
@@ -63,54 +50,65 @@ function HighlightCorrectWordEditor({ questionText }: { questionText?: string })
   const hasPhrases = phrases.length >= 1;
 
   return (
-    <Box className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5">
       {/* Penalty dropdown */}
-      <FormControl size="small" className="max-w-[260px]">
-        <InputLabel id="hcw-penalty-label">
+      <div className="flex flex-col gap-1.5 max-w-[260px]">
+        <label className="text-sm font-medium text-foreground">
           {t('editor.highlight_correct_word.penalty_label', { defaultValue: 'Penalty per wrong word' })}
-        </InputLabel>
+        </label>
         <Select
-          labelId="hcw-penalty-label"
-          label={t('editor.highlight_correct_word.penalty_label', { defaultValue: 'Penalty per wrong word' })}
-          value={penaltyPercent}
-          onChange={(e) => setValue('highlightPenaltyPercent', Number(e.target.value))}
+          value={String(penaltyPercent)}
+          onValueChange={(val) => setValue('highlightPenaltyPercent', Number(val))}
         >
-          {PENALTY_OPTIONS.map((opt) => (
-            <MenuItem key={opt} value={opt}>
-              {opt}%
-            </MenuItem>
-          ))}
+          <SelectTrigger className="w-full text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PENALTY_OPTIONS.map((opt) => (
+              <SelectItem key={opt} value={String(opt)}>
+                {opt}%
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
-      </FormControl>
+      </div>
 
       {/* Highlighted phrases list */}
-      <Box>
-        <Typography
-          variant="body2"
-          className="font-semibold mb-3"
-          sx={{ color: 'text.primary' }}
-        >
+      <div>
+        <p className="text-sm font-semibold text-foreground mb-3">
           {t('editor.highlight_correct_word.phrases_label', { defaultValue: 'Highlighted phrases' })}{' '}
-          <Typography component="span" variant="caption" sx={{ color: 'text.secondary' }}>
+          <span className="text-xs font-normal text-muted-foreground">
             ({t('editor.highlight_correct_word.remove_hint', { defaultValue: 'hover a phrase in the editor to remove it' })})
-          </Typography>
-        </Typography>
+          </span>
+        </p>
 
         {hasPhrases ? (
-          <Box className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             {phrases.map((phrase, i) => (
-              <PhraseChip key={`${phrase}-${i}`} label={phrase} size="small" />
+              <span
+                key={`${phrase}-${i}`}
+                className={cn(
+                  'inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium',
+                  'bg-green-500/[0.12] text-green-600 border border-green-500/35',
+                  'dark:text-green-400'
+                )}
+              >
+                {phrase}
+              </span>
             ))}
-          </Box>
+          </div>
         ) : (
-          <Alert severity="warning" variant="outlined" className="text-sm">
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-lg border border-amber-400/40 bg-amber-400/5 px-4 py-3 text-sm text-amber-700 dark:text-amber-400"
+          >
             {t('editor.highlight_correct_word.error_no_phrases', {
               defaultValue: 'Highlight at least one word or phrase before saving.',
             })}
-          </Alert>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
