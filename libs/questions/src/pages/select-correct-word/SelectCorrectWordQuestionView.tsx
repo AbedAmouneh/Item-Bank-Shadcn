@@ -21,7 +21,7 @@ function getOptionChipClass(
       : 'bg-red-500/15 border-red-500 text-red-600 dark:text-red-400 font-semibold';
   }
   if (isSelected) {
-    return 'bg-primary/12 border-primary text-primary font-semibold';
+    return 'bg-primary/[0.12] border-primary text-primary font-semibold';
   }
   return 'bg-transparent border-border/50 text-foreground';
 }
@@ -123,7 +123,7 @@ const SelectCorrectWordQuestionView = ({ question }: SelectCorrectWordQuestionVi
                       }
                     }}
                     className={cn(
-                      'inline-flex items-center px-2 py-0.5 rounded-lg border text-sm transition-all duration-150 select-none',
+                      'inline-flex items-center ps-2 pe-2 py-0.5 rounded-lg border text-sm transition-all duration-150 select-none',
                       checked ? 'cursor-default' : 'cursor-pointer',
                       !checked && 'hover:bg-primary/[0.08] hover:border-primary/50',
                       checked && 'pointer-events-none',
