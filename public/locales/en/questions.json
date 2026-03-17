@@ -441,7 +441,8 @@
       "show_solution": "Show Solution"
     },
     "answer_placeholder": "Answer {{index}}",
-    "require_unique_answers": "Require unique answers"
+    "require_unique_answers": "Require unique answers",
+    "enable_word_limit": "Enable word limit"
   },
   "no_questions": "No questions found"
 }
