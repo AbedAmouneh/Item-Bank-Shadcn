@@ -1,10 +1,8 @@
-import { Box, Button, alpha, styled } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import type { QuestionRow } from '../../components/QuestionsTable';
 import { useCallback, useState } from 'react';
+import { Check, RotateCcw, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type TrueFalseQuestionViewProps = {
   question: QuestionRow;
@@ -12,58 +10,62 @@ type TrueFalseQuestionViewProps = {
 
 type OptionPillFeedback = 'correct' | 'wrong' | undefined;
 
-const OptionPill = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'selected' && prop !== 'feedback',
-})<{ selected?: boolean; feedback?: OptionPillFeedback }>(({ theme, selected, feedback }) => {
-  const getBackgroundColor = () => {
-    if (feedback === 'correct') {
-      return alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.4 : 0.25);
-    }
-    if (feedback === 'wrong') {
-      return alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.4 : 0.25);
-    }
-    if (selected) {
-      return alpha(theme.palette.primary.main, 0.15);
-    }
-    return 'transparent';
-  };
+type OptionPillProps = {
+  selected: boolean;
+  feedback: OptionPillFeedback;
+  onClick: () => void;
+  children: React.ReactNode;
+};
 
-  const getBorderColor = () => {
-    if (feedback === 'correct') return theme.palette.success.main;
-    if (feedback === 'wrong') return theme.palette.error.main;
-    if (selected) return 'transparent';
-    return theme.palette.semantic.choice.unselectedBorder;
-  };
+/** Renders a single True/False choice pill with feedback-aware colors. */
+const OptionPill = ({ selected, feedback, onClick, children }: OptionPillProps) => {
+  const bgColor =
+    feedback === 'correct'
+      ? 'rgba(34,197,94,0.25)'
+      : feedback === 'wrong'
+        ? 'rgba(239,68,68,0.25)'
+        : selected
+          ? 'hsl(var(--primary) / 0.15)'
+          : 'transparent';
 
-  const getTextColor = () => {
-    if (feedback === 'correct') return theme.palette.success.main;
-    if (feedback === 'wrong') return theme.palette.error.main;
-    if (selected) return theme.palette.common.white;
-    return theme.palette.text.secondary;
-  };
+  const borderColor =
+    feedback === 'correct'
+      ? '#22c55e'
+      : feedback === 'wrong'
+        ? '#ef4444'
+        : selected
+          ? 'transparent'
+          : 'hsl(var(--border))';
 
-  return {
-    width: '100%',
-    borderRadius: 9999,
-    marginBottom: theme.spacing(1),
-    backgroundColor: getBackgroundColor(),
-    border: `1px solid ${getBorderColor()}`,
-    color: getTextColor(),
-    cursor: feedback ? 'default' : 'pointer',
-  };
-});
+  const textColor =
+    feedback === 'correct'
+      ? '#22c55e'
+      : feedback === 'wrong'
+        ? '#ef4444'
+        : selected
+          ? 'white'
+          : 'hsl(var(--muted-foreground))';
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
+  return (
+    <div
+      className="flex w-full items-center gap-3 rounded-full px-4 py-3 text-base mb-1 border"
+      style={{
+        backgroundColor: bgColor,
+        borderColor,
+        color: textColor,
+        cursor: feedback ? 'default' : 'pointer',
+      }}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+};
 
 const TrueFalseQuestionView = ({ question }: TrueFalseQuestionViewProps) => {
   const [selectedOption, setSelectedOption] = useState<boolean | null>(null);
   const [checked, setChecked] = useState(false);
-  const { t } = useTranslation("questions");
+  const { t } = useTranslation('questions');
 
   const correctAnswer = question.correct_choice ?? true;
   const isCorrect = selectedOption === correctAnswer;
@@ -89,9 +91,8 @@ const TrueFalseQuestionView = ({ question }: TrueFalseQuestionViewProps) => {
 
   return (
     <>
-      <Box className="flex flex-col gap-0 mb-6">
+      <div className="flex flex-col gap-0 mb-6">
         <OptionPill
-          className="flex items-center gap-3 py-3 px-4 text-base"
           selected={selectedOption === true && !checked}
           feedback={getFeedback(true)}
           onClick={() => !checked && setSelectedOption(true)}
@@ -100,7 +101,6 @@ const TrueFalseQuestionView = ({ question }: TrueFalseQuestionViewProps) => {
           <span>{t('editor.true')}</span>
         </OptionPill>
         <OptionPill
-          className="flex items-center gap-3 py-3 px-4 text-base"
           selected={selectedOption === false && !checked}
           feedback={getFeedback(false)}
           onClick={() => !checked && setSelectedOption(false)}
@@ -108,34 +108,32 @@ const TrueFalseQuestionView = ({ question }: TrueFalseQuestionViewProps) => {
           <span className="opacity-90">•</span>
           <span>{t('editor.false')}</span>
         </OptionPill>
-      </Box>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
           <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
             disabled={!checked && selectedOption === null}
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+            className="rounded-xl font-semibold"
           >
+            {checked ? <RotateCcw className="me-2 h-4 w-4" /> : <Check className="me-2 h-4 w-4" />}
             {checked ? t('retry') : t('check')}
           </Button>
           {checked && !isCorrect && (
             <Button
               onClick={handleShowSolution}
-              variant="contained"
-              startIcon={<LightbulbIcon />}
-              className="normal-case font-semibold"
-              sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+              className="rounded-xl font-semibold"
             >
+              <Lightbulb className="me-2 h-4 w-4" />
               {t('show_solution')}
             </Button>
           )}
-        </Box>
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">{question.mark}</MarkBox>
-      </Box>
+        </div>
+        <div className="rounded-xl border border-border bg-card text-foreground py-2 px-4 font-semibold text-[0.95rem]">
+          {question.mark}
+        </div>
+      </div>
     </>
   );
 };
