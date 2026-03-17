@@ -1,6 +1,5 @@
-import { Alert, Box, Dialog, DialogContent, IconButton, Snackbar } from '@mui/material';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
+import { Dialog, DialogContent } from '@item-bank/ui';
 import {
   QuestionEditorShell,
   QuestionsTable,
@@ -13,6 +12,45 @@ import { putQuestion, getQuestions, deleteQuestion, getQuestionById } from '../.
 import { storedToRow } from '../../utils/questionConverters';
 import { createStoredQuestion } from '../../utils/questionFactory';
 import { storedToFormData } from '../../utils/questionToFormData';
+
+type SnackbarSeverity = 'success' | 'error' | 'info' | 'warning';
+
+const severityClasses: Record<SnackbarSeverity, string> = {
+  success: 'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-400',
+  error: 'border-destructive/40 bg-destructive/10 text-destructive',
+  info: 'border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-400',
+  warning: 'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+};
+
+interface SnackbarNotificationProps {
+  message: string;
+  severity: SnackbarSeverity;
+  onClose: () => void;
+}
+
+/** Fixed bottom-center notification that auto-dismisses after 4 seconds. */
+function SnackbarNotification({ message, severity, onClose }: SnackbarNotificationProps) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-6 start-1/2 z-50 -translate-x-1/2">
+      <div className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${severityClasses[severity]}`}>
+        <span>{message}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close notification"
+          className="ms-2 rounded p-0.5 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function rowToFormData(row: QuestionRow): QuestionFormData | null {
   if (row.type === 'true_false') {
@@ -57,7 +95,7 @@ const Home = () => {
   const [initialFormData, setInitialFormData] = useState<QuestionFormData | undefined>(undefined);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('success');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<SnackbarSeverity>('success');
   const selectedQuestionType = useRef<QuestionType | null>(null);
   const selectedQuestion = useRef<QuestionRow | null>(null);
   const questionToEditId = useRef<string | number | null>(null);
@@ -232,7 +270,7 @@ const Home = () => {
   );
 
   return (
-    <Box className="w-full">
+    <div className="w-full">
       <QuestionsTable
         questions={questions}
         onQuestionTypeChange={handleQuestionTypeChange}
@@ -240,21 +278,10 @@ const Home = () => {
         onEditQuestion={handleEditQuestion}
         onDeleteQuestion={handleDeleteQuestion}
       />
-      
-      <Dialog
-        open={isEditorOpen}
-        onClose={closeEditor}
-        maxWidth="md"
-        fullWidth
-      >
-        <IconButton
-          onClick={closeEditor}
-          className="absolute right-2 top-2"
-          sx={{ color: 'text.secondary' }}
-        >
-          <CloseIcon />
-        </IconButton>
-        <DialogContent className="pt-12">
+
+      {/* Editor Dialog */}
+      <Dialog open={isEditorOpen} onOpenChange={(open) => { if (!open) closeEditor(); }}>
+        <DialogContent className="max-w-3xl">
           {(questionToEdit ? questionToEdit.type : selectedQuestionType.current) && (
             <QuestionEditorShell
               key={questionToEdit ? questionToEdit.id : 'new'}
@@ -268,48 +295,23 @@ const Home = () => {
       </Dialog>
 
       {/* Question View Dialog */}
-      <Dialog
-        open={questionViewOpen}
-        onClose={() => setQuestionViewOpen(false)}
-        maxWidth={selectedQuestion.current?.type === 'free_hand_drawing' ? 'lg' : 'md'}
-        fullWidth
-      >
-        <IconButton
-          onClick={() => setQuestionViewOpen(false)}
-          className="absolute right-2 top-2"
-          sx={{ color: 'text.secondary' }}
+      <Dialog open={questionViewOpen} onOpenChange={(open) => { if (!open) setQuestionViewOpen(false); }}>
+        <DialogContent
+          className={selectedQuestion.current?.type === 'free_hand_drawing' ? 'max-w-5xl' : 'max-w-3xl'}
         >
-          <CloseIcon />
-        </IconButton>
-        <DialogContent className="pt-12">
-          <QuestionViewShell
-            question={selectedQuestion.current}
-          >
-
-          </QuestionViewShell>
+          <QuestionViewShell question={selectedQuestion.current} />
         </DialogContent>
       </Dialog>
-      
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={(_, reason) => {
-          if (reason === 'clickaway') return;
-          setSnackbarOpen(false);
-        }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
+
+      {/* Snackbar notification */}
+      {snackbarOpen && (
+        <SnackbarNotification
+          message={snackbarMessage}
           severity={snackbarSeverity}
-          elevation={6}
-          variant="filled"
-          className="w-full"
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+          onClose={() => setSnackbarOpen(false)}
+        />
+      )}
+    </div>
   );
 };
 
