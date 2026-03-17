@@ -370,6 +370,7 @@ function ImageSequencingEditor() {
                     {/* Drag grip — absolute overlay bottom-start */}
                     <div className="absolute bottom-1.5 start-1.5">
                       <div
+                        role="button"
                         className="cursor-grab active:cursor-grabbing focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                         data-drag-handle="true"
                         tabIndex={0}
