@@ -1,6 +1,10 @@
 {
     "AuthorApp": "AuthorApp",
     "brand": "AuthorApp Item Bank",
+    "back": "Back",
+    "next": "Next",
+    "not_available": "Not available",
+    "save": "Save",
     "switch_language": "Switch language",
     "switch_theme": "Switch theme",
     "nav": {
@@ -37,6 +41,7 @@
         "email": "Email",
         "cancel": "Cancel",
         "save": "Save",
+        "save_options": "Save options",
         "save_and_continue": "Save and continue",
         "save_and_close": "Save and close",
         "current_password": "Current Password",
