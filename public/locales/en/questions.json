@@ -189,7 +189,8 @@
             "cancel": "Cancel",
             "save": "Save",
             "open_calculator": "Open calculator",
-            "open_math_editor": "Open math editor"
+            "open_math_editor": "Open math editor",
+            "select_unit": "Select unit"
         },
         "fill_in_blanks": {
             "toolbar_key": "Key",
