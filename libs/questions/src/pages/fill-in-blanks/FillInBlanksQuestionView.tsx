@@ -185,7 +185,7 @@ const FillInBlanksQuestionView = ({ question }: FillInBlanksQuestionViewProps) =
                   disabled={checked}
                   className={cn(
                     'min-w-[120px] h-8 rounded-lg border px-2 text-sm transition-colors',
-                    'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
                     'disabled:cursor-not-allowed disabled:opacity-75',
                     feedback ? 'pe-7' : '',
                     getInputClassName(feedback)
