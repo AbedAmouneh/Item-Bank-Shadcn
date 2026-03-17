@@ -1,43 +1,41 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Select,
-  MenuItem,
-  Typography,
-  useTheme,
-  alpha,
-  styled,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Switch,
-  FormControlLabel,
-  TextField,
-  FormControl,
-  InputLabel,
-} from '@mui/material';
 import { Stage, Layer, Rect, Circle, Text, Image as KonvaImage, Transformer, Group, Line } from 'react-konva';
 import type Konva from 'konva';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import {
-  CropFree as RectangleIcon,
-  RadioButtonUnchecked as CircleIcon,
-  Pentagon as PolygonIcon,
-  PanTool as PanIcon,
-  Undo as UndoIcon,
-  Redo as RedoIcon,
-  Refresh as ResetIcon,
-  ZoomIn as ZoomInIcon,
-  ZoomOut as ZoomOutIcon,
-  Fullscreen as FullscreenIcon,
-} from '@mui/icons-material';
+  Square,
+  CircleDashed,
+  Pentagon,
+  Hand,
+  Undo2,
+  Redo2,
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  ImagePlus,
+  Trash2,
+} from 'lucide-react';
+import {
+  cn,
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@item-bank/ui';
 
 type HotspotTool = 'rectangle' | 'circle' | 'polygon' | 'pan';
 
@@ -56,50 +54,17 @@ type HotspotShape = {
   mark?: number;
 };
 
-const DropZone = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'dragOver',
-})<{ dragOver?: boolean }>(({ theme, dragOver }) => ({
-  border: `2px dashed ${dragOver ? theme.palette.primary.main : theme.palette.divider}`,
-  backgroundColor: dragOver ? theme.palette.action.hover : theme.palette.action.selected,
-  cursor: 'pointer',
-  transition: theme.transitions.create(['border-color', 'background-color'], {
-    duration: theme.transitions.duration.short,
-  }),
-}));
-
-const ToolbarContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
-  borderBottom: `1px solid ${theme.palette.divider}`,
-}));
-
-const ToolbarGroup = styled(Box)(({ theme }) => ({
-  borderRight: `1px solid ${theme.palette.divider}`,
-  '&:last-child': { borderRight: 'none' },
-}));
-
-const StyledIconButton = styled(IconButton)<{ selected?: boolean }>(({ theme, selected }) => ({
-  backgroundColor: selected
-    ? theme.palette.mode === 'dark'
-      ? alpha(theme.palette.primary.main, 0.2)
-      : alpha(theme.palette.primary.main, 0.1)
-    : 'transparent',
-  color: selected ? theme.palette.primary.main : theme.palette.text.secondary,
-  '&:hover': {
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? alpha(theme.palette.primary.main, 0.3)
-        : alpha(theme.palette.primary.main, 0.15),
-  },
-}));
-
-const CanvasContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
-}));
-
 const MAX_CANVAS_WIDTH = 800;
 const POLYGON_CLOSE_THRESHOLD = 12;
 const MAX_TOTAL_PARTIAL_MARK = 1;
 const MARK_EPSILON = 1e-4;
+
+// Hardcoded hex values matching CSS vars: --primary #6366F1, --primary-dark #4F46E5
+// --destructive #F43F5E, --destructive-dark (darker rose) #e11d48
+const KONVA_PRIMARY = '#6366F1';
+const KONVA_PRIMARY_DARK = '#4F46E5';
+const KONVA_DESTRUCTIVE = '#F43F5E';
+const KONVA_DESTRUCTIVE_DARK = '#e11d48';
 
 function normalizeHotspotMark(mark: number | undefined): number {
   const raw = Math.max(0, mark ?? 0);
@@ -117,7 +82,6 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function MultipleHotspotsEditor() {
   const { t } = useTranslation('questions');
-  const theme = useTheme();
   const {
     watch,
     setValue,
@@ -516,9 +480,10 @@ export default function MultipleHotspotsEditor() {
     setStageScale({ x: next / 100, y: next / 100 });
   }, [zoom]);
 
-  const handleZoomChange = useCallback((value: number) => {
-    setZoom(value);
-    setStageScale({ x: value / 100, y: value / 100 });
+  const handleZoomChange = useCallback((value: string) => {
+    const numValue = Number(value);
+    setZoom(numValue);
+    setStageScale({ x: numValue / 100, y: numValue / 100 });
   }, []);
 
   const handleFullscreen = useCallback(() => {
@@ -573,29 +538,33 @@ export default function MultipleHotspotsEditor() {
     historyIndex.current = -1;
   }, [setValue]);
 
+  /** Shared icon button class builder for toolbar buttons */
+  const toolbarBtnClass = (selected?: boolean) =>
+    cn(
+      'p-1.5 rounded-lg transition-colors',
+      selected
+        ? 'bg-primary/10 text-primary dark:bg-primary/20'
+        : 'text-muted-foreground hover:bg-muted'
+    );
+
   if (!background_image) {
     return (
-      <Box className="flex flex-col gap-4">
-        <Typography
-          className="block text-[0.8125rem] font-normal leading-tight"
-          sx={(theme) => ({ color: theme.palette.text.secondary })}
-          variant="body2"
-          component="label"
-        >
+      <div className="flex flex-col gap-4">
+        <label className="block text-[0.8125rem] font-normal leading-tight text-muted-foreground">
           {t('editor.background_image')}
-        </Typography>
-        {(errors as any)?.background_image && (
-          <Typography
-            variant="caption"
-            color="error"
-            className="mt-1 block"
-          >
-            {(errors as any).background_image.message}
-          </Typography>
+        </label>
+        {(errors as Record<string, { message?: string }>)?.background_image && (
+          <span className="mt-1 block text-xs font-medium text-destructive">
+            {(errors as Record<string, { message?: string }>).background_image.message}
+          </span>
         )}
-        <DropZone
-          className="cursor-pointer min-h-[160px] flex flex-col items-center justify-center gap-2 rounded-lg"
-          dragOver={dragOver}
+        <div
+          className={cn(
+            'cursor-pointer min-h-[160px] flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors',
+            dragOver
+              ? 'border-primary bg-primary/5'
+              : 'border-border bg-muted/30 hover:border-primary/50'
+          )}
           onDrop={handleDrop}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -608,184 +577,271 @@ export default function MultipleHotspotsEditor() {
             accept="image/*"
             onChange={handleFileChange}
           />
-          <AddPhotoAlternateOutlinedIcon
-            className="text-5xl"
-            sx={(theme) => ({ color: theme.palette.text.secondary })}
-          />
-          <Typography
-            className="text-sm"
-            sx={(theme) => ({ color: theme.palette.text.secondary })}
-            variant="body2"
-          >
-            {t('editor.drag_and_drop')}
-          </Typography>
+          <ImagePlus className="text-muted-foreground" size={48} />
+          <p className="text-sm text-muted-foreground">{t('editor.drag_and_drop')}</p>
           <Button
-            className="font-medium normal-case"
-            variant="contained"
-            color="primary"
-            size="small"
+            size="sm"
             onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
           >
             {t('editor.browse')}
           </Button>
-        </DropZone>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
 
-      <Box className="flex items-center justify-between">
-        <Typography
-          className="text-[0.8125rem] font-normal leading-tight"
-          sx={(theme) => ({ color: theme.palette.text.secondary })}
-          variant="body2"
-        >
+      {/* Header row: label + remove button */}
+      <div className="flex items-center justify-between">
+        <span className="text-[0.8125rem] font-normal leading-tight text-muted-foreground">
           {t('editor.background_image')}
-        </Typography>
+        </span>
         <Button
-          size="small"
-          variant="outlined"
-          color="error"
-          startIcon={<DeleteOutlinedIcon fontSize="small" />}
-          className="normal-case text-xs"
+          size="sm"
+          variant="destructive"
           onClick={handleRemoveImage}
+          className="gap-1.5"
         >
+          <Trash2 size={14} />
           {t('editor.remove_image')}
         </Button>
-      </Box>
+      </div>
 
-      <Box className="flex items-center justify-between gap-4 mb-4">
-        <FormControlLabel
-          control={
-            <Switch
-              checked={allowPartialCredit}
-              onChange={(e) => {
-                setAllowPartialCredit(e.target.checked);
-                setTool('pan');
-              }}
-              color="primary"
+      {/* Partial credit toggle + min/max selections */}
+      <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={allowPartialCredit}
+            onClick={() => {
+              setAllowPartialCredit((prev) => !prev);
+              setTool('pan');
+            }}
+            className={cn(
+              'relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              allowPartialCredit ? 'bg-primary' : 'bg-input'
+            )}
+          >
+            <span
+              className={cn(
+                'pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform',
+                allowPartialCredit ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0'
+              )}
             />
-          }
-          label="Allow partial credit"
-        />
-        <Box className="flex gap-2">
-          <TextField
-            label="Min selections"
-            type="number"
-            size="small"
-            value={minSelections}
-            onChange={(e) => {
-              const value = Math.max(1, Number(e.target.value) || 1);
-              setMinSelections(value);
-            }}
-            inputProps={{ min: 1 }}
-            className="w-[140px]"
-              error={!!(errors as any)?.minSelections}
-              helperText={(errors as any)?.minSelections?.message || ''}
-          />
-          <TextField
-            label="Max selections"
-            type="number"
-            size="small"
-            value={maxSelections}
-            onChange={(e) => {
-              const value = Math.max(1, Number(e.target.value) || 1);
-              setMaxSelections(value);
-            }}
-            inputProps={{ min: 1 }}
-            className="w-[140px]"
-              error={!!(errors as any)?.maxSelections}
-              helperText={(errors as any)?.maxSelections?.message || ''}
-          />
-        </Box>
-      </Box>
-
-      <Box
-        ref={containerRef}
-        className="overflow-hidden rounded"
-        sx={{ border: `1px solid ${theme.palette.divider}` }}
-      >
-        <ToolbarContainer className="flex items-center flex-wrap gap-1 p-2">
-
-          <ToolbarGroup className="flex items-center gap-1 py-0 px-2">
-            <Tooltip title="Rectangle">
-              <StyledIconButton size="small" selected={tool === 'rectangle'} onClick={() => setTool('rectangle')}>
-                <RectangleIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-            <Tooltip title="Circle">
-              <StyledIconButton size="small" selected={tool === 'circle'} onClick={() => setTool('circle')}>
-                <CircleIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-            <Tooltip title="Polygon">
-              <StyledIconButton size="small" selected={tool === 'polygon'} onClick={() => setTool('polygon')}>
-                <PolygonIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-          </ToolbarGroup>
-
-          <ToolbarGroup className="flex items-center gap-1 py-0 px-2">
-            <Tooltip title="Pan / Select">
-              <StyledIconButton size="small" selected={tool === 'pan'} onClick={() => setTool('pan')}>
-                <PanIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-            <Tooltip title="Undo">
-              <StyledIconButton size="small" onClick={handleUndo} disabled={historyIndex.current <= 0}>
-                <UndoIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-            <Tooltip title="Redo">
-              <StyledIconButton size="small" onClick={handleRedo} disabled={historyIndex.current >= history.current.length - 1}>
-                <RedoIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-            <Tooltip title="Reset">
-              <StyledIconButton size="small" onClick={handleReset}>
-                <ResetIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-          </ToolbarGroup>
-
-          <ToolbarGroup className="flex items-center gap-1 py-0 px-2">
-            <Tooltip title="Zoom Out">
-              <StyledIconButton size="small" onClick={handleZoomOut}>
-                <ZoomOutIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-            <Select
-              value={zoom}
-              onChange={(e) => handleZoomChange(Number(e.target.value))}
-              size="small"
-              MenuProps={{
-                container: isFullscreen ? containerRef.current : undefined,
-                disablePortal: isFullscreen,
+          </button>
+          <span className="text-sm text-foreground">Allow partial credit</span>
+        </label>
+        <div className="flex gap-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Min selections</label>
+            <Input
+              type="number"
+              value={minSelections}
+              min={1}
+              onChange={(e) => {
+                const value = Math.max(1, Number(e.target.value) || 1);
+                setMinSelections(value);
               }}
-              className="min-w-[80px] h-8"
-              sx={{ '& .MuiSelect-select': { py: 0.5, fontSize: '0.875rem' } }}
-            >
-              {[25, 50, 75, 100, 125, 150, 200, 300, 400].map((v) => (
-                <MenuItem key={v} value={v}>{v}%</MenuItem>
-              ))}
-            </Select>
-            <Tooltip title="Zoom In">
-              <StyledIconButton size="small" onClick={handleZoomIn}>
-                <ZoomInIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-            <Tooltip title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>
-              <StyledIconButton size="small" onClick={handleFullscreen}>
-                <FullscreenIcon fontSize="small" />
-              </StyledIconButton>
-            </Tooltip>
-          </ToolbarGroup>
+              className="w-[140px] h-8 text-sm"
+            />
+            {(errors as Record<string, { message?: string }>)?.minSelections && (
+              <span className="text-xs text-destructive">
+                {(errors as Record<string, { message?: string }>).minSelections.message}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Max selections</label>
+            <Input
+              type="number"
+              value={maxSelections}
+              min={1}
+              onChange={(e) => {
+                const value = Math.max(1, Number(e.target.value) || 1);
+                setMaxSelections(value);
+              }}
+              className="w-[140px] h-8 text-sm"
+            />
+            {(errors as Record<string, { message?: string }>)?.maxSelections && (
+              <span className="text-xs text-destructive">
+                {(errors as Record<string, { message?: string }>).maxSelections.message}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
 
-        </ToolbarContainer>
+      {/* Canvas container */}
+      <div
+        ref={containerRef}
+        className="overflow-hidden rounded border border-border"
+      >
+        {/* Toolbar */}
+        <div className="flex items-center flex-wrap gap-1 p-2 bg-muted/60 border-b border-border dark:bg-muted/30">
 
-        <CanvasContainer className="flex justify-center p-4 overflow-auto">
+          {/* Drawing tools group */}
+          <TooltipProvider>
+            <div className="flex items-center gap-1 py-0 pe-2 border-e border-border">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Rectangle"
+                    className={toolbarBtnClass(tool === 'rectangle')}
+                    onClick={() => setTool('rectangle')}
+                  >
+                    <Square size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Rectangle</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Circle"
+                    className={toolbarBtnClass(tool === 'circle')}
+                    onClick={() => setTool('circle')}
+                  >
+                    <CircleDashed size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Circle</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Polygon"
+                    className={toolbarBtnClass(tool === 'polygon')}
+                    onClick={() => setTool('polygon')}
+                  >
+                    <Pentagon size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Polygon</TooltipContent>
+              </Tooltip>
+            </div>
+
+            {/* Actions group */}
+            <div className="flex items-center gap-1 py-0 pe-2 border-e border-border">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Pan / Select"
+                    className={toolbarBtnClass(tool === 'pan')}
+                    onClick={() => setTool('pan')}
+                  >
+                    <Hand size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Pan / Select</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Undo"
+                    className={toolbarBtnClass()}
+                    onClick={handleUndo}
+                    disabled={historyIndex.current <= 0}
+                  >
+                    <Undo2 size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Undo</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Redo"
+                    className={toolbarBtnClass()}
+                    onClick={handleRedo}
+                    disabled={historyIndex.current >= history.current.length - 1}
+                  >
+                    <Redo2 size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Redo</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Reset"
+                    className={toolbarBtnClass()}
+                    onClick={handleReset}
+                  >
+                    <RotateCcw size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Reset</TooltipContent>
+              </Tooltip>
+            </div>
+
+            {/* Zoom group */}
+            <div className="flex items-center gap-1 py-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Zoom Out"
+                    className={toolbarBtnClass()}
+                    onClick={handleZoomOut}
+                  >
+                    <ZoomOut size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Zoom Out</TooltipContent>
+              </Tooltip>
+              <Select value={String(zoom)} onValueChange={handleZoomChange}>
+                <SelectTrigger className="min-w-[80px] h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[25, 50, 75, 100, 125, 150, 200, 300, 400].map((v) => (
+                    <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Zoom In"
+                    className={toolbarBtnClass()}
+                    onClick={handleZoomIn}
+                  >
+                    <ZoomIn size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Zoom In</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                    className={toolbarBtnClass()}
+                    onClick={handleFullscreen}
+                  >
+                    <Maximize2 size={16} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+
+        </div>
+
+        {/* Canvas area */}
+        <div className="flex justify-center p-4 overflow-auto bg-muted/20 dark:bg-muted/10">
           <Stage
             ref={stageRef}
             width={canvasWidth}
@@ -811,7 +867,7 @@ export default function MultipleHotspotsEditor() {
                 width={canvasWidth}
                 height={canvasHeight}
                 fill="#ffffff"
-                stroke={theme.palette.divider}
+                stroke="#e2e8f0"
                 strokeWidth={1}
               />
 
@@ -1009,8 +1065,8 @@ export default function MultipleHotspotsEditor() {
                     >
                       <Circle
                         radius={12}
-                        fill={theme.palette.primary.main}
-                        stroke={theme.palette.primary.dark}
+                        fill={KONVA_PRIMARY}
+                        stroke={KONVA_PRIMARY_DARK}
                         strokeWidth={2}
                       />
                       <Text
@@ -1031,8 +1087,8 @@ export default function MultipleHotspotsEditor() {
                     >
                       <Circle
                         radius={12}
-                        fill={theme.palette.error.main}
-                        stroke={theme.palette.error.dark}
+                        fill={KONVA_DESTRUCTIVE}
+                        stroke={KONVA_DESTRUCTIVE_DARK}
                         strokeWidth={2}
                       />
                       <Text
@@ -1046,74 +1102,74 @@ export default function MultipleHotspotsEditor() {
               })()}
             </Layer>
           </Stage>
-        </CanvasContainer>
-      </Box>
+        </div>
+      </div>
 
-      {(errors as any)?.hotspots && (
-        <Typography
-          variant="caption"
-          color="error"
-          className="mt-1 block"
-        >
-          {(errors as any).hotspots.message}
-        </Typography>
+      {(errors as Record<string, { message?: string }>)?.hotspots && (
+        <span className="mt-1 block text-xs font-medium text-destructive">
+          {(errors as Record<string, { message?: string }>).hotspots.message}
+        </span>
       )}
 
-      <Dialog open={editDialogOpen} onClose={handleEditClose} maxWidth="xs" fullWidth>
-        <DialogTitle>Edit Hotspot</DialogTitle>
-        <DialogContent>
-          {allowPartialCredit ? (
-            <FormControl fullWidth className="mt-2">
-              <InputLabel>Mark %</InputLabel>
-              <Select
-                value={editingMark * 100}
-                label="Mark %"
-                onChange={(e) => {
-                  setEditingMark(Number(e.target.value) / 100);
-                  setEditingError('');
-                }}
-              >
-                <MenuItem value={0}>0%</MenuItem>
-                <MenuItem value={5}>5%</MenuItem>
-                <MenuItem value={10}>10%</MenuItem>
-                <MenuItem value={15}>15%</MenuItem>
-                <MenuItem value={20}>20%</MenuItem>
-                <MenuItem value={25}>25%</MenuItem>
-                <MenuItem value={30}>30%</MenuItem>
-                <MenuItem value={33.3}>33.3%</MenuItem>
-                <MenuItem value={40}>40%</MenuItem>
-                <MenuItem value={50}>50%</MenuItem>
-                <MenuItem value={60}>60%</MenuItem>
-                <MenuItem value={75}>75%</MenuItem>
-                <MenuItem value={80}>80%</MenuItem>
-                <MenuItem value={90}>90%</MenuItem>
-                <MenuItem value={100}>100%</MenuItem>
-              </Select>
-              {editingError && (
-                <Typography variant="caption" color="error" className="mt-2 block">
-                  {editingError}
-                </Typography>
-              )}
-            </FormControl>
-          ) : (
-            <FormControlLabel
-              className="mt-2"
-              control={
-                <Switch
-                  checked={editingIsCorrect}
-                  onChange={(e) => setEditingIsCorrect(e.target.checked)}
-                  color="primary"
-                />
-              }
-              label="Mark as correct"
-            />
-          )}
+      {/* Edit hotspot dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={(open) => { if (!open) handleEditClose(); }}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Edit Hotspot</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2">
+            {allowPartialCredit ? (
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-muted-foreground">Mark %</label>
+                <Select
+                  value={String(editingMark * 100)}
+                  onValueChange={(val) => {
+                    setEditingMark(Number(val) / 100);
+                    setEditingError('');
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[0, 5, 10, 15, 20, 25, 30, 33.3, 40, 50, 60, 75, 80, 90, 100].map((v) => (
+                      <SelectItem key={v} value={String(v)}>{v}%</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {editingError && (
+                  <span className="mt-1 block text-xs font-medium text-destructive">{editingError}</span>
+                )}
+              </div>
+            ) : (
+              <label className="flex items-center gap-2 cursor-pointer select-none mt-2">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={editingIsCorrect}
+                  onClick={() => setEditingIsCorrect((prev) => !prev)}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    editingIsCorrect ? 'bg-primary' : 'bg-input'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform',
+                      editingIsCorrect ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+                <span className="text-sm text-foreground">Mark as correct</span>
+              </label>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleEditClose}>Cancel</Button>
+            <Button onClick={handleEditSave}>Save</Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditClose}>Cancel</Button>
-          <Button onClick={handleEditSave} variant="contained">Save</Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 }
