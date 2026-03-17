@@ -50,13 +50,13 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
       validate: {
         minOptions: (vals: SelectWordGroup[]) =>
           (vals ?? []).every((g) => g.options.length >= 2) ||
-          t('editor.select_correct_word.error_min_options', { defaultValue: 'Each key must have at least 2 options.' }),
+          t('editor.select_correct_word.error_min_options'),
         exactlyOneCorrect: (vals: SelectWordGroup[]) =>
           (vals ?? []).every((g) => g.options.filter((o) => o.isCorrect).length === 1) ||
-          t('editor.select_correct_word.error_no_correct', { defaultValue: 'Each key must have exactly one correct option.' }),
+          t('editor.select_correct_word.error_no_correct'),
         noEmptyOptions: (vals: SelectWordGroup[]) =>
           (vals ?? []).every((g) => g.options.every((o) => o.text.trim())) ||
-          t('editor.select_correct_word.error_empty_options', { defaultValue: 'All options must have text before saving.' }),
+          t('editor.select_correct_word.error_empty_options'),
       },
     });
     return () => {
@@ -160,7 +160,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
   if (!hasKeys) {
     return (
       <p role="alert" className="text-sm text-destructive">
-        {t('editor.select_correct_word.error_no_keys', { defaultValue: 'Use [[key]] in the question text to add selectable word groups.' })}
+        {t('editor.select_correct_word.error_no_keys')}
       </p>
     );
   }
@@ -169,7 +169,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <p className="text-sm font-semibold text-foreground">
-          {t('editor.select_correct_word.options_label', { defaultValue: 'Options by key' })} *
+          {t('editor.select_correct_word.options_label')} *
         </p>
 
         {/* Partial credit toggle using named peer pattern */}
@@ -183,7 +183,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
           <div className="w-9 h-5 rounded-full bg-[hsl(var(--toggle-track))] peer-checked/toggle:bg-primary relative transition-colors">
             <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/toggle:translate-x-4 rtl:peer-checked/toggle:-translate-x-4" />
           </div>
-          {t('editor.select_correct_word.partial_credit', { defaultValue: 'Allow partial credit' })}
+          {t('editor.select_correct_word.partial_credit')}
         </label>
       </div>
 
@@ -203,7 +203,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
                 checked={option.isCorrect}
                 onChange={() => handleSetCorrect(group.key, option.id)}
                 className="shrink-0 w-4 h-4 accent-primary cursor-pointer"
-                title={t('editor.select_correct_word.correct_label', { defaultValue: 'Mark as correct' })}
+                title={t('editor.select_correct_word.correct_label')}
               />
 
               <Input
@@ -220,7 +220,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
                 type="button"
                 onClick={() => handleDeleteOption(group.key, option.id)}
                 disabled={group.options.length <= 2}
-                aria-label={t('editor.select_correct_word.delete_option', { defaultValue: 'Delete option' })}
+                aria-label={t('editor.select_correct_word.delete_option')}
                 className="shrink-0 p-1 rounded-md text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none"
               >
                 <Trash2 className="w-4 h-4" />
@@ -234,7 +234,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
             className="self-start inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            {t('editor.select_correct_word.add_option', { defaultValue: 'Add option' })}
+            {t('editor.select_correct_word.add_option')}
           </button>
         </div>
       ))}
