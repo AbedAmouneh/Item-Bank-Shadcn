@@ -1,46 +1,12 @@
 import { memo, useCallback, useMemo } from 'react';
-import { Box, TextField, Typography, styled, alpha, useTheme } from '@mui/material';
 import { Editor } from '@tinymce/tinymce-react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
-
-const Section = styled(Box)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.background.paper, 0.6),
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-}));
-
-const GraderEditorWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(3),
-  overflow: 'hidden',
-  border: theme.palette.mode === 'dark'
-    ? `1.5px solid ${alpha(theme.palette.primary.main, 0.6)}`
-    : `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 0 12px ${alpha(theme.palette.primary.main, 0.25)}, inset 0 2px 8px ${alpha(theme.palette.background.default, 0.4)}`
-    : `inset 0 1px 4px ${alpha(theme.palette.text.primary, 0.06)}`,
-  transition: 'all 0.2s ease',
-  '& .tox-tinymce': { border: 'none !important', borderRadius: 0 },
-  '&:focus-within': {
-    borderColor: alpha(theme.palette.primary.main, 0.6),
-  },
-}));
-
-const SectionTitle = styled(Typography)(({ theme }) => ({
-  color: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.9 : 0.75),
-}));
-
-const MinMaxRow = styled(Box)(({ theme }) => ({
-  '& > *': {
-    flex: '1 1 120px',
-    minWidth: 120,
-  },
-}));
+import { cn, Input } from '@item-bank/ui';
 
 const defaultToolbar = 'bold italic underline | bullist numlist | outdent indent | undo redo | link';
 
 function RecordAudioEditor() {
-  const theme = useTheme();
   const { watch, setValue } = useFormContext();
   const { t, i18n } = useTranslation('questions');
 
@@ -103,9 +69,9 @@ function RecordAudioEditor() {
   const informationForGradersLabel = t('editor.record_audio.information_for_graders') ?? 'Information for graders';
 
   const graderEditorInit = useMemo(() => {
-    const isDarkMode = theme.palette.mode === 'dark';
+    const isDarkMode = document.documentElement.classList.contains('dark');
     const contentStyle = isDarkMode
-      ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: ${theme.palette.background.default}; color: ${alpha(theme.palette.text.primary, 0.9)}; }`
+      ? 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: #0f0f0f; color: rgba(255,255,255,0.9); }'
       : 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; }';
     return {
       height: 200,
@@ -119,19 +85,20 @@ function RecordAudioEditor() {
       statusbar: false,
       content_style: contentStyle,
     };
-  }, [theme, i18n.language]);
+  }, [i18n.language]);
 
   return (
-    <Box className="flex flex-col gap-4">
-      <Box>
-        <Typography
-          className="text-sm mb-3 font-medium"
-          sx={{ color: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.9 : 0.75) }}
-          variant="body2"
+    <div className="flex flex-col gap-4">
+      {/* Information for graders */}
+      <div>
+        <p className="text-sm mb-3 font-medium text-muted-foreground">{informationForGradersLabel}</p>
+        <div
+          className={cn(
+            'rounded-xl overflow-hidden border transition-all',
+            'border-border focus-within:border-primary/60',
+            '[&_.tox-tinymce]:border-none [&_.tox-tinymce]:rounded-none'
+          )}
         >
-          {informationForGradersLabel}
-        </Typography>
-        <GraderEditorWrapper>
           <Editor
             tinymceScriptSrc="/tinymce/tinymce.min.js"
             licenseKey="gpl"
@@ -139,69 +106,69 @@ function RecordAudioEditor() {
             onEditorChange={(value) => setValue('informationForGraders', value, { shouldValidate: false })}
             init={graderEditorInit}
           />
-        </GraderEditorWrapper>
-      </Box>
+        </div>
+      </div>
 
-      <Section className="p-6 mb-6">
-        <SectionTitle className="text-sm font-medium mb-4">{recordingsLabel}</SectionTitle>
-        <MinMaxRow className="flex flex-wrap gap-4 items-start">
-          <TextField
-            label={minLabel}
-            type="number"
-            size="small"
-            required
-            value={numberOfRecordingsMin}
-            onChange={handleRecordingsMinChange}
-            error={!!recordingsRangeError}
-            helperText={recordingsRangeError ?? ' '}
-            inputProps={{ min: 0 }}
-            fullWidth
-          />
-          <TextField
-            label={maxLabel}
-            type="number"
-            size="small"
-            required
-            value={numberOfRecordingsMax}
-            onChange={handleRecordingsMaxChange}
-            error={!!recordingsRangeError}
-            helperText={' '}
-            inputProps={{ min: 0 }}
-            fullWidth
-          />
-        </MinMaxRow>
-      </Section>
+      {/* Number of recordings */}
+      <div className="rounded-lg border border-border bg-card/60 p-6 mb-6">
+        <p className="text-sm font-medium text-muted-foreground mb-4">{recordingsLabel}</p>
+        <div className="flex flex-wrap gap-4 items-start">
+          <div className="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+            <label className="text-xs font-medium text-muted-foreground">{minLabel}</label>
+            <Input
+              type="number"
+              value={numberOfRecordingsMin}
+              onChange={handleRecordingsMinChange}
+              className={cn('text-sm', recordingsRangeError && 'border-destructive focus-visible:ring-destructive')}
+              min={0}
+            />
+            {recordingsRangeError && (
+              <span className="text-xs text-destructive">{recordingsRangeError}</span>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+            <label className="text-xs font-medium text-muted-foreground">{maxLabel}</label>
+            <Input
+              type="number"
+              value={numberOfRecordingsMax}
+              onChange={handleRecordingsMaxChange}
+              className={cn('text-sm', recordingsRangeError && 'border-destructive focus-visible:ring-destructive')}
+              min={0}
+            />
+          </div>
+        </div>
+      </div>
 
-      <Section className="p-6 mb-6">
-        <SectionTitle className="text-sm font-medium mb-4">{durationLabel}</SectionTitle>
-        <MinMaxRow className="flex flex-wrap gap-4 items-start">
-          <TextField
-            label={minLabel}
-            type="number"
-            size="small"
-            required
-            value={recordingDurationMinSeconds}
-            onChange={handleDurationMinChange}
-            error={!!durationRangeError}
-            helperText={durationRangeError ?? ' '}
-            inputProps={{ min: 0 }}
-            fullWidth
-          />
-          <TextField
-            label={maxLabel}
-            type="number"
-            size="small"
-            required
-            value={recordingDurationMaxSeconds}
-            onChange={handleDurationMaxChange}
-            error={!!durationRangeError}
-            helperText={' '}
-            inputProps={{ min: 0 }}
-            fullWidth
-          />
-        </MinMaxRow>
-      </Section>
-    </Box>
+      {/* Recording duration */}
+      <div className="rounded-lg border border-border bg-card/60 p-6 mb-6">
+        <p className="text-sm font-medium text-muted-foreground mb-4">{durationLabel}</p>
+        <div className="flex flex-wrap gap-4 items-start">
+          <div className="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+            <label className="text-xs font-medium text-muted-foreground">{minLabel}</label>
+            <Input
+              type="number"
+              value={recordingDurationMinSeconds}
+              onChange={handleDurationMinChange}
+              className={cn('text-sm', durationRangeError && 'border-destructive focus-visible:ring-destructive')}
+              min={0}
+            />
+            {durationRangeError && (
+              <span className="text-xs text-destructive">{durationRangeError}</span>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+            <label className="text-xs font-medium text-muted-foreground">{maxLabel}</label>
+            <Input
+              type="number"
+              value={recordingDurationMaxSeconds}
+              onChange={handleDurationMaxChange}
+              className={cn('text-sm', durationRangeError && 'border-destructive focus-visible:ring-destructive')}
+              min={0}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
