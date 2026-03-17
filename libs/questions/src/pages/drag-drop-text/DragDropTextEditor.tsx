@@ -781,7 +781,7 @@ function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }
 
       {/* Add item dialog */}
       <Dialog open={addItemDialogOpen} onOpenChange={(open) => { if (!open) handleAddItemDialogClose(); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_text.add_item_dialog_title')}</DialogTitle>
           </DialogHeader>
@@ -821,7 +821,7 @@ function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }
 
       {/* Add group dialog */}
       <Dialog open={addGroupDialogOpen} onOpenChange={(open) => { if (!open) handleAddGroupClose(); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_text.add_group_dialog_title')}</DialogTitle>
           </DialogHeader>
