@@ -134,7 +134,7 @@ const EssayQuestionView = ({ question }: EssayQuestionViewProps) => {
             className={cn(
               'w-full rounded-[0.375rem] border border-border bg-card px-3 py-2',
               'text-sm text-foreground placeholder:text-muted-foreground',
-              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
               'resize-none'
             )}
             placeholder={t('editor.essay.enter_response') || 'Enter your response...'}
