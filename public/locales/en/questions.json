@@ -55,6 +55,10 @@
   "status": "Status",
   "actions": "Actions",
   "last_modified": "Last Modified",
+  "page": "Page",
+  "previous_page": "Previous page",
+  "next_page": "Next page",
+  "row_menu": "Row menu",
   "types": {
     "multiple_choice": "Multiple Choice",
     "short_answer": "Short Answer",
