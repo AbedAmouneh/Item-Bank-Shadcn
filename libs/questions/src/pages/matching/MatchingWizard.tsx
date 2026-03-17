@@ -796,7 +796,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
               <button
                 type="button"
                 onClick={handleAddLeftItem}
-                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Plus size={15} />
                 {t('editor.matching.add_left_item')}
@@ -815,7 +815,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                     type="button"
                     onClick={() => handleRightModeChange('text')}
                     className={cn(
-                      'px-3 py-1.5 font-medium transition-colors',
+                      'px-3 py-1.5 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       rightMode === 'text'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-transparent text-muted-foreground hover:bg-muted'
@@ -827,7 +827,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                     type="button"
                     onClick={() => handleRightModeChange('image')}
                     className={cn(
-                      'px-3 py-1.5 font-medium transition-colors',
+                      'px-3 py-1.5 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       rightMode === 'image'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-transparent text-muted-foreground hover:bg-muted'
@@ -930,7 +930,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
               <button
                 type="button"
                 onClick={handleAddRightItem}
-                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Plus size={15} />
                 {t('editor.matching.add_right_item')}
@@ -1055,7 +1055,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                       type="button"
                       onClick={() => openChooser(leftIdx)}
                       className={cn(
-                        'px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors',
+                        'px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                         hasLinks
                           ? 'border-primary text-primary hover:bg-primary/10'
                           : 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
@@ -1073,7 +1073,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                       aria-label={t('editor.matching.multiple_answers_toggle_tooltip')}
                       onClick={() => toggleMultipleAnswers(leftIdx)}
                       className={cn(
-                        'p-1.5 rounded-lg transition-colors',
+                        'p-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                         leftItem.multipleAnswers
                           ? 'text-primary bg-primary/10'
                           : 'text-muted-foreground hover:bg-muted'
@@ -1118,7 +1118,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                             type="button"
                             onClick={() => removeLinkFromLeft(leftIdx, rightItem.id)}
                             aria-label={t('delete')}
-                            className="p-1.5 rounded-lg hover:bg-muted transition-colors shrink-0"
+                            className="p-1.5 rounded-lg hover:bg-muted transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           >
                             <Trash2 size={13} className="text-muted-foreground" />
                           </button>
