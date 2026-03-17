@@ -441,7 +441,8 @@
       "show_solution": "اعرض الحل"
     },
     "answer_placeholder": "الإجابة {{index}}",
-    "require_unique_answers": "تطلب إجابات فريدة"
+    "require_unique_answers": "تطلب إجابات فريدة",
+    "enable_word_limit": "تمكين حد الكلمات"
   },
   "no_questions": "لا توجد أسئلة"
 }
