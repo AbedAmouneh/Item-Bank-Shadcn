@@ -3,6 +3,8 @@ import {
   createEmptyNumericalUnit,
   latexUnitToPlainText,
   MARK_OPTIONS,
+  UNIT_HANDLING_OPTIONS,
+  UNIT_INPUT_METHOD_OPTIONS,
 } from '../types';
 
 describe('latexUnitToPlainText', () => {
@@ -149,5 +151,53 @@ describe('MARK_OPTIONS', () => {
 
   it('has no values above 100', () => {
     expect(MARK_OPTIONS.every((v) => v <= 100)).toBe(true);
+  });
+});
+
+describe('UNIT_HANDLING_OPTIONS', () => {
+  it('contains exactly 3 options', () => {
+    expect(UNIT_HANDLING_OPTIONS).toHaveLength(3);
+  });
+
+  it('includes the required, optional, and disabled values', () => {
+    const values = UNIT_HANDLING_OPTIONS.map((o) => o.value);
+    expect(values).toContain('required');
+    expect(values).toContain('optional');
+    expect(values).toContain('disabled');
+  });
+
+  it('every option has a non-empty label', () => {
+    expect(UNIT_HANDLING_OPTIONS.every((o) => o.label.length > 0)).toBe(true);
+  });
+
+  it('every option has a non-empty description', () => {
+    expect(UNIT_HANDLING_OPTIONS.every((o) => o.description.length > 0)).toBe(true);
+  });
+
+  it('has no duplicate values', () => {
+    const values = UNIT_HANDLING_OPTIONS.map((o) => o.value);
+    expect(new Set(values).size).toBe(values.length);
+  });
+});
+
+describe('UNIT_INPUT_METHOD_OPTIONS', () => {
+  it('contains exactly 3 options', () => {
+    expect(UNIT_INPUT_METHOD_OPTIONS).toHaveLength(3);
+  });
+
+  it('includes multiple_choice_selection, drop_down, and text_input values', () => {
+    const values = UNIT_INPUT_METHOD_OPTIONS.map((o) => o.value);
+    expect(values).toContain('multiple_choice_selection');
+    expect(values).toContain('drop_down');
+    expect(values).toContain('text_input');
+  });
+
+  it('every option has a non-empty label', () => {
+    expect(UNIT_INPUT_METHOD_OPTIONS.every((o) => o.label.length > 0)).toBe(true);
+  });
+
+  it('has no duplicate values', () => {
+    const values = UNIT_INPUT_METHOD_OPTIONS.map((o) => o.value);
+    expect(new Set(values).size).toBe(values.length);
   });
 });
