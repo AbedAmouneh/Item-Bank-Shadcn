@@ -325,6 +325,7 @@ function TextSequencingEditor() {
             >
               {/* Drag handle */}
               <div
+                role="button"
                 className="flex items-center p-1 rounded-lg shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/50 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 focus-visible:text-primary"
                 data-drag-handle="true"
                 tabIndex={0}
