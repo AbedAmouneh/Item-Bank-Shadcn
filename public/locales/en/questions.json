@@ -215,6 +215,7 @@
             "auto_distribute": "Auto-distribute marks",
             "add_row": "Add image",
             "drag_handle_label": "Image {{index}} drag handle. Use Up or Down arrow key to reorder.",
+            "delete_row": "Delete image",
             "error_min_rows": "At least 2 images are required.",
             "error_empty_images": "All images must be uploaded before saving.",
             "error_total_not_100": "Mark percentages must total 100% (currently {{total}}%)."
