@@ -1,15 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
-import {
-  Box,
-  Typography,
-  Chip,
-  Button,
-  TextField,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { cn, Button } from '@item-bank/ui';
 import type { QuestionRow } from '../../components/QuestionsTable';
 
 const COLOR_MAP: Record<string, string> = {
@@ -38,49 +29,6 @@ type CategoryData = {
 type TextClassificationViewProps = {
   question: QuestionRow;
 };
-
-const PoolContainer = styled(Box)(({ theme }) => ({
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.3)
-      : alpha(theme.palette.action.hover, 0.4),
-  borderRadius: theme.spacing(2),
-  padding: theme.spacing(2),
-  minHeight: 60,
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(1),
-}));
-
-const DropZone = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'colorHex' && prop !== 'isDragOver',
-})<{ colorHex: string; isDragOver: boolean }>(({ theme, colorHex, isDragOver }) => ({
-  flex: 1,
-  minWidth: 180,
-  minHeight: 120,
-  border: `2px ${isDragOver ? 'solid' : 'dashed'} ${isDragOver ? colorHex : alpha(colorHex, 0.4)}`,
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: isDragOver
-    ? alpha(colorHex, 0.08)
-    : theme.palette.background.paper,
-  padding: theme.spacing(1.5),
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(0.75),
-  alignContent: 'flex-start',
-  transition: 'all 0.2s ease',
-}));
-
-const CategoryHeaderBox = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'colorHex',
-})<{ colorHex: string }>(({ theme, colorHex }) => ({
-  backgroundColor: alpha(colorHex, 0.12),
-  color: colorHex,
-  padding: theme.spacing(1, 2),
-  borderRadius: `${theme.spacing(1.5)} ${theme.spacing(1.5)} 0 0`,
-  fontWeight: 600,
-  fontSize: '0.875rem',
-}));
 
 const TextClassificationView = ({ question }: TextClassificationViewProps) => {
   const { t } = useTranslation('questions');
@@ -210,137 +158,158 @@ const TextClassificationView = ({ question }: TextClassificationViewProps) => {
   );
 
   return (
-    <Box className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {/* Item pool */}
-      <PoolContainer
+      <div
+        className="rounded-2xl bg-muted/40 dark:bg-muted/30 p-3 min-h-[60px] flex flex-wrap gap-2"
         onDragOver={handleDragOver}
         onDrop={handleDropOnPool}
       >
         {poolItems.length > 0 ? (
           poolItems.map((item) => (
-            <Chip
+            <span
               key={item.id}
-              label={item.text}
               draggable={!checked}
-              onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, item.id)}
-              sx={{
-                cursor: checked ? 'default' : 'grab',
-                '&:active': { cursor: 'grabbing' },
-              }}
-            />
+              onDragStart={(e) => handleDragStart(e, item.id)}
+              className={cn(
+                'px-2.5 py-1 text-sm rounded-lg border border-border bg-background text-foreground',
+                checked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+              )}
+            >
+              {item.text}
+            </span>
           ))
         ) : (
-          <Typography variant="body2" color="text.disabled" className="self-center w-full text-center">
+          <p className="self-center w-full text-center text-sm text-muted-foreground">
             {allItems.length === 0 ? 'No items' : 'All items placed'}
-          </Typography>
+          </p>
         )}
-      </PoolContainer>
+      </div>
 
       {/* Category drop zones */}
-      <Box
-        className="flex gap-3"
-        sx={{
-          flexDirection: layout === 'columns' ? 'row' : 'column',
-          flexWrap: layout === 'columns' ? 'wrap' : 'nowrap',
-        }}
+      <div
+        className={cn(
+          'flex gap-3',
+          layout === 'columns' ? 'flex-row flex-wrap' : 'flex-col',
+        )}
       >
         {categories.map((cat) => {
           const colorHex = COLOR_MAP[cat.color] ?? COLOR_MAP.blue;
           const placedAnswerIds = placements[cat.id] ?? [];
 
           return (
-            <Box key={cat.id} sx={{ flex: 1, minWidth: 180 }}>
-              <CategoryHeaderBox colorHex={colorHex}>
+            <div key={cat.id} className="flex-1 min-w-[180px]">
+              {/* Category header bar */}
+              <div
+                className="px-4 py-2 text-sm font-semibold rounded-t-xl"
+                style={{ backgroundColor: colorHex, color: '#ffffff' }}
+              >
                 {cat.name}
-              </CategoryHeaderBox>
-              <DropZone
-                colorHex={colorHex}
-                isDragOver={dragOverZone === cat.id}
+              </div>
+
+              {/* Drop zone */}
+              <div
                 onDragOver={(e) => {
                   handleDragOver(e);
                   setDragOverZone(cat.id);
                 }}
                 onDragLeave={() => setDragOverZone(null)}
                 onDrop={(e) => handleDropOnCategory(e, cat.id)}
-                sx={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
+                className={cn(
+                  'min-h-[120px] border-2 rounded-b-xl p-3 flex flex-wrap gap-2 content-start transition-all duration-200 bg-card',
+                  dragOverZone === cat.id
+                    ? 'border-solid'
+                    : 'border-dashed',
+                )}
+                style={{
+                  borderColor: dragOverZone === cat.id
+                    ? colorHex
+                    : `${colorHex}66`,
+                  backgroundColor: dragOverZone === cat.id
+                    ? `${colorHex}14`
+                    : undefined,
+                }}
               >
                 {placedAnswerIds.map((answerId) => {
                   const answer = getAnswerById(answerId);
                   if (!answer) return null;
                   const isCorrect = checked ? isCorrectPlacement(answerId, cat.id) : undefined;
                   return (
-                    <Chip
+                    <span
                       key={answerId}
-                      label={answer.text}
                       draggable={!checked}
-                      onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, answerId)}
-                      color={
-                        isCorrect === true ? 'success' :
-                        isCorrect === false ? 'error' :
-                        'default'
-                      }
-                      variant={checked ? 'filled' : 'outlined'}
-                      sx={{
-                        cursor: checked ? 'default' : 'grab',
-                        '&:active': { cursor: 'grabbing' },
-                      }}
-                    />
+                      onDragStart={(e) => handleDragStart(e, answerId)}
+                      className={cn(
+                        'px-2.5 py-1 text-sm rounded-lg border',
+                        checked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
+                        isCorrect === true && 'bg-green-50 border-green-400 text-green-800 dark:bg-green-900/20 dark:border-green-600 dark:text-green-300',
+                        isCorrect === false && 'bg-red-50 border-red-400 text-red-800 dark:bg-red-900/20 dark:border-red-600 dark:text-red-300',
+                        isCorrect === undefined && 'bg-background border-border text-foreground',
+                      )}
+                    >
+                      {answer.text}
+                    </span>
                   );
                 })}
                 {placedAnswerIds.length === 0 && (
-                  <Typography variant="caption" color="text.disabled" className="self-center w-full text-center py-4">
+                  <span className="self-center w-full text-center py-4 text-xs text-muted-foreground">
                     Drop items here
-                  </Typography>
+                  </span>
                 )}
-              </DropZone>
-            </Box>
+              </div>
+            </div>
           );
         })}
-      </Box>
+      </div>
 
       {/* Justification field */}
       {justification !== 'disabled' && (
-        <Box>
-          <Typography variant="body2" fontWeight={500} className="mb-1">
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">
             Justify your answer{justification === 'required' ? ' *' : ''}
-          </Typography>
-          <TextField
-            fullWidth
-            multiline
-            minRows={2}
-            maxRows={4}
+          </p>
+          <textarea
             value={justificationText}
             onChange={(e) => setJustificationText(e.target.value)}
             disabled={checked}
-            size="small"
+            rows={3}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 resize-none"
           />
-        </Box>
+        </div>
       )}
 
       {/* Check/Retry + Mark */}
-      <Box className="flex items-center justify-between">
-        <Box className="flex gap-2">
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
           {!checked ? (
             <Button
-              variant="contained"
+              variant="default"
               onClick={handleCheck}
               disabled={!hasPlacedItems}
             >
               {t('check')}
             </Button>
           ) : (
-            <Button variant="outlined" onClick={handleRetry}>
+            <Button variant="outline" onClick={handleRetry}>
               {t('retry')}
             </Button>
           )}
-        </Box>
-        <Chip
-          label={checked ? `${score} / ${question.mark}` : `${question.mark}`}
-          color={checked ? (score === question.mark ? 'success' : score > 0 ? 'warning' : 'error') : 'default'}
-          variant="outlined"
-        />
-      </Box>
-    </Box>
+        </div>
+
+        {/* Score badge */}
+        <span
+          className={cn(
+            'px-3 py-1 text-sm font-medium rounded-full border',
+            !checked && 'border-border text-foreground bg-background',
+            checked && score === question.mark && 'border-green-400 text-green-800 bg-green-50 dark:border-green-600 dark:text-green-300 dark:bg-green-900/20',
+            checked && score > 0 && score < question.mark && 'border-yellow-400 text-yellow-800 bg-yellow-50 dark:border-yellow-600 dark:text-yellow-300 dark:bg-yellow-900/20',
+            checked && score === 0 && 'border-red-400 text-red-800 bg-red-50 dark:border-red-600 dark:text-red-300 dark:bg-red-900/20',
+          )}
+        >
+          {checked ? `${score} / ${question.mark}` : `${question.mark}`}
+        </span>
+      </div>
+    </div>
   );
 };
 
