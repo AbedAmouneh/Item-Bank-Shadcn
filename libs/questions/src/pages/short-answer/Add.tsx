@@ -110,6 +110,7 @@ function Add() {
             {/* Delete */}
             <button
               type="button"
+              aria-label={t('editor.remove_answer')}
               onClick={() => handleDeleteAnswer(answer.id)}
               disabled={answers.length <= 1}
               className="p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed mt-0.5"
