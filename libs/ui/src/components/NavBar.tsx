@@ -148,7 +148,7 @@ function NavBar() {
                 <DropdownMenuPrimitive.Item
                   key={item.path}
                   className={cn(
-                    'text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent transition-colors outline-none',
+                    'text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none',
                     isSelected(item.path) && 'text-primary font-medium'
                   )}
                   onSelect={() => handleNavItemClick(item.path)}
