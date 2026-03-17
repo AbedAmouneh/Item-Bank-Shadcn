@@ -55,6 +55,10 @@
   "status": "الحالة",
   "actions": "الإجراءات",
   "last_modified": "آخر تعديل",
+  "page": "صفحة",
+  "previous_page": "الصفحة السابقة",
+  "next_page": "الصفحة التالية",
+  "row_menu": "قائمة الصف",
   "types": {
     "multiple_choice": "اختيار من متعدد",
     "short_answer": "إجابة قصيرة",
