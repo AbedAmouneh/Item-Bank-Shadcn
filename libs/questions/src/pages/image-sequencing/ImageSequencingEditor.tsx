@@ -316,22 +316,9 @@ function ImageSequencingEditor() {
                     : undefined
                 }
               >
-                {/* Drag handle at middle start */}
-                <div className="flex items-center justify-center w-10 self-center">
-                  <div
-                    className="flex items-center p-1 rounded-lg shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/50 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 focus-visible:text-primary"
-                    data-drag-handle="true"
-                    tabIndex={0}
-                    aria-label={t('editor.image_sequencing.drag_handle_label', { index: index + 1 })}
-                    onKeyDown={(e) => handleHandleKeyDown(e, index)}
-                  >
-                    <GripVertical size={16} />
-                  </div>
-                </div>
-
                 {/* Content: image upload + mark field */}
                 <div className="flex-1 flex flex-col gap-2">
-                  {/* Image upload area */}
+                  {/* Image upload area with absolute overlays */}
                   <div
                     className={cn(
                       'relative w-full h-40 rounded-lg flex items-center justify-center overflow-hidden transition-colors',
@@ -366,6 +353,32 @@ function ImageSequencingEditor() {
                         e.target.value = '';
                       }}
                     />
+
+                    {/* Delete button — absolute overlay top-end */}
+                    <div className="absolute top-1.5 end-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRow(item.id)}
+                        disabled={items.length <= 2}
+                        aria-label={t('editor.image_sequencing.delete_row')}
+                        className="p-1 rounded-lg bg-white/80 dark:bg-card/80 text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+
+                    {/* Drag grip — absolute overlay bottom-start */}
+                    <div className="absolute bottom-1.5 start-1.5">
+                      <div
+                        className="cursor-grab active:cursor-grabbing focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                        data-drag-handle="true"
+                        tabIndex={0}
+                        aria-label={t('editor.image_sequencing.drag_handle_label', { index: index + 1 })}
+                        onKeyDown={(e) => handleHandleKeyDown(e, index)}
+                      >
+                        <GripVertical size={14} className="text-white drop-shadow" />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Mark percent field */}
@@ -390,19 +403,6 @@ function ImageSequencingEditor() {
                     </div>
                   </div>
                 </div>
-
-                {/* Delete button at middle end */}
-                <div className="flex items-center justify-center w-10 self-center">
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteRow(item.id)}
-                    disabled={items.length <= 2}
-                    className="shrink-0 p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    aria-label={t('editor.image_sequencing.delete_row')}
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
               </div>
             );
           })}
@@ -412,7 +412,7 @@ function ImageSequencingEditor() {
       {/* Add image button */}
       <button
         type="button"
-        className="self-start flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+        className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-dashed border-border hover:border-primary hover:text-primary transition-colors"
         onClick={handleAddRow}
       >
         <Plus size={15} />
