@@ -442,5 +442,6 @@
     },
     "answer_placeholder": "الإجابة {{index}}",
     "require_unique_answers": "تطلب إجابات فريدة"
-  }
+  },
+  "no_questions": "لا توجد أسئلة"
 }
