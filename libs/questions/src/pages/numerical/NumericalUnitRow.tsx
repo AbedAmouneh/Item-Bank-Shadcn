@@ -1,19 +1,15 @@
 import 'mathlive';
 import { memo, useState, useCallback, useEffect, useRef, createElement } from 'react';
+import { Calculator, Trash2, X } from 'lucide-react';
 import {
-  Box,
-  TextField,
-  IconButton,
-
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
   Button,
-} from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
-import CloseIcon from '@mui/icons-material/Close';
+  Input,
+} from '@item-bank/ui';
 import { type NumericalUnit } from './types';
 
 type MathFieldElement = HTMLElement & {
@@ -174,10 +170,12 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
     setMathInputValue(unit.unit);
     setMathDialogOpen(true);
   }, [unit.unit]);
+
   const handleCloseMathDialog = useCallback(() => {
     setMathDialogOpen(false);
     hideVirtualKeyboard();
   }, [hideVirtualKeyboard]);
+
   const handleSaveMath = useCallback(() => {
     onChange(id, 'unit', mathInputValue);
     setMathDialogOpen(false);
@@ -186,200 +184,132 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
 
   return (
     <>
-    <Box
-      className="flex items-end gap-3 p-3 w-full box-border min-w-0 rounded border flex-wrap"
-      sx={(theme) => ({
-        backgroundColor: theme.palette.action.hover,
-        borderColor: theme.palette.divider,
-      })}
-    >
-      {showCalculatorIcon ? (
-        <Box sx={{ flex: '1 1 160px', minWidth: 140, position: 'relative' }}>
-          <Box
-            component="label"
-            className="absolute top-0 left-[10px] z-10 pointer-events-none text-xs leading-none -translate-y-1/2 px-0.5"
-            sx={(theme) => ({
-              color: theme.palette.text.secondary,
-              backgroundColor: theme.palette.background.paper,
-            })}
+      <div className="flex items-center gap-2 p-3 rounded-xl border border-border bg-muted/20 flex-wrap">
+        {showCalculatorIcon ? (
+          <div className="relative flex-1" style={{ minWidth: 140 }}>
+            {/* Floating label */}
+            <span className="absolute -top-2 start-2.5 z-10 pointer-events-none text-xs leading-none px-0.5 bg-background text-muted-foreground">
+              Unit *
+            </span>
+            {/* Math display + open dialog trigger */}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={handleOpenMathDialog}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenMathDialog(); }}
+              className="flex items-center cursor-pointer ps-2 pe-1 h-9 rounded-md border border-input bg-background hover:border-foreground transition-colors"
+              aria-label="Open math editor"
+            >
+              <div className="flex flex-1 items-center overflow-hidden min-w-0">
+                {createElement('math-field', {
+                  ref: (node: MathFieldElement | null) => {
+                    displayMathRef.current = node;
+                    if (node) {
+                      node.value = unit.unit;
+                      node.mathVirtualKeyboardPolicy = 'manual';
+                    }
+                  },
+                  'read-only': true,
+                  style: {
+                    width: '100%',
+                    border: 'none',
+                    outline: 'none',
+                    backgroundColor: 'transparent',
+                    fontSize: '0.8125rem',
+                    pointerEvents: 'none',
+                    minHeight: '1.4rem',
+                  },
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  handleOpenMathDialog();
+                }}
+                className="p-0.5 rounded text-primary hover:bg-transparent transition-colors"
+                aria-label="Open calculator"
+              >
+                <Calculator size={18} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <Input
+            value={unit.unit}
+            onChange={(e) => onChange(id, 'unit', e.target.value)}
+            className="flex-1 text-sm"
+            placeholder="Unit *"
+            style={{ minWidth: 140 }}
+          />
+        )}
+
+        <span className="text-xs text-muted-foreground shrink-0">×</span>
+
+        <Input
+          type="number"
+          value={unit.multiplier}
+          disabled={index === 0}
+          onChange={(e) => onChange(id, 'multiplier', e.target.value)}
+          className="w-28 text-sm"
+          placeholder="Multiplier *"
+          step="any"
+        />
+
+        {canRemove ? (
+          <button
+            type="button"
+            onClick={() => onRemove(id)}
+            className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+            aria-label="Remove unit"
           >
-            Unit *
-          </Box>
-          <Box
-            onClick={handleOpenMathDialog}
-            className="flex items-center cursor-pointer pl-5 pr-2 h-[36px] rounded border border-solid"
-            sx={(theme) => ({
-              borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.23)' : 'rgba(0,0,0,0.23)',
-              backgroundColor: theme.palette.background.paper,
-              '&:hover': {
-                borderColor: theme.palette.text.primary,
+            <Trash2 size={14} />
+          </button>
+        ) : (
+          <div className="w-8 shrink-0" />
+        )}
+      </div>
+
+      <Dialog open={mathDialogOpen} onOpenChange={(open) => { if (!open) handleCloseMathDialog(); }}>
+        <DialogContent className="max-w-2xl overflow-visible rounded-lg">
+          <DialogHeader className="flex flex-row items-center justify-between py-1">
+            <DialogTitle className="text-xl font-semibold">Insert/Edit Math</DialogTitle>
+            <button
+              type="button"
+              onClick={handleCloseMathDialog}
+              className="p-1.5 rounded-md text-primary hover:bg-accent transition-colors"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+          </DialogHeader>
+
+          <div className="rounded border border-border bg-muted/30 px-2.5 py-1">
+            {createElement('math-field', {
+              ref: (node: MathFieldElement | null) => setMathFieldNode(node),
+              'aria-label': 'Math input',
+              style: {
+                width: '100%',
+                minHeight: '2.25rem',
+                border: 'none',
+                outline: 'none',
+                overflow: 'visible',
+                backgroundColor: 'transparent',
+                fontSize: '1rem',
               },
             })}
-          >
-            <Box className="flex flex-1 items-center overflow-hidden min-w-0">
-              {createElement('math-field', {
-                ref: (node: MathFieldElement | null) => {
-                  displayMathRef.current = node;
-                  if (node) {
-                    node.value = unit.unit;
-                    node.mathVirtualKeyboardPolicy = 'manual';
-                  }
-                },
-                'read-only': true,
-                style: {
-                  width: '100%',
-                  border: 'none',
-                  outline: 'none',
-                  backgroundColor: 'transparent',
-                  fontSize: '0.8125rem',
-                  pointerEvents: 'none',
-                  minHeight: '1.4rem',
-                },
-              })}
-            </Box>
-            <IconButton
-              size="small"
-              disableRipple
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                handleOpenMathDialog();
-              }}
-              sx={(theme) => ({
-                color: theme.palette.primary.main,
-                p: 0.25,
-                borderRadius: 1,
-                '&:hover': { backgroundColor: 'transparent' },
-              })}
-              aria-label="Open calculator"
-            >
-              <CalculateOutlinedIcon sx={{ fontSize: 20 }} />
-            </IconButton>
-          </Box>
-        </Box>
-      ) : (
-        <TextField
-          label="Unit *"
-          value={unit.unit}
-          onChange={(e) => onChange(id, 'unit', e.target.value)}
-          size="small"
-          sx={(theme) => ({
-            flex: '1 1 160px',
-            minWidth: 140,
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: theme.palette.background.paper,
-              fontSize: '0.8125rem',
-              height: 36,
-            },
-            '& .MuiOutlinedInput-input': { py: 1.5, px: 2.5 },
-          })}
-        />
-      )}
+          </div>
 
-      <TextField
-        label="Multiplier *"
-        value={unit.multiplier}
-        disabled={index === 0}
-        onChange={(e) => onChange(id, 'multiplier', e.target.value)}
-        type="number"
-        size="small"
-        sx={(theme) => ({
-          flex: '1 1 160px',
-          minWidth: 140,
-          '& .MuiOutlinedInput-root': {
-            backgroundColor: theme.palette.background.paper,
-            fontSize: '0.8125rem',
-            height: 36,
-          },
-          '& .MuiOutlinedInput-input': { py: 1.5, px: 2.5 },
-        })}
-        slotProps={{ htmlInput: { step: 'any' } }}
-      />
-
-      {canRemove ? (
-        <IconButton
-          size="small"
-          className="shrink-0 p-1 mb-0.5"
-          onClick={() => onRemove(id)}
-          aria-label="Remove unit"
-        >
-          <DeleteOutlineIcon sx={{ fontSize: 20 }} />
-        </IconButton>
-      ) : (
-        <Box className="w-8 shrink-0" />
-      )}
-    </Box>
-
-    <Dialog
-      open={mathDialogOpen}
-      onClose={handleCloseMathDialog}
-      maxWidth="md"
-      fullWidth
-      disableEnforceFocus
-      PaperProps={{
-        sx: (theme) => ({
-          borderRadius: 2,
-          backgroundColor: theme.palette.background.paper,
-          overflow: 'visible',
-        }),
-      }}
-    >
-      <DialogTitle
-        component="div"
-        className="flex items-center justify-between py-4 px-5"
-      >
-        <Box component="span" className="text-xl font-semibold">
-          Insert/Edit Math
-        </Box>
-        <IconButton
-          size="small"
-          onClick={handleCloseMathDialog}
-          aria-label="Close"
-          sx={(theme) => ({ color: theme.palette.primary.light })}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent className="px-5 pb-2 overflow-visible">
-        <Box
-          className="rounded px-2.5 py-1"
-          sx={(theme) => ({
-            border: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.palette.action.hover,
-          })}
-        >
-          {createElement('math-field', {
-            ref: (node: MathFieldElement | null) => setMathFieldNode(node),
-            'aria-label': 'Math input',
-            style: {
-              width: '100%',
-              minHeight: '2.25rem',
-              border: 'none',
-              outline: 'none',
-              overflow: 'visible',
-              backgroundColor: 'transparent',
-              fontSize: '1rem',
-            },
-          })}
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ px: 2.5, py: 2, gap: 1 }}>
-        <Button
-          onClick={handleCloseMathDialog}
-          variant="outlined"
-          className="normal-case"
-          sx={(theme) => ({ borderColor: theme.palette.primary.light, color: theme.palette.primary.light })}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSaveMath}
-          variant="contained"
-          className="normal-case"
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <DialogFooter className="gap-2 sm:gap-2 flex-row justify-end">
+            <Button variant="outline" onClick={handleCloseMathDialog} type="button">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveMath} type="button">
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 });
