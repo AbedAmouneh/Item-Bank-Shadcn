@@ -1,19 +1,8 @@
-import {
-  Box,
-  Button,
-  Chip,
-  Typography,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import CircleIcon from '@mui/icons-material/Circle';
-import type { QuestionRow } from '../../components/QuestionsTable';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { Check, RotateCcw, Lightbulb, Circle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn, Button } from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type DragDropItem = NonNullable<QuestionRow['dragDropItems']>[number];
 type DragDropGroup = NonNullable<QuestionRow['dragDropGroups']>[number];
@@ -23,6 +12,16 @@ type Segment =
   | { type: 'slot'; key: string; slotId: string };
 
 const SLOT_RE_SRC = '\\[\\[([^\\]]+)\\]\\]';
+
+/** Maps the semantic group color name to a concrete hex value used for inline styles. */
+const GROUP_COLOR_HEX: Record<string, string> = {
+  primary:   '#6366f1',
+  secondary: '#8b5cf6',
+  success:   '#22c55e',
+  warning:   '#f59e0b',
+  error:     '#ef4444',
+  info:      '#3b82f6',
+};
 
 function unwrapBracketToken(raw: string): string {
   const trimmed = raw.trim();
@@ -157,36 +156,10 @@ function buildPoolOrder(items: DragDropItem[]): string[] {
   return result;
 }
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
-
-const PoolContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  justifyContent: 'center',
-  alignItems: 'center',
-  alignContent: 'flex-start',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1.25, 1.5),
-  border: `1px solid ${alpha(theme.palette.divider, 0.34)}`,
-  borderRadius: theme.spacing(2),
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.62)
-      : alpha(theme.palette.primary.main, 0.03),
-  minHeight: theme.spacing(10),
-  touchAction: 'none',
-}));
-
 type DragDropTextQuestionViewProps = { question: QuestionRow };
 
 const DragDropTextQuestionView = ({ question }: DragDropTextQuestionViewProps) => {
   const { t, i18n } = useTranslation('questions');
-  const theme = useTheme();
 
   const items: DragDropItem[] = useMemo(() => question.dragDropItems ?? [], [question.dragDropItems]);
   const groups: DragDropGroup[] = useMemo(() => question.dragDropGroups ?? [], [question.dragDropGroups]);
@@ -225,28 +198,14 @@ const DragDropTextQuestionView = ({ question }: DragDropTextQuestionViewProps) =
     [items]
   );
 
+  /** Resolves the hex color for a group by its id. */
   const getGroupColor = useCallback(
     (groupId: string): string | undefined => {
       const group = groups.find((g) => g.id === groupId);
       if (!group) return undefined;
-      switch (group.color) {
-        case 'primary':
-          return theme.palette.primary.main;
-        case 'secondary':
-          return theme.palette.secondary.main;
-        case 'success':
-          return theme.palette.success.main;
-        case 'warning':
-          return theme.palette.warning.main;
-        case 'error':
-          return theme.palette.error.main;
-        case 'info':
-          return theme.palette.info.main;
-        default:
-          return undefined;
-      }
+      return GROUP_COLOR_HEX[group.color];
     },
-    [groups, theme]
+    [groups]
   );
 
   const canDrop = useCallback(
@@ -325,14 +284,8 @@ const DragDropTextQuestionView = ({ question }: DragDropTextQuestionViewProps) =
       const rawSlotKey = slotEl?.dataset.slotKey ?? null;
       const canDropToSlot =
         rawSlotId !== null && rawSlotKey !== null && canDrop(drag.itemId, rawSlotKey);
-      const validSlotId =
-        canDropToSlot
-          ? rawSlotId
-          : null;
-      const validSlotKey =
-        canDropToSlot
-          ? rawSlotKey
-          : null;
+      const validSlotId = canDropToSlot ? rawSlotId : null;
+      const validSlotKey = canDropToSlot ? rawSlotKey : null;
 
       if (validSlotId !== hoverSlotRef.current) {
         hoverSlotRef.current = validSlotId;
@@ -424,7 +377,7 @@ const DragDropTextQuestionView = ({ question }: DragDropTextQuestionViewProps) =
   const ghostGroupColor = ghostItem?.groupId ? getGroupColor(ghostItem.groupId) : undefined;
 
   return (
-    <Box
+    <div
       ref={containerRef}
       className="flex flex-col gap-5"
       onPointerDown={handleContainerPointerDown}
@@ -432,15 +385,8 @@ const DragDropTextQuestionView = ({ question }: DragDropTextQuestionViewProps) =
       onPointerUp={handleContainerPointerUp}
       onPointerCancel={handleContainerPointerUp}
     >
-      <Box
-        className="text-base"
-        sx={{
-          lineHeight: 1.8,
-          '& p': {
-            margin: 0,
-          },
-        }}
-      >
+      {/* Question text with inline drop slots */}
+      <div className="text-base leading-relaxed">
         {segments.map((seg, idx) => {
           if (seg.type === 'text') {
             return <span key={idx}>{seg.content}</span>;
@@ -458,93 +404,58 @@ const DragDropTextQuestionView = ({ question }: DragDropTextQuestionViewProps) =
           const groupColor = placedItem?.groupId ? getGroupColor(placedItem.groupId) : undefined;
 
           return (
-            <Box
+            <span
               key={idx}
-              component="span"
               data-slot-id={slotId}
               data-slot-key={slotKey}
-              className="inline-flex items-center justify-center min-w-28 min-h-10 mx-1 my-0.5 px-3 py-1.5"
-              sx={{
-                borderRadius: 1.5,
-                border: `2px solid ${
-                  isCorrect
-                    ? theme.palette.success.main
-                    : isWrong
-                    ? theme.palette.error.main
-                    : isHover
-                    ? theme.palette.primary.main
-                    : alpha(theme.palette.divider, 0.5)
-                }`,
-                backgroundColor: isCorrect
-                  ? alpha(theme.palette.success.main, 0.1)
-                  : isWrong
-                  ? alpha(theme.palette.error.main, 0.1)
-                  : isHover
-                  ? alpha(theme.palette.primary.main, 0.08)
-                  : alpha(theme.palette.action.hover, theme.palette.mode === 'dark' ? 0.56 : 0.68),
-                verticalAlign: 'middle',
-                cursor: 'default',
-                transition: 'border-color 0.12s ease, background-color 0.12s ease',
-                userSelect: 'none',
-              }}
+              className={cn(
+                'inline-flex items-center justify-center min-w-28 min-h-10 mx-1 my-0.5 px-3 py-1.5 rounded-md border-2 align-middle cursor-default select-none transition-[border-color,background-color] duration-150',
+                isCorrect && 'border-green-500 bg-green-500/10',
+                isWrong && 'border-destructive bg-destructive/10',
+                isHover && !isCorrect && !isWrong && 'border-primary bg-primary/8',
+                !isCorrect && !isWrong && !isHover && 'border-border/50 bg-muted/40'
+              )}
             >
               {placedItem ? (
-                <Box
-                  component="span"
+                <span
                   data-slot-id={slotId}
                   data-slot-placed-id={placedItem.id}
-                  className="inline-flex items-center gap-1"
-                  sx={{
-                    cursor: checked ? 'default' : 'grab',
-                    touchAction: 'none',
-                  }}
+                  className={cn(
+                    'inline-flex items-center gap-1',
+                    checked ? 'cursor-default' : 'cursor-grab'
+                  )}
+                  style={{ touchAction: 'none' }}
                 >
                   {groupColor && (
-                    <CircleIcon className="shrink-0" sx={{ fontSize: 8, color: groupColor }} />
+                    <Circle size={8} style={{ color: groupColor }} className="fill-current shrink-0" />
                   )}
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    sx={{
-                      fontWeight: 500,
-                      color: isCorrect
-                        ? 'success.main'
-                        : isWrong
-                        ? 'error.main'
-                        : 'text.primary',
-                    }}
+                  <span
+                    className={cn(
+                      'text-sm font-medium',
+                      isCorrect ? 'text-green-600 dark:text-green-400' : isWrong ? 'text-destructive' : 'text-foreground'
+                    )}
                   >
                     {placedItem.answer}
-                  </Typography>
-                </Box>
+                  </span>
+                </span>
               ) : (
-                <Typography
-                  component="span"
-                  variant="body2"
-                  sx={{
-                    color: 'text.secondary',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    letterSpacing: 0.2,
-                  }}
-                >
+                <span className="text-[0.72rem] font-semibold tracking-[0.2px] text-muted-foreground">
                   ______
-                </Typography>
+                </span>
               )}
-            </Box>
+            </span>
           );
         })}
-      </Box>
+      </div>
 
-      <Box>
-        <Typography variant="body1" className="mb-2" sx={{ color: 'text.primary', fontWeight: 500 }}>
+      {/* Answer pool */}
+      <div>
+        <p className="mb-2 text-base font-medium text-foreground">
           {t('drag_drop_text.pool_label')}
-        </Typography>
-        <PoolContainer>
+        </p>
+        <div className="flex flex-wrap justify-center items-center content-start gap-2 px-3 py-2.5 min-h-10 rounded-2xl border border-border/34 bg-primary/3 dark:bg-card/62 touch-none">
           {poolItemIds.length === 0 && !ghost && (
-            <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-              —
-            </Typography>
+            <span className="text-sm text-muted-foreground">—</span>
           )}
           {poolItemIds.map((id) => {
             const item = getItemById(id);
@@ -552,113 +463,100 @@ const DragDropTextQuestionView = ({ question }: DragDropTextQuestionViewProps) =
             const isDimmed = ghost?.itemId === id && dragSource === 'pool';
             const groupColor = item.groupId ? getGroupColor(item.groupId) : undefined;
             return (
-              <Box
+              <div
                 key={id}
                 data-pool-item-id={id}
-                className="inline-flex items-center gap-1 px-4 py-2"
-                sx={{
-                  borderRadius: 2,
-                  border: `1px solid ${
-                    groupColor
-                      ? alpha(groupColor, 0.5)
-                      : alpha(theme.palette.divider, 0.4)
-                  }`,
-                  backgroundColor: groupColor
-                    ? alpha(groupColor, 0.1)
-                    : theme.palette.mode === 'dark'
-                    ? alpha(theme.palette.background.paper, 0.7)
-                    : alpha(theme.palette.primary.main, 0.04),
-                  cursor: checked ? 'default' : isDimmed ? 'grabbing' : 'grab',
-                  userSelect: 'none',
+                className={cn(
+                  'inline-flex items-center gap-1 px-4 py-2 rounded-2xl border select-none transition-opacity duration-150',
+                  checked ? 'cursor-default' : isDimmed ? 'cursor-grabbing' : 'cursor-grab',
+                  isDimmed && 'opacity-35'
+                )}
+                style={{
+                  borderColor: groupColor ? `${groupColor}80` : undefined,
+                  backgroundColor: groupColor ? `${groupColor}1a` : undefined,
                   touchAction: 'none',
-                  opacity: isDimmed ? 0.35 : 1,
-                  transition: 'opacity 0.12s ease',
                 }}
               >
                 {groupColor && (
-                  <CircleIcon className="shrink-0" sx={{ fontSize: 10, color: groupColor }} />
+                  <Circle size={10} style={{ color: groupColor }} className="fill-current shrink-0" />
                 )}
-                <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                  {item.answer}
-                </Typography>
-              </Box>
+                <span className="text-sm text-foreground">{item.answer}</span>
+              </div>
             );
           })}
-        </PoolContainer>
-      </Box>
+        </div>
+      </div>
 
+      {/* Drag ghost — follows pointer absolutely */}
       {ghost && ghostItem && (
-        <Box
-          className="fixed inline-flex items-center gap-1 px-3 py-1.5"
-          style={{ left: ghost.x, top: ghost.y }}
-          sx={{
-            borderRadius: 9999,
-            border: `1px solid ${
-              ghostGroupColor
-                ? alpha(ghostGroupColor, 0.6)
-                : alpha(theme.palette.primary.main, 0.5)
-            }`,
-            backgroundColor:
-              theme.palette.mode === 'dark'
-                ? alpha(theme.palette.background.paper, 0.95)
-                : theme.palette.background.paper,
-            pointerEvents: 'none',
-            boxShadow: theme.shadows[8],
-            transform: 'scale(1.06)',
-            zIndex: 9999,
-            userSelect: 'none',
-            whiteSpace: 'nowrap',
+        <div
+          className="fixed inline-flex items-center gap-1 px-3 py-1.5 rounded-full border pointer-events-none shadow-lg scale-[1.06] select-none whitespace-nowrap z-[9999] bg-background dark:bg-card"
+          style={{
+            insetInlineStart: ghost.x,
+            top: ghost.y,
+            borderColor: ghostGroupColor ? `${ghostGroupColor}99` : 'hsl(var(--primary) / 0.5)',
           }}
         >
           {ghostGroupColor && (
-            <CircleIcon className="shrink-0" sx={{ fontSize: 10, color: ghostGroupColor }} />
+            <Circle size={10} style={{ color: ghostGroupColor }} className="fill-current shrink-0" />
           )}
-          <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>
-            {ghostItem.answer}
-          </Typography>
-        </Box>
+          <span className="text-sm font-medium text-foreground">{ghostItem.answer}</span>
+        </div>
       )}
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3 flex-wrap">
+      {/* Action bar */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
+            type="button"
             onClick={checked ? handleRetry : handleCheck}
             disabled={!checked && !hasAnyPlaced}
-            className="normal-case font-semibold min-w-[104px] py-2 px-2.5"
-            sx={(th) => ({ borderRadius: th.spacing(1.5) })}
+            className="font-semibold min-w-[104px]"
           >
-            {checked ? t('retry') : t('check')}
+            {checked ? (
+              <>
+                <RotateCcw size={15} className="me-1.5" />
+                {t('retry')}
+              </>
+            ) : (
+              <>
+                <Check size={15} className="me-1.5" />
+                {t('check')}
+              </>
+            )}
           </Button>
 
           {checked && score && !score.isFullyCorrect && (
             <Button
-              variant="contained"
-              startIcon={<LightbulbIcon />}
+              type="button"
               onClick={handleShowSolution}
-              className="normal-case font-semibold"
-              sx={(th) => ({ borderRadius: th.spacing(1.5) })}
+              className="font-semibold"
             >
+              <Lightbulb size={15} className="me-1.5" />
               {t('show_solution')}
             </Button>
           )}
 
           {checked && score && (
-            <Chip
-              className="font-semibold text-sm rounded-xl"
-              label={`${formatNum(score.earned)} / ${formatNum(question.mark)}`}
-              color={score.isFullyCorrect ? 'success' : 'default'}
-              variant={score.isFullyCorrect ? 'filled' : 'outlined'}
-            />
+            <span
+              className={cn(
+                'inline-flex items-center px-3 py-1 rounded-xl border text-sm font-semibold',
+                score.isFullyCorrect
+                  ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400'
+                  : 'border-border bg-muted text-muted-foreground'
+              )}
+            >
+              {formatNum(score.earned)} / {formatNum(question.mark)}
+            </span>
           )}
-        </Box>
+        </div>
 
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        {/* Mark badge */}
+        <div className="py-2 px-4 font-semibold text-[0.95rem] rounded-xl border border-border bg-background text-foreground">
           {formatNum(question.mark)}
-        </MarkBox>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 
