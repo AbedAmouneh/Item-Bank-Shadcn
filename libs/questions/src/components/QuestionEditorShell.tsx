@@ -1633,7 +1633,7 @@ function QuestionEditorShellForm({
       <DialogPrimitive.Root open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
-          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm max-h-[90vh] overflow-y-auto bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
             <DialogPrimitive.Title className="text-base font-semibold text-foreground mb-4">
               {t('rename_key')}
             </DialogPrimitive.Title>
@@ -1672,7 +1672,7 @@ function QuestionEditorShellForm({
       <DialogPrimitive.Root open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
-          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm max-h-[90vh] overflow-y-auto bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
             <DialogPrimitive.Title className="text-base font-semibold text-foreground mb-4">
               {t('delete_key_title')}
             </DialogPrimitive.Title>
