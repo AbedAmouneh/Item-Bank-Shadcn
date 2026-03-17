@@ -26,10 +26,7 @@
     "text_sequencing": {
         "chip_hint": "Use Left or Right arrow key to move this item."
     },
-    "image_sequencing": {
-        "chip_hint": "Use Left or Right arrow key to move this image.",
-        "image_sequence": "Image {{number}}"
-    },
+    "image_sequencing": {},
     "drag_drop_text": {
         "pool_label": "Available items",
         "slot_hint": "drop here"

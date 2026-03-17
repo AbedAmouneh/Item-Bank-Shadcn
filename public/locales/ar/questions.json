@@ -26,10 +26,7 @@
     "text_sequencing": {
         "chip_hint": "استخدم مفتاح السهم الأيسر أو الأيمن لتحريك هذا العنصر."
     },
-    "image_sequencing": {
-        "chip_hint": "استخدم مفتاح السهم الأيسر أو الأيمن لتحريك هذه الصورة.",
-        "image_sequence": "الصورة {{number}}"
-    },
+    "image_sequencing": {},
     "drag_drop_text": {
         "pool_label": "العناصر المتاحة",
         "slot_hint": "أفلت هنا"
