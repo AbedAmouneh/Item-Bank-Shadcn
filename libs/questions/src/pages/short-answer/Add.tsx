@@ -136,7 +136,7 @@ function Add() {
       <div className="flex flex-col gap-3">
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
           <input type="checkbox" className="sr-only peer" checked={ignoreCasing} onChange={(e) => handleCasingToggle(e.target.checked)} />
-          <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+          <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
             <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
           </div>
           <span className="text-sm text-foreground">{t('editor.ignore_casing')}</span>
@@ -144,7 +144,7 @@ function Add() {
 
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
           <input type="checkbox" className="sr-only peer" checked={requireUniqueAnswers} onChange={(e) => handleUniqueToggle(e.target.checked)} />
-          <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+          <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
             <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
           </div>
           <span className="text-sm text-foreground">{t('editor.require_unique_answers')}</span>
