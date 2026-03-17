@@ -558,9 +558,7 @@ function QuestionEditorShellForm({
 
         if (hotspotCount === 0) {
           errors.hotspots = {
-            message: t('editor.multiple_hotspots.error_no_hotspots', {
-              defaultValue: 'Add at least one hotspot.',
-            }),
+            message: t('editor.multiple_hotspots.error_no_hotspots'),
           };
         }
 
@@ -619,9 +617,7 @@ function QuestionEditorShellForm({
           );
           if (hasEmptyText) {
             errors.answers = {
-              message: t('editor.answer_text_required', {
-                defaultValue: 'Each answer must have text',
-              }),
+              message: t('editor.answer_text_required'),
             };
           }
         }
