@@ -1,18 +1,15 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  Divider,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import {
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@item-bank/ui';
 import NumericalAnswerRow from './NumericalAnswerRow';
 import NumericalUnitRow from './NumericalUnitRow';
 import {
@@ -105,16 +102,11 @@ function NumericalEditor() {
   const canRemoveUnit = units.length > 1;
 
   return (
-    <Box className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {/* Answers section */}
-      <Typography
-        variant="body2"
-        component="label"
-        className="block text-[0.8125rem] font-normal leading-tight"
-        sx={{ color: 'text.secondary' }}
-      >
-        {t('editor.answers')} <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-      </Typography>
+      <label className="block text-[0.8125rem] font-normal leading-tight text-muted-foreground">
+        {t('editor.answers')} <span className="text-destructive">*</span>
+      </label>
 
       {answers.map((answer, index) => (
         <NumericalAnswerRow
@@ -127,91 +119,80 @@ function NumericalEditor() {
         />
       ))}
 
-      <Button
-        variant="text"
-        color="primary"
-        startIcon={<AddIcon />}
+      <button
+        type="button"
         onClick={handleAddAnswer}
-        className="self-start normal-case font-medium"
+        className="flex items-center gap-1.5 self-start text-sm text-primary hover:text-primary/80 font-medium transition-colors"
       >
+        <Plus size={15} />
         {t('editor.add_answer')}
-      </Button>
+      </button>
 
-      <Divider />
+      <hr className="border-border my-2" />
 
       {/* Unit handling row */}
-      <Box className="flex items-center gap-3 flex-wrap">
-        <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel>Unit handling</InputLabel>
-          <Select
-            value={unitHandling}
-            label="Unit handling"
-            onChange={(e) => setValue('numericalUnitHandling', e.target.value as NumericalUnitHandling)}
-            renderValue={(selected) => {
-              const opt = UNIT_HANDLING_OPTIONS.find((o) => o.value === selected);
-              return opt?.label ?? selected;
-            }}
-          >
+      <div className="flex items-center gap-3 flex-wrap">
+        <Select
+          value={unitHandling}
+          onValueChange={(value) => setValue('numericalUnitHandling', value as NumericalUnitHandling)}
+        >
+          <SelectTrigger className="w-[200px] text-sm">
+            <SelectValue placeholder={t('editor.numerical.unit_handling')} />
+          </SelectTrigger>
+          <SelectContent>
             {UNIT_HANDLING_OPTIONS.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                <Box>
-                  <Typography variant="body2" className="font-medium leading-snug">
-                    {opt.label}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary' }}
-                    className="leading-snug block"
-                  >
-                    {opt.description}
-                  </Typography>
-                </Box>
-              </MenuItem>
+              <SelectItem key={opt.value} value={opt.value}>
+                <div>
+                  <p className="font-medium leading-snug text-sm">{opt.label}</p>
+                  <p className="text-xs text-muted-foreground leading-snug">{opt.description}</p>
+                </div>
+              </SelectItem>
             ))}
-          </Select>
-        </FormControl>
+          </SelectContent>
+        </Select>
 
         {unitHandling === 'required' && (
           <>
-            <FormControl size="small" sx={{ minWidth: 220 }}>
-              <InputLabel>Unit is entered using</InputLabel>
-              <Select
-                value={unitInputMethod}
-                label="Unit is entered using"
-                onChange={(e) => setValue('numericalUnitInputMethod', e.target.value as NumericalUnitInputMethod)}
-              >
+            <Select
+              value={unitInputMethod}
+              onValueChange={(value) => setValue('numericalUnitInputMethod', value as NumericalUnitInputMethod)}
+            >
+              <SelectTrigger className="w-[240px] text-sm">
+                <SelectValue placeholder={t('editor.numerical.unit_input_method')} />
+              </SelectTrigger>
+              <SelectContent>
                 {UNIT_INPUT_METHOD_OPTIONS.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>
+                  <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
-              </Select>
-            </FormControl>
+              </SelectContent>
+            </Select>
 
-            <TextField
-              label="Unit penalty (%) *"
-              value={unitPenalty}
-              onChange={(e) => setValue('numericalUnitPenalty', e.target.value)}
-              type="number"
-              size="small"
-              sx={{ width: 160 }}
-              slotProps={{ htmlInput: { step: 1, min: 0, max: 100 } }}
-            />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">
+                {t('editor.numerical.unit_penalty')}
+              </label>
+              <Input
+                type="number"
+                value={unitPenalty}
+                onChange={(e) => setValue('numericalUnitPenalty', e.target.value)}
+                className="w-36 text-sm h-9"
+                step={1}
+                min={0}
+                max={100}
+              />
+            </div>
           </>
         )}
-      </Box>
+      </div>
 
       {/* Units list */}
       {showUnits && (
-        <Box className="flex flex-col gap-4">
-          <Typography
-            variant="body2"
-            component="label"
-            className="block text-[0.8125rem] font-normal leading-tight"
-            sx={{ color: 'text.secondary' }}
-          >
-            Units <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-          </Typography>
+        <div className="flex flex-col gap-4">
+          <label className="block text-[0.8125rem] font-normal leading-tight text-muted-foreground">
+            {t('editor.numerical.units')} <span className="text-destructive">*</span>
+          </label>
 
           {units.map((unit, index) => (
             <NumericalUnitRow
@@ -225,18 +206,17 @@ function NumericalEditor() {
             />
           ))}
 
-          <Button
-            variant="text"
-            color="primary"
-            startIcon={<AddIcon />}
+          <button
+            type="button"
             onClick={handleAddUnit}
-            className="self-start normal-case font-medium"
+            className="flex items-center gap-1.5 self-start text-sm text-primary hover:text-primary/80 font-medium transition-colors"
           >
-            Add Unit
-          </Button>
-        </Box>
+            <Plus size={15} />
+            {t('editor.numerical.add_unit')}
+          </button>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
