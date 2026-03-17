@@ -1,20 +1,8 @@
-import {
-  Box,
-  Button,
-  Chip,
-  TextField,
-  Typography,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import CircleIcon from '@mui/icons-material/Circle';
-import type { QuestionRow } from '../../components/QuestionsTable';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Check, RotateCcw, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn, Badge } from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -27,96 +15,132 @@ type DragDropImageItem = NonNullable<QuestionRow['dragDropImageItems']>[number];
 type DragDropImageGroup = NonNullable<QuestionRow['dragDropImageGroups']>[number];
 type Zone = DragDropImageItem['zones'][number];
 
-// ─── Styled ───────────────────────────────────────────────────────────────────
-
-const PoolChip = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'groupColor' && prop !== 'isDragging',
-})<{ groupColor?: string; isDragging?: boolean }>(({ theme, groupColor, isDragging }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '4px 12px',
-  borderRadius: theme.spacing(1),
-  border: `1.5px solid ${groupColor ?? theme.palette.divider}`,
-  backgroundColor: groupColor
-    ? alpha(groupColor, 0.1)
-    : theme.palette.action.selected,
-  cursor: isDragging ? 'grabbing' : 'grab',
-  userSelect: 'none',
-  opacity: isDragging ? 0.4 : 1,
-  touchAction: 'none',
-  transition: theme.transitions.create(['opacity', 'background-color'], {
-    duration: theme.transitions.duration.short,
-  }),
-  fontSize: '0.875rem',
-  fontWeight: 500,
-  gap: 6,
-  whiteSpace: 'nowrap',
-}));
-
-const ZoneTarget = styled(Box, {
-  shouldForwardProp: (prop) =>
-    prop !== 'filled' && prop !== 'correct' && prop !== 'wrong' && prop !== 'groupColor',
-})<{ filled?: boolean; correct?: boolean; wrong?: boolean; groupColor?: string }>(
-  ({ theme, filled, correct, wrong, groupColor }) => {
-    const isEmptyHint = !filled && !correct && !wrong;
-
-    return {
-    position: 'absolute',
-    width: ZONE_W,
-    height: ZONE_H,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 6,
-    border: correct
-      ? `2px solid ${theme.palette.success.main}`
-      : wrong
-      ? `2px solid ${theme.palette.error.main}`
-      : filled
-      ? `2px solid ${groupColor ?? theme.palette.primary.main}`
-      : `1.5px dashed ${alpha(theme.palette.common.white, 0.62)}`,
-    backgroundColor: correct
-      ? alpha(theme.palette.success.main, 0.12)
-      : wrong
-      ? alpha(theme.palette.error.main, 0.12)
-      : filled
-      ? alpha(groupColor ?? theme.palette.primary.main, 0.1)
-      : alpha(theme.palette.common.white, 0.2),
-    backgroundImage: 'none',
-    fontSize: '0.75rem',
-    color: correct
-      ? theme.palette.success.main
-      : wrong
-      ? theme.palette.error.main
-      : alpha(theme.palette.common.black, 0.54),
-    fontStyle: filled ? 'normal' : 'italic',
-    overflow: 'hidden',
-    cursor: filled ? 'pointer' : 'default',
-    boxShadow: isEmptyHint
-      ? `inset 0 0 0 1px ${alpha(theme.palette.common.black, 0.14)}`
-      : 'none',
-    transition: theme.transitions.create(['border-color', 'background-color'], {
-      duration: theme.transitions.duration.short,
-    }),
-    };
-  }
-);
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const COLOR_MAP: Record<string, string> = {
-  primary: '#1976d2',
-  secondary: '#9c27b0',
-  success: '#2e7d32',
-  warning: '#ed6c02',
-  error: '#d32f2f',
-  info: '#0288d1',
+  primary: '#6366f1',
+  secondary: '#8b5cf6',
+  success: '#22c55e',
+  warning: '#f59e0b',
+  error: '#ef4444',
+  info: '#3b82f6',
 };
 
 function resolveGroupColor(groups: DragDropImageGroup[], groupId: string): string | undefined {
   const group = groups.find((g) => g.id === groupId);
   if (!group) return undefined;
   return COLOR_MAP[group.color] ?? group.color;
+}
+
+// ─── Zone target ──────────────────────────────────────────────────────────────
+
+type ZoneTargetProps = {
+  filled: boolean;
+  correct: boolean;
+  wrong: boolean;
+  groupColor?: string;
+  style: React.CSSProperties;
+  'data-zone-id': string;
+  onClick: () => void;
+  children: React.ReactNode;
+};
+
+/** Absolute-positioned drop zone overlay rendered on top of the background image. */
+function ZoneTarget({
+  filled,
+  correct,
+  wrong,
+  groupColor,
+  style,
+  children,
+  onClick,
+  ...rest
+}: ZoneTargetProps) {
+  const borderColor = correct
+    ? '#22c55e'
+    : wrong
+    ? '#ef4444'
+    : filled
+    ? (groupColor ?? 'hsl(var(--primary))')
+    : 'rgba(255,255,255,0.62)';
+
+  const bgColor = correct
+    ? 'rgba(34,197,94,0.12)'
+    : wrong
+    ? 'rgba(239,68,68,0.12)'
+    : filled
+    ? (groupColor ? groupColor + '1a' : 'hsl(var(--primary)/0.1)')
+    : 'rgba(255,255,255,0.2)';
+
+  const textColor = correct
+    ? '#22c55e'
+    : wrong
+    ? '#ef4444'
+    : 'rgba(0,0,0,0.54)';
+
+  return (
+    <div
+      {...rest}
+      onClick={onClick}
+      className={cn(
+        'absolute flex items-center justify-center overflow-hidden text-xs font-medium transition-[border-color,background-color]',
+        filled ? 'cursor-pointer' : 'cursor-default',
+        !filled && !correct && !wrong ? 'shadow-[inset_0_0_0_1px_rgba(0,0,0,0.14)]' : ''
+      )}
+      style={{
+        ...style,
+        borderRadius: 6,
+        border: `${filled || correct || wrong ? '2px' : '1.5px'} ${filled || correct || wrong ? 'solid' : 'dashed'} ${borderColor}`,
+        backgroundColor: bgColor,
+        color: textColor,
+        fontStyle: filled ? 'normal' : 'italic',
+        userSelect: 'none',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Pool chip ────────────────────────────────────────────────────────────────
+
+type PoolChipProps = {
+  groupColor?: string;
+  isDragging: boolean;
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: (e: React.PointerEvent) => void;
+  onPointerCancel: () => void;
+  children: React.ReactNode;
+};
+
+/** Draggable pool chip shown beneath the image canvas. */
+function PoolChip({
+  groupColor,
+  isDragging,
+  children,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onPointerCancel,
+}: PoolChipProps) {
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
+      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-sm font-medium whitespace-nowrap touch-none select-none transition-[opacity,background-color]"
+      style={{
+        borderColor: groupColor ?? 'hsl(var(--border))',
+        backgroundColor: groupColor ? groupColor + '1a' : 'hsl(var(--muted))',
+        cursor: isDragging ? 'grabbing' : 'grab',
+        opacity: isDragging ? 0.4 : 1,
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -127,7 +151,6 @@ type DragDropImageViewProps = {
 
 export default function DragDropImageView({ question }: DragDropImageViewProps) {
   const { t } = useTranslation('questions');
-  const theme = useTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const items: DragDropImageItem[] = useMemo(
@@ -375,8 +398,19 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
     [draggingItemId, items]
   );
 
+  // ── Score badge variant ───────────────────────────────────────────────────
+
+  const scoreBadgeClass =
+    score !== null
+      ? score >= 1
+        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-300 dark:border-green-700'
+        : score > 0
+        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700'
+        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-300 dark:border-red-700'
+      : '';
+
   return (
-    <Box
+    <div
       ref={containerRef}
       className="flex flex-col gap-4"
       onPointerMove={handlePointerMove}
@@ -385,7 +419,7 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
     >
       {/* Image with zones */}
       {bgImage && (
-        <Box className="relative inline-block max-w-full select-none">
+        <div className="relative inline-block max-w-full select-none">
           <img
             src={bgImage}
             alt="background"
@@ -414,9 +448,9 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
                 onClick={() => handleZoneClick(zone.id)}
               >
                 {dragOver === zone.id && draggingItemId ? (
-                  <Typography variant="caption" sx={{ fontStyle: 'normal', opacity: 0.7 }}>
+                  <span className="not-italic opacity-70 text-xs">
                     {items.find((i) => i.id === draggingItemId)?.answer ?? '…'}
-                  </Typography>
+                  </span>
                 ) : placedItem ? (
                   placedItem.itemType === 'image' && placedItem.image ? (
                     <img
@@ -430,35 +464,27 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
                       draggable={false}
                     />
                   ) : (
-                    <Typography variant="caption" noWrap className="not-italic px-1">
+                    <span className="not-italic truncate px-1 text-xs font-medium">
                       {placedItem.answer}
-                    </Typography>
+                    </span>
                   )
                 ) : (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontStyle: 'normal',
-                      fontWeight: 600,
-                      letterSpacing: 0.2,
-                      color: alpha(theme.palette.common.black, 0.6),
-                    }}
-                  >
+                  <span className="not-italic font-semibold text-xs tracking-wide text-black/60">
                     {t('drag_drop_text.slot_hint')}
-                  </Typography>
+                  </span>
                 )}
               </ZoneTarget>
             );
           })}
-        </Box>
+        </div>
       )}
 
       {/* Pool */}
-      <Box>
-        <Typography variant="caption" className="block mb-2" sx={{ color: 'text.secondary' }}>
+      <div>
+        <span className="block text-xs font-medium text-muted-foreground mb-2">
           {t('editor.drag_drop_image.pool_label')}
-        </Typography>
-        <Box className="flex flex-wrap gap-2">
+        </span>
+        <div className="flex flex-wrap gap-2">
           {shuffledIds
             .filter((id) => isInPool(id))
             .map((id) => {
@@ -475,7 +501,12 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
                   onPointerUp={handlePointerUp}
                   onPointerCancel={handlePointerCancel}
                 >
-                  {groupColor && <CircleIcon sx={{ fontSize: 8, color: groupColor }} />}
+                  {groupColor && (
+                    <span
+                      className="inline-block w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: groupColor }}
+                    />
+                  )}
                   {item.itemType === 'image' && item.image ? (
                     <img
                       src={item.image}
@@ -489,15 +520,24 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
                 </PoolChip>
               );
             })}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {justificationMode !== 'disabled' && (
-        <Box>
-          <TextField
-            label={t('drag_drop_image.justification_response_label', {
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            {t('drag_drop_image.justification_response_label', {
               defaultValue: 'Justification',
             })}
+            {justificationMode === 'required' && (
+              <span className="text-destructive ms-0.5">*</span>
+            )}
+          </label>
+          <textarea
+            className={cn(
+              'w-full min-h-[80px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y',
+              justificationError ? 'border-destructive' : 'border-border'
+            )}
             placeholder={t('drag_drop_image.justification_response_placeholder', {
               defaultValue: 'Write your justification...',
             })}
@@ -507,39 +547,31 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
               setJustificationText(nextValue);
               if (nextValue.trim()) setJustificationError(false);
             }}
-            required={justificationMode === 'required'}
-            error={justificationError}
-            helperText={
-              justificationError
-                ? t('drag_drop_image.error_justification_required', {
-                    defaultValue: 'Justification is required.',
-                  })
-                : `${justificationFraction}%`
-            }
-            multiline
-            minRows={3}
-            fullWidth
-            size="small"
+            rows={3}
           />
-        </Box>
+          {justificationError ? (
+            <p className="mt-1 text-xs text-destructive">
+              {t('drag_drop_image.error_justification_required', {
+                defaultValue: 'Justification is required.',
+              })}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground">{justificationFraction}%</p>
+          )}
+        </div>
       )}
 
       {/* Ghost element */}
       {ghostItem && (
-        <Box
+        <div
           ref={ghostRef}
-          className="fixed flex items-center justify-center rounded pointer-events-none overflow-hidden whitespace-nowrap text-xs font-medium"
+          className="fixed flex items-center justify-center rounded pointer-events-none overflow-hidden whitespace-nowrap text-xs font-medium border-2 border-primary bg-primary/15 text-primary"
           style={{
             width: ZONE_W,
             height: ZONE_H,
             zIndex: 9999,
-            paddingLeft: 4,
-            paddingRight: 4,
-          }}
-          sx={{
-            border: `1.5px solid ${theme.palette.primary.main}`,
-            backgroundColor: alpha(theme.palette.primary.main, 0.15),
-            color: theme.palette.primary.main,
+            paddingInlineStart: 4,
+            paddingInlineEnd: 4,
           }}
         >
           {ghostItem.itemType === 'image' && ghostItem.image ? (
@@ -552,27 +584,29 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
           ) : (
             <span>{ghostItem.answer}</span>
           )}
-        </Box>
+        </div>
       )}
 
       {/* Score */}
       {score !== null && (
-        <Box className="flex items-center gap-2">
-          <Chip
-            label={`${Math.round(score * question.mark * 10) / 10} / ${question.mark}`}
-            color={score >= 1 ? 'success' : score > 0 ? 'warning' : 'error'}
-            size="small"
-          />
-        </Box>
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border',
+              scoreBadgeClass
+            )}
+          >
+            {Math.round(score * question.mark * 10) / 10} / {question.mark}
+          </span>
+        </div>
       )}
 
       {/* Actions */}
-      <Box className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap">
         {!checked ? (
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<CheckIcon />}
+          <button
+            type="button"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             disabled={justificationMode === 'required' && !justificationText.trim()}
             onClick={() => {
               if (justificationMode === 'required' && !justificationText.trim()) {
@@ -583,30 +617,31 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
               setChecked(true);
             }}
           >
+            <Check size={15} />
             {t('check')}
-          </Button>
+          </button>
         ) : (
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<ReplayIcon />}
+          <button
+            type="button"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
             onClick={handleRetry}
           >
+            <RotateCcw size={15} />
             {t('retry')}
-          </Button>
+          </button>
         )}
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<LightbulbIcon />}
+        <button
+          type="button"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
           onClick={() => {
             setShowSolution((v) => !v);
             setChecked(false);
           }}
         >
+          <Lightbulb size={15} />
           {t('show_solution')}
-        </Button>
-      </Box>
-    </Box>
+        </button>
+      </div>
+    </div>
   );
 }
