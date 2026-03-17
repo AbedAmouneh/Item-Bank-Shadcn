@@ -1177,7 +1177,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
 
       {/* ── Choose matching items dialog ────────────────────────────────── */}
       <Dialog open={chooserOpen} onOpenChange={(open) => { if (!open) handleChooserCancel(); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {t('editor.matching.choose_matching_title')}
