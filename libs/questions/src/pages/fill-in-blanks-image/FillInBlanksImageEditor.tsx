@@ -493,7 +493,7 @@ export default function FillInBlanksImageEditor() {
                           checked={answer.ignoreCasing}
                           onChange={(e) => handleAnswerChange(zone.id, answer.id, 'ignoreCasing', e.target.checked)}
                         />
-                        <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked/toggle:bg-primary relative">
+                        <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked/toggle:bg-primary relative">
                           <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/toggle:translate-x-4 rtl:peer-checked/toggle:-translate-x-4" />
                         </div>
                         <span className="text-xs text-foreground">{t('editor.ignore_casing')}</span>
