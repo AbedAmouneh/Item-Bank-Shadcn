@@ -1,42 +1,18 @@
 import {
-  Box,
-  Typography,
-  IconButton,
-  Slider,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  styled,
-} from '@mui/material';
-import {
   useRef,
   useState,
   useCallback,
   useEffect,
 } from 'react';
-import CheckIcon from '@mui/icons-material/Check';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import { Check, Music, Play, Pause, Trash2, MoreVertical, Volume2, VolumeX } from 'lucide-react';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import { cn } from '@item-bank/ui';
 
 export type RecordingItem = {
   id: string;
   blobUrl: string;
   durationSeconds: number;
 };
-
-const RecordedCard = styled(Box)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  border: `1px solid ${theme.palette.divider}`,
-  padding: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-  backgroundColor: theme.palette.background.paper,
-}));
 
 const formatTime = (seconds: number): string => {
   const m = Math.floor(seconds / 60);
@@ -70,7 +46,6 @@ function RecordedAudioPlayer({ item, onDelete, canDelete, label }: RecordedAudio
   const [muted, setMuted] = useState(false);
   const [volumeHover, setVolumeHover] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const [speedMenuAnchor, setSpeedMenuAnchor] = useState<null | HTMLElement>(null);
 
   const duration = item.durationSeconds;
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -109,10 +84,10 @@ function RecordedAudioPlayer({ item, onDelete, canDelete, label }: RecordedAudio
   }, [item.blobUrl]);
 
   const handleSliderChange = useCallback(
-    (_: Event, value: number | number[]) => {
-      const v = Array.isArray(value) ? value[0] : value;
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const v = Number(e.target.value);
       const audio = audioRef.current;
-      if (audio && typeof v === 'number') {
+      if (audio) {
         const time = (v / 100) * duration;
         audio.currentTime = time;
         setCurrentTime(time);
@@ -138,142 +113,143 @@ function RecordedAudioPlayer({ item, onDelete, canDelete, label }: RecordedAudio
     setMuted((m) => !m);
   }, []);
 
-  const handleVolumeChange = useCallback((_: Event, value: number | number[]) => {
-    const v = Array.isArray(value) ? value[0] : value;
-    const level = typeof v === 'number' ? v / 100 : 1;
+  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const level = Number(e.target.value) / 100;
     setVolume(level);
     if (level > 0) setMuted(false);
   }, []);
 
   return (
-    <RecordedCard>
-      <Box className="flex items-center justify-between mb-3">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <MusicNoteIcon sx={{ color: 'primary.main', fontSize: 20 }} />
-          <Typography variant="body2" fontWeight={500}>
-            {label}
-          </Typography>
-        </Box>
-        <IconButton
-          size="small"
+    <div className="rounded-xl border border-border bg-card p-3 flex flex-col gap-3">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Music size={18} className="text-primary" />
+          <span className="text-sm font-medium text-foreground">{label}</span>
+        </div>
+        <button
+          type="button"
           onClick={onDelete}
           disabled={!canDelete}
-          sx={{ color: canDelete ? 'text.secondary' : 'action.disabled' }}
           aria-label="Delete recording"
+          className={cn(
+            'p-1.5 rounded-lg transition-colors',
+            canDelete
+              ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
+              : 'text-muted-foreground/30 cursor-not-allowed'
+          )}
         >
-          <DeleteOutlinedIcon fontSize="small" />
-        </IconButton>
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-        <IconButton size="small" onClick={togglePlay} color="primary" aria-label={playing ? 'Pause' : 'Play'}>
-          {playing ? <PauseIcon /> : <PlayArrowIcon />}
-        </IconButton>
-        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 80 }}>
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      {/* Playback controls row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Play / Pause */}
+        <button
+          type="button"
+          onClick={togglePlay}
+          aria-label={playing ? 'Pause' : 'Play'}
+          className="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors"
+        >
+          {playing ? <Pause size={20} /> : <Play size={20} />}
+        </button>
+
+        {/* Time display */}
+        <span className="text-sm text-muted-foreground min-w-[80px] tabular-nums">
           {formatTime(currentTime)} / {formatTime(duration)}
-        </Typography>
-        <Slider
-          size="small"
+        </span>
+
+        {/* Progress slider */}
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={0.1}
           value={duration > 0 ? progress : 0}
           onChange={handleSliderChange}
-          sx={{
-            flex: 1,
-            minWidth: 80,
-            maxWidth: 240,
-            margin: 0,
-            padding: '0 !important',
-            '& .MuiSlider-thumb': { width: 12, height: 12 },
-            '& .MuiSlider-track': { height: 2 },
-            '& .MuiSlider-rail': { height: 2 },
-          }}
           aria-label="Playback position"
+          className="flex-1 min-w-[80px] max-w-[240px] h-1 accent-primary cursor-pointer"
         />
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            minHeight: 40,
-          }}
+
+        {/* Volume control */}
+        <div
+          className="flex items-center gap-1 min-h-[40px]"
           onMouseEnter={() => setVolumeHover(true)}
           onMouseLeave={() => setVolumeHover(false)}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              overflow: 'hidden',
-              width: volumeHover ? 72 : 0,
-              opacity: volumeHover ? 1 : 0,
-              transition: 'width 0.2s ease, opacity 0.2s ease',
-              minHeight: 40,
-            }}
+          <div
+            className={cn(
+              'flex items-center overflow-hidden transition-all duration-200',
+              volumeHover ? 'w-[72px] opacity-100' : 'w-0 opacity-0'
+            )}
           >
-            <Slider
-              size="small"
-              value={muted ? 0 : volume * 100}
-              onChange={handleVolumeChange}
+            <input
+              type="range"
               min={0}
               max={100}
-              sx={{
-                width: 72,
-                margin: 0,
-                padding: '0 !important',
-                color: 'text.secondary',
-                '& .MuiSlider-thumb': { width: 12, height: 12 },
-                '& .MuiSlider-track': { height: 2 },
-                '& .MuiSlider-rail': { height: 2 },
-              }}
+              step={1}
+              value={muted ? 0 : Math.round(volume * 100)}
+              onChange={handleVolumeChange}
               aria-label="Volume"
               onClick={(e) => e.stopPropagation()}
+              className="w-[72px] h-1 accent-muted-foreground cursor-pointer"
             />
-          </Box>
-          <IconButton
-            size="small"
+          </div>
+          <button
+            type="button"
             onClick={toggleMute}
-            sx={{ color: 'text.secondary' }}
             aria-label={muted ? 'Unmute' : 'Mute'}
+            className="p-1.5 rounded-lg text-muted-foreground hover:bg-accent transition-colors"
           >
-            {muted ? (
-              <VolumeOffIcon sx={{ fontSize: 20 }} />
-            ) : (
-              <VolumeUpIcon sx={{ fontSize: 20 }} />
-            )}
-          </IconButton>
-        </Box>
-        <IconButton
-          size="small"
-          sx={{ color: 'text.secondary' }}
-          aria-label="Playback speed"
-          onClick={(e) => setSpeedMenuAnchor(e.currentTarget)}
-        >
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
-        <Menu
-          anchorEl={speedMenuAnchor}
-          open={Boolean(speedMenuAnchor)}
-          onClose={() => setSpeedMenuAnchor(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          {PLAYBACK_SPEED_OPTIONS.map(({ value, label }) => (
-            <MenuItem
-              key={value}
-              selected={playbackRate === value}
-              onClick={() => {
-                setPlaybackRate(value);
-                setSpeedMenuAnchor(null);
-              }}
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+        </div>
+
+        {/* Playback speed menu */}
+        <DropdownMenuPrimitive.Root>
+          <DropdownMenuPrimitive.Trigger asChild>
+            <button
+              type="button"
+              aria-label="Playback speed"
+              className="p-1.5 rounded-lg text-muted-foreground hover:bg-accent transition-colors"
             >
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                {playbackRate === value ? <CheckIcon fontSize="small" /> : null}
-              </ListItemIcon>
-              <ListItemText primary={label} />
-            </MenuItem>
-          ))}
-        </Menu>
-      </Box>
+              <MoreVertical size={16} />
+            </button>
+          </DropdownMenuPrimitive.Trigger>
+          <DropdownMenuPrimitive.Portal>
+            <DropdownMenuPrimitive.Content
+              align="end"
+              sideOffset={4}
+              className={cn(
+                'z-50 min-w-[120px] overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-md',
+                'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+                'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95'
+              )}
+            >
+              {PLAYBACK_SPEED_OPTIONS.map(({ value, label: speedLabel }) => (
+                <DropdownMenuPrimitive.Item
+                  key={value}
+                  onSelect={() => setPlaybackRate(value)}
+                  className={cn(
+                    'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm cursor-pointer outline-none select-none',
+                    'text-foreground hover:bg-accent focus:bg-accent'
+                  )}
+                >
+                  <span className="w-4 flex items-center justify-center">
+                    {playbackRate === value && <Check size={14} className="text-primary" />}
+                  </span>
+                  {speedLabel}
+                </DropdownMenuPrimitive.Item>
+              ))}
+            </DropdownMenuPrimitive.Content>
+          </DropdownMenuPrimitive.Portal>
+        </DropdownMenuPrimitive.Root>
+      </div>
+
       <audio ref={audioRef} src={item.blobUrl} />
-    </RecordedCard>
+    </div>
   );
 }
 
