@@ -1,66 +1,17 @@
-import { Box, Button, alpha, styled } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import CloseIcon from '@mui/icons-material/Close';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import type { QuestionRow } from '../../components/QuestionsTable';
 import { useCallback, useMemo, useState } from 'react';
+
+import { Check, CheckCircle, Lightbulb, RotateCcw, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import { Button } from '@item-bank/ui';
+
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type MultipleChoiceQuestionViewProps = {
   question: QuestionRow;
 };
 
 type ChoiceFeedback = 'correct' | 'wrong' | undefined;
-
-const ChoicePill = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'selected' && prop !== 'feedback',
-})<{ selected?: boolean; feedback?: ChoiceFeedback }>(({ theme, selected, feedback }) => {
-  const getBackgroundColor = () => {
-    if (feedback === 'correct') {
-      return alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.4 : 0.25);
-    }
-    if (feedback === 'wrong') {
-      return alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.4 : 0.25);
-    }
-    if (selected) {
-      return alpha(theme.palette.primary.main, 0.15);
-    }
-    return 'transparent';
-  };
-
-  const getBorderColor = () => {
-    if (feedback === 'correct') return theme.palette.success.main;
-    if (feedback === 'wrong') return theme.palette.error.main;
-    if (selected) return 'transparent';
-    return theme.palette.semantic.choice.unselectedBorder;
-  };
-
-  const getTextColor = () => {
-    if (feedback === 'correct') return theme.palette.success.main;
-    if (feedback === 'wrong') return theme.palette.error.main;
-    if (selected) return theme.palette.common.white;
-    return theme.palette.text.secondary;
-  };
-
-  return {
-    width: '100%',
-    borderRadius: 9999,
-    marginBottom: theme.spacing(1),
-    backgroundColor: getBackgroundColor(),
-    border: `1px solid ${getBorderColor()}`,
-    color: getTextColor(),
-    cursor: feedback ? 'default' : 'pointer',
-  };
-});
-
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
 
 function parseFraction(value: string): number {
   const parsed = Number.parseFloat(value);
@@ -70,6 +21,46 @@ function parseFraction(value: string): number {
 function formatMark(value: number): string {
   if (Number.isInteger(value)) return String(value);
   return value.toFixed(2).replace(/\.?0+$/, '');
+}
+
+/** Derive inline style values for a choice pill based on selection and feedback state. */
+function getChoicePillStyles(
+  selected: boolean,
+  feedback: ChoiceFeedback
+): { backgroundColor: string | undefined; border: string; color: string; cursor: string } {
+  const isCorrect = feedback === 'correct';
+  const isWrong = feedback === 'wrong';
+
+  const backgroundColor = isCorrect
+    ? '#22c55e33'
+    : isWrong
+      ? '#ef444433'
+      : selected
+        ? 'hsl(var(--primary) / 0.15)'
+        : undefined;
+
+  const borderColor = isCorrect
+    ? '#22c55e'
+    : isWrong
+      ? '#ef4444'
+      : selected
+        ? 'transparent'
+        : 'hsl(var(--border))';
+
+  const color = isCorrect
+    ? '#22c55e'
+    : isWrong
+      ? '#ef4444'
+      : selected
+        ? 'white'
+        : 'hsl(var(--muted-foreground))';
+
+  return {
+    backgroundColor,
+    border: `1px solid ${borderColor}`,
+    color,
+    cursor: feedback ? 'default' : 'pointer',
+  };
 }
 
 const MultipleChoiceQuestionView = ({ question }: MultipleChoiceQuestionViewProps) => {
@@ -103,28 +94,31 @@ const MultipleChoiceQuestionView = ({ question }: MultipleChoiceQuestionViewProp
   const allowMultipleSelection =
     allowPartialCredit || configuredMaxSelections > 1 || correctChoiceIds.length > 1;
 
-  const toggleChoice = useCallback((choiceId: number) => {
-    if (checked) return;
+  const toggleChoice = useCallback(
+    (choiceId: number) => {
+      if (checked) return;
 
-    setSelectedChoices((prev) => {
-      const newSet = new Set(prev);
-      if (allowMultipleSelection) {
-        if (newSet.has(choiceId)) {
-          newSet.delete(choiceId);
+      setSelectedChoices((prev) => {
+        const newSet = new Set(prev);
+        if (allowMultipleSelection) {
+          if (newSet.has(choiceId)) {
+            newSet.delete(choiceId);
+          } else {
+            const maxSelectable = allowPartialCredit
+              ? choices.length
+              : Math.max(1, configuredMaxSelections);
+            if (newSet.size >= maxSelectable) return prev;
+            newSet.add(choiceId);
+          }
         } else {
-          const maxSelectable = allowPartialCredit
-            ? choices.length
-            : Math.max(1, configuredMaxSelections);
-          if (newSet.size >= maxSelectable) return prev;
+          newSet.clear();
           newSet.add(choiceId);
         }
-      } else {
-        newSet.clear();
-        newSet.add(choiceId);
-      }
-      return newSet;
-    });
-  }, [allowMultipleSelection, allowPartialCredit, checked, choices.length, configuredMaxSelections]);
+        return newSet;
+      });
+    },
+    [allowMultipleSelection, allowPartialCredit, checked, choices.length, configuredMaxSelections]
+  );
 
   const getChoiceFeedback = (choiceId: number): ChoiceFeedback => {
     if (!checked || !selectedChoices.has(choiceId)) return undefined;
@@ -178,72 +172,68 @@ const MultipleChoiceQuestionView = ({ question }: MultipleChoiceQuestionViewProp
   }, [correctChoiceIds]);
 
   const getFeedbackIcon = (feedback: ChoiceFeedback) => {
-    if (feedback === 'correct') return <CheckCircleIcon fontSize="small" />;
-    if (feedback === 'wrong') return <CloseIcon fontSize="small" />;
+    if (feedback === 'correct') return <CheckCircle size={16} />;
+    if (feedback === 'wrong') return <X size={16} />;
     return null;
   };
 
   return (
     <>
-      <Box className="flex flex-col gap-0 mb-6">
+      <div className="flex flex-col gap-0 mb-6">
         {choices.map((choice) => {
           const feedback = getChoiceFeedback(choice.id);
           const isSelected = selectedChoices.has(choice.id);
+          const pillStyles = getChoicePillStyles(isSelected && !checked, feedback);
 
           return (
-            <Box key={choice.id}>
-              <ChoicePill
-                className="flex items-center gap-3 py-3 px-4 text-base"
-                selected={isSelected && !checked}
-                feedback={feedback}
+            <div key={choice.id}>
+              <div
+                className="flex items-center gap-3 py-3 px-4 text-base w-full mb-1 rounded-full"
+                style={pillStyles}
                 onClick={() => toggleChoice(choice.id)}
               >
                 <span className="opacity-90">•</span>
-                <Box
-                  component="span"
-                  sx={{ '& p': { margin: 0 }, '& ul, & ol': { margin: 0, paddingInlineStart: 20 } }}
+                <span
+                  className="[&_p]:m-0 [&_ul]:m-0 [&_ol]:m-0 [&_ul]:[padding-inline-start:20px] [&_ol]:[padding-inline-start:20px]"
                   dangerouslySetInnerHTML={{ __html: choice.answer }}
                 />
-                {feedback && <Box className="ml-auto">{getFeedbackIcon(feedback)}</Box>}
-              </ChoicePill>
+                {feedback && <span className="ms-auto">{getFeedbackIcon(feedback)}</span>}
+              </div>
               {checked && choice.feedback && isSelected && (
-                <Box
-                  className="text-sm mt-1 ml-8 italic opacity-90"
-                  sx={{ '& p': { margin: 0 } }}
+                <div
+                  className="text-sm mt-1 ms-8 italic opacity-90 [&_p]:m-0"
                   dangerouslySetInnerHTML={{ __html: choice.feedback }}
                 />
               )}
-            </Box>
+            </div>
           );
         })}
-      </Box>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
           <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
             disabled={!checked && selectedChoices.size === 0}
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+            className="normal-case font-semibold rounded-2xl"
           >
+            {checked ? <RotateCcw size={16} className="me-2" /> : <Check size={16} className="me-2" />}
             {checked ? t('retry') : t('check')}
           </Button>
           {checked && !isAnswerCorrect && (
             <Button
               onClick={handleShowSolution}
-              variant="contained"
-              startIcon={<LightbulbIcon />}
-              className="normal-case font-semibold"
-              sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+              className="normal-case font-semibold rounded-2xl"
             >
+              <Lightbulb size={16} className="me-2" />
               {t('show_solution')}
             </Button>
           )}
-        </Box>
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">{markLabel}</MarkBox>
-      </Box>
+        </div>
+        <div className="py-2 px-4 font-semibold text-[0.95rem] rounded-2xl bg-card border border-border text-foreground">
+          {markLabel}
+        </div>
+      </div>
     </>
   );
 };
