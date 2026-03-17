@@ -1,4 +1,4 @@
-import {
+import React, {
   memo,
   useCallback,
   useEffect,
@@ -6,42 +6,14 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  FormControlLabel,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Step,
-  StepLabel,
-  Stepper,
-  Switch,
-  TextField,
-  Typography,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
-import JustificationInput from '../../components/JustificationInput';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import CircleIcon from '@mui/icons-material/Circle';
-import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
+import { Check, ChevronLeft, ChevronRight, Plus, Trash2, ImagePlus } from 'lucide-react';
 import { Stage, Layer, Rect, Text, Image as KonvaImage, Group, Transformer } from 'react-konva';
 import type Konva from 'konva';
 import { Editor } from '@tinymce/tinymce-react';
 import type { Editor as TinyMCEEditor } from 'tinymce';
 import { useTranslation } from 'react-i18next';
+import { cn, Input, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@item-bank/ui';
+import JustificationInput from '../../components/JustificationInput';
 import type { QuestionFormData } from '../../components/QuestionEditorShell';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -99,38 +71,20 @@ function distributeMarks(items: WizardItem[]): WizardItem[] {
   }));
 }
 
-// ─── Styled components ────────────────────────────────────────────────────────
+// ─── Color map ────────────────────────────────────────────────────────────────
 
-const DropZone = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'dragOver',
-})<{ dragOver?: boolean }>(({ theme, dragOver }) => ({
-  border: `2px dashed ${dragOver ? theme.palette.primary.main : theme.palette.divider}`,
-  backgroundColor: dragOver ? theme.palette.action.hover : theme.palette.action.selected,
-  cursor: 'pointer',
-  borderRadius: theme.spacing(1.5),
-  transition: theme.transitions.create(['border-color', 'background-color'], {
-    duration: theme.transitions.duration.short,
-  }),
-}));
+const COLOR_HEX: Record<string, string> = {
+  primary: '#6366f1',
+  secondary: '#8b5cf6',
+  success: '#22c55e',
+  warning: '#f59e0b',
+  error: '#ef4444',
+  info: '#3b82f6',
+};
 
-const ItemCard = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'selected',
-})<{ selected?: boolean }>(({ theme, selected }) => ({
-  border: `1.5px solid ${selected ? theme.palette.primary.main : theme.palette.divider}`,
-  borderRadius: theme.spacing(1.5),
-  padding: theme.spacing(1.5),
-  backgroundColor: selected
-    ? alpha(theme.palette.primary.main, 0.06)
-    : theme.palette.background.paper,
-  cursor: 'pointer',
-  transition: theme.transitions.create(['border-color', 'background-color'], {
-    duration: theme.transitions.duration.short,
-  }),
-  '&:hover': {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: alpha(theme.palette.primary.main, 0.04),
-  },
-}));
+function resolveColor(colorKey: string): string {
+  return COLOR_HEX[colorKey] ?? COLOR_HEX['primary'];
+}
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -144,8 +98,7 @@ type DragDropImageWizardProps = {
 
 function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWizardProps) {
   const { t, i18n } = useTranslation('questions');
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+  const isDark = document.documentElement.classList.contains('dark');
 
   // ── Step 1 state ─────────────────────────────────────────────────────────
 
@@ -235,22 +188,12 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
 
   // ── Group color helpers ──────────────────────────────────────────────────
 
-  const resolveColor = useCallback(
-    (colorKey: string): string => {
-      type PaletteKey = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
-      const key = colorKey as PaletteKey;
-      if (theme.palette[key]) return theme.palette[key].main;
-      return theme.palette.primary.main;
-    },
-    [theme]
-  );
-
   const getItemColor = useCallback(
     (item: WizardItem): string => {
       const group = groups.find((g) => g.id === item.groupId);
-      return group ? resolveColor(group.color) : theme.palette.grey[400];
+      return group ? resolveColor(group.color) : '#9ca3af';
     },
-    [groups, resolveColor, theme]
+    [groups]
   );
 
   const normalizeZone = useCallback(
@@ -560,10 +503,10 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
       statusbar: false,
       placeholder: t('question_text_placeholder'),
       content_style: isDark
-        ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: ${theme.palette.background.default}; color: ${alpha(theme.palette.text.primary, 0.9)}; } p:first-child { margin-top: 0; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { top: 16px !important; left: 16px !important; right: 16px !important; }`
+        ? 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; } p:first-child { margin-top: 0; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { top: 16px !important; left: 16px !important; right: 16px !important; }'
         : 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; } p:first-child { margin-top: 0; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { top: 16px !important; left: 16px !important; right: 16px !important; }',
     }),
-    [isDark, i18n.language, t, theme]
+    [isDark, i18n.language, t]
   );
 
   // ── Rendered zones for Konva ─────────────────────────────────────────────
@@ -603,73 +546,94 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
     transformer.getLayer()?.batchDraw();
   }, [selectedCanvasZone, renderedZones]);
 
+  // ── Step labels ───────────────────────────────────────────────────────────
+
+  const steps = [
+    t('editor.drag_drop_image.step_1_label'),
+    t('editor.drag_drop_image.step_2_label'),
+  ];
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <Box className="flex flex-col gap-6 p-6">
-      {/* Stepper */}
-      <Stepper activeStep={step} alternativeLabel>
-        <Step>
-          <StepLabel>{t('editor.drag_drop_image.step_1_label')}</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>{t('editor.drag_drop_image.step_2_label')}</StepLabel>
-        </Step>
-      </Stepper>
+    <div className="flex flex-col gap-6 p-6">
+      {/* Step indicator */}
+      <div className="flex items-center gap-0 mb-6">
+        {steps.map((stepLabel, i) => (
+          <React.Fragment key={i}>
+            <div className="flex items-center gap-2">
+              <div
+                className={cn(
+                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors',
+                  i < step
+                    ? 'bg-primary text-primary-foreground'
+                    : i === step
+                    ? 'border-2 border-primary bg-primary/10 text-primary'
+                    : 'border-2 border-border bg-muted text-muted-foreground'
+                )}
+              >
+                {i < step ? <Check size={13} /> : i + 1}
+              </div>
+              <span
+                className={cn(
+                  'text-xs font-medium hidden sm:block',
+                  i === step ? 'text-foreground' : 'text-muted-foreground'
+                )}
+              >
+                {stepLabel}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className={cn(
+                  'flex-1 h-0.5 mx-2 rounded-full',
+                  i < step ? 'bg-primary' : 'bg-border'
+                )}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
 
       {/* ── STEP 1 ───────────────────────────────────────────────────── */}
       {step === 0 && (
-        <Box className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5">
           {step1Errors.length > 0 && (
-            <Alert severity="error">
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               <ul className="m-0 ps-4">
                 {step1Errors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
               </ul>
-            </Alert>
+            </div>
           )}
 
           {/* Name + Mark row */}
-          <Box className="flex gap-4 flex-wrap">
-            <TextField
-              label={t('question_name')}
+          <div className="flex gap-4 flex-wrap">
+            <Input
+              placeholder={t('question_name')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              size="small"
               className="flex-1 min-w-[200px]"
             />
-            <TextField
-              label={t('mark')}
+            <Input
               type="number"
+              placeholder={t('mark')}
               value={mark}
               onChange={(e) => setMark(Number(e.target.value))}
-              size="small"
-              inputProps={{ min: 0, step: 0.5 }}
+              min={0}
+              step={0.5}
               style={{ width: 120 }}
             />
-          </Box>
+          </div>
 
           {/* Question text */}
-          <Box>
-            <Typography
-              variant="caption"
-              className="block mb-1"
-              sx={{ color: 'text.secondary' }}
-            >
-              {t('question_text')} <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-            </Typography>
-            <Box
-              className="overflow-hidden"
-              sx={{
-                borderRadius: 3,
-                border: isDark
-                  ? `1.5px solid ${alpha(theme.palette.primary.main, 0.6)}`
-                  : `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                backgroundColor: theme.palette.background.paper,
-              }}
-            >
+          <div>
+            <span className="block text-xs font-medium text-muted-foreground mb-1">
+              {t('question_text')} <span className="text-destructive">*</span>
+            </span>
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
               <Editor
                 tinymceScriptSrc="/tinymce/tinymce.min.js"
                 licenseKey="gpl"
@@ -680,8 +644,8 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                 onEditorChange={(val) => setText(val)}
                 init={editorInit}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           {/* Justification */}
           <JustificationInput
@@ -692,41 +656,39 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
           />
 
           {/* Background image upload */}
-          <Box>
-            <Typography
-              variant="caption"
-              className="block mb-1"
-              sx={{ color: 'text.secondary' }}
-            >
+          <div>
+            <span className="block text-xs font-medium text-muted-foreground mb-1">
               {t('editor.background_image')} *
-            </Typography>
+            </span>
             {bgImageError && (
-              <Alert severity="error" className="mb-2">
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-2 text-sm text-destructive mb-2">
                 {bgImageError}
-              </Alert>
+              </div>
             )}
             {bgImageDataUrl ? (
-              <Box className="inline-block">
+              <div className="inline-block">
                 <img
                   src={bgImageDataUrl}
                   alt={t('editor.background_image')}
                   className="max-w-full block rounded-lg"
                   style={{ maxHeight: 240 }}
                 />
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  className="mt-2"
+                <button
+                  type="button"
+                  className="mt-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
                   onClick={() => setBgImageDataUrl(null)}
                 >
                   {t('editor.remove_image')}
-                </Button>
-              </Box>
+                </button>
+              </div>
             ) : (
-              <DropZone
-                dragOver={bgDragOver}
-                className="flex flex-col items-center justify-center p-8 gap-2"
+              <div
+                className={cn(
+                  'flex flex-col items-center justify-center p-8 gap-2 rounded-xl cursor-pointer border-2 border-dashed transition-colors',
+                  bgDragOver
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border bg-muted/40 hover:border-primary/50 hover:bg-muted/60'
+                )}
                 onClick={() => bgFileRef.current?.click()}
                 onDragOver={(e: React.DragEvent) => {
                   e.preventDefault();
@@ -740,11 +702,9 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                   if (file) handleBgFile(file);
                 }}
               >
-                <AddPhotoAlternateOutlinedIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {t('editor.drag_and_drop')}
-                </Typography>
-              </DropZone>
+                <ImagePlus size={40} className="text-muted-foreground/60" />
+                <p className="text-sm text-muted-foreground">{t('editor.drag_and_drop')}</p>
+              </div>
             )}
             <input
               ref={bgFileRef}
@@ -757,53 +717,61 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                 e.target.value = '';
               }}
             />
-          </Box>
+          </div>
 
           {/* Nav */}
-          <Box className="flex justify-end gap-3 pt-2">
-            <Button variant="outlined" color="inherit" onClick={onCancel}>
+          <div className="flex justify-between mt-6 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
               {t('cancel')}
-            </Button>
-            <Button variant="contained" onClick={handleNext}>
-              {t('editor.drag_drop_image.step_2_label')} →
-            </Button>
-          </Box>
-        </Box>
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              {t('common:next')}
+              <ChevronRight size={15} className="rtl:rotate-180" />
+            </button>
+          </div>
+        </div>
       )}
 
       {/* ── STEP 2 ───────────────────────────────────────────────────── */}
       {step === 1 && (
-        <Box className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {saveErrors.length > 0 && (
-            <Alert severity="error">
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               <ul className="m-0 ps-4">
                 {saveErrors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
               </ul>
-            </Alert>
+            </div>
           )}
 
           {selectedItemId ? (
-            <Alert severity="info" className="py-1">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 px-4 py-2 text-sm text-blue-700 dark:text-blue-300">
               {t('editor.drag_drop_image.placement_mode_hint', {
                 answer: items.find((i) => i.id === selectedItemId)?.answer || '…',
               })}
-            </Alert>
+            </div>
           ) : (
-            <Alert severity="info" className="py-1">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 px-4 py-2 text-sm text-blue-700 dark:text-blue-300">
               {t('editor.drag_drop_image.select_item_hint')}
-            </Alert>
+            </div>
           )}
 
           {/* Canvas */}
           {bgImg && (
-            <Box
-              className="overflow-auto max-w-full rounded"
-              sx={{
-                border: `1px solid ${theme.palette.divider}`,
-                cursor: selectedItemId ? 'crosshair' : 'default',
-              }}
+            <div
+              className={cn(
+                'overflow-auto max-w-full rounded border border-border',
+                selectedItemId ? 'cursor-crosshair' : 'cursor-default'
+              )}
             >
               <Stage
                 ref={stageRef}
@@ -823,7 +791,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                         y={zone.top}
                         width={zone.width}
                         height={zone.height}
-                        fill={alpha(zone.color, 0.3)}
+                        fill={zone.color + '4d'}
                         stroke={zone.color}
                         strokeWidth={2}
                         cornerRadius={4}
@@ -892,124 +860,139 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                   />
                 </Layer>
               </Stage>
-            </Box>
+            </div>
           )}
 
           {/* Groups + auto-distribute row */}
-          <Box className="flex flex-wrap gap-4">
-            <Box className="flex-1 min-w-[220px]">
-              <Box className="flex items-center justify-between mb-2">
-                <Typography variant="subtitle2">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-[220px]">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-semibold text-foreground">
                   {t('editor.drag_drop_image.groups_label')}
-                </Typography>
-                <Button
-                  size="small"
-                  startIcon={<AddIcon />}
+                </h4>
+                <button
+                  type="button"
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   onClick={() => setGroupDialogOpen(true)}
                   disabled={groups.length >= GROUP_COLORS.length}
                 >
+                  <Plus size={13} />
                   {t('editor.drag_drop_image.add_group')}
-                </Button>
-              </Box>
-              <Box className="flex flex-col gap-1">
+                </button>
+              </div>
+              <div className="flex flex-col gap-1">
                 {groups.map((group) => (
-                  <Box key={group.id} className="flex items-center gap-2">
-                    <CircleIcon sx={{ color: resolveColor(group.color), fontSize: 14 }} />
-                    <Typography variant="body2" className="flex-1">
-                      {group.name}
-                    </Typography>
-                    <IconButton size="small" onClick={() => deleteGroup(group.id)}>
-                      <DeleteOutlineIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                  <div key={group.id} className="flex items-center gap-2">
+                    <span
+                      className="inline-block w-3.5 h-3.5 rounded-full shrink-0"
+                      style={{ backgroundColor: resolveColor(group.color) }}
+                    />
+                    <p className="text-sm text-muted-foreground flex-1">{group.name}</p>
+                    <button
+                      type="button"
+                      aria-label={t('editor.drag_drop_image.delete_group')}
+                      className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
+                      onClick={() => deleteGroup(group.id)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 ))}
-              </Box>
-            </Box>
+              </div>
+            </div>
 
-            <Box className="flex items-start pt-1">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={autoDistribute}
-                    onChange={(e) => setAutoDistribute(e.target.checked)}
-                    size="small"
+            <div className="flex items-start pt-1">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={autoDistribute}
+                  onClick={() => setAutoDistribute((v) => !v)}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    autoDistribute ? 'bg-primary' : 'bg-input'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform',
+                      autoDistribute ? 'translate-x-4' : 'translate-x-0'
+                    )}
                   />
-                }
-                label={
-                  <Typography variant="body2">
-                    {t('editor.drag_drop_image.auto_distribute')}
-                  </Typography>
-                }
-              />
-            </Box>
-          </Box>
+                </button>
+                <span className="text-sm text-muted-foreground">
+                  {t('editor.drag_drop_image.auto_distribute')}
+                </span>
+              </label>
+            </div>
+          </div>
 
           {/* Items */}
-          <Box>
-            <Box className="flex items-center justify-between mb-2">
-              <Typography variant="subtitle2">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold text-foreground">
                 {t('editor.drag_drop_image.items_label')}
-              </Typography>
-              <Button
-                size="small"
-                startIcon={<AddIcon />}
+              </h4>
+              <button
+                type="button"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors"
                 onClick={() => setAddItemDialogOpen(true)}
               >
+                <Plus size={13} />
                 {t('editor.drag_drop_image.add_item')}
-              </Button>
-            </Box>
+              </button>
+            </div>
 
-            <Box className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
               {items.map((item, idx) => (
-                <ItemCard
+                <div
                   key={item.id}
-                  selected={selectedItemId === item.id}
+                  className={cn(
+                    'rounded-xl border p-3 cursor-pointer transition-colors',
+                    selectedItemId === item.id
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border bg-card hover:border-primary/50 hover:bg-primary/[0.03]'
+                  )}
                   onClick={() =>
                     setSelectedItemId((prev) => (prev === item.id ? null : item.id))
                   }
                 >
-                  <Box className="flex items-start gap-3 flex-wrap">
+                  <div className="flex items-start gap-3 flex-wrap">
                     {/* Index circle */}
-                    <Box
-                      className="flex items-center justify-center shrink-0 rounded-full"
+                    <div
+                      className="flex items-center justify-center shrink-0 rounded-full text-white text-xs font-bold"
                       style={{ width: 24, height: 24, backgroundColor: getItemColor(item) }}
                     >
-                      <Typography variant="caption" className="text-white font-bold">
-                        {idx + 1}
-                      </Typography>
-                    </Box>
+                      {idx + 1}
+                    </div>
 
                     {/* Answer / image */}
-                    <Box className="flex-1 min-w-[160px]">
+                    <div className="flex-1 min-w-[160px]">
                       {item.itemType === 'text' ? (
-                        <TextField
-                          size="small"
+                        <Input
                           placeholder={t('editor.drag_drop_image.answer_placeholder')}
                           value={item.answer}
                           onChange={(e) => updateItem(item.id, 'answer', e.target.value)}
                           onClick={(e) => e.stopPropagation()}
-                          fullWidth
                         />
                       ) : (
-                        <Box className="flex flex-col gap-2">
-                          <TextField
-                            size="small"
+                        <div className="flex flex-col gap-2">
+                          <Input
                             placeholder={t('editor.drag_drop_image.answer_placeholder')}
                             value={item.answer}
                             onChange={(e) => updateItem(item.id, 'answer', e.target.value)}
                             onClick={(e) => e.stopPropagation()}
-                            fullWidth
                           />
                           {item.image ? (
-                            <Box className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <img
                                 src={item.image}
                                 alt={item.answer}
                                 style={{ height: 40, objectFit: 'contain', borderRadius: 4 }}
                               />
-                              <Button
-                                size="small"
-                                color="error"
+                              <button
+                                type="button"
+                                className="px-2 py-1 text-xs font-medium rounded-lg text-destructive border border-destructive/40 hover:bg-destructive/10 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   updateItem(item.id, 'image', undefined);
@@ -1021,326 +1004,306 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                                 }}
                               >
                                 {t('editor.remove_image')}
-                              </Button>
-                            </Box>
+                              </button>
+                            </div>
                           ) : (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              startIcon={<AddPhotoAlternateOutlinedIcon />}
-                              component="label"
+                            <label
+                              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors cursor-pointer w-fit"
                               onClick={(e) => e.stopPropagation()}
                             >
+                              <ImagePlus size={13} />
                               {t('editor.drag_drop_image.upload_item_image')}
                               <input
                                 type="file"
                                 accept="image/*"
-                                hidden
+                                className="hidden"
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) handleItemImageFile(item.id, file);
                                   e.target.value = '';
                                 }}
                               />
-                            </Button>
+                            </label>
                           )}
                           {itemImageErrors[item.id] && (
-                            <Typography variant="caption" color="error">
+                            <span className="text-xs text-destructive">
                               {itemImageErrors[item.id]}
-                            </Typography>
+                            </span>
                           )}
-                        </Box>
+                        </div>
                       )}
-                    </Box>
+                    </div>
 
-                    {/* Group */}
-                    <FormControl size="small" style={{ minWidth: 120 }}>
-                      <InputLabel shrink>{t('editor.drag_drop_image.col_group')}</InputLabel>
-                      <Select
-                        label={t('editor.drag_drop_image.col_group')}
-                        value={item.groupId}
-                        onChange={(e) => updateItem(item.id, 'groupId', e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        displayEmpty
-                        renderValue={(value) => {
-                          if (!value) {
-                            return (
-                              <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-                                {t('editor.drag_drop_image.no_group')}
-                              </Typography>
-                            );
-                          }
-                          const selectedGroup = groups.find((g) => g.id === value);
-                          if (!selectedGroup) {
-                            return (
-                              <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-                                {t('editor.drag_drop_image.no_group')}
-                              </Typography>
-                            );
-                          }
-                          return (
-                            <Box className="flex items-center gap-1">
-                              <CircleIcon sx={{ fontSize: 10, color: resolveColor(selectedGroup.color) }} />
-                              <Typography variant="body2">{selectedGroup.name}</Typography>
-                            </Box>
-                          );
-                        }}
-                      >
-                        <MenuItem value="">
-                          {t('editor.drag_drop_image.no_group')}
-                        </MenuItem>
-                        {groups.map((g) => (
-                          <MenuItem key={g.id} value={g.id}>
-                            <Box className="flex items-center gap-1">
-                              <CircleIcon
-                                sx={{ fontSize: 10, color: resolveColor(g.color) }}
-                              />
-                              {g.name}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                    {/* Group selector */}
+                    <select
+                      className="h-8 rounded-lg border border-border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      style={{ minWidth: 120 }}
+                      value={item.groupId}
+                      onChange={(e) => updateItem(item.id, 'groupId', e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <option value="">{t('editor.drag_drop_image.no_group')}</option>
+                      {groups.map((g) => (
+                        <option key={g.id} value={g.id}>
+                          {g.name}
+                        </option>
+                      ))}
+                    </select>
 
                     {/* Mark % */}
-                    <TextField
-                      size="small"
-                      label={t('editor.drag_drop_image.col_mark')}
+                    <Input
                       type="number"
+                      placeholder={t('editor.drag_drop_image.col_mark')}
                       value={item.markPercent}
                       onChange={(e) =>
                         updateItem(item.id, 'markPercent', Number(e.target.value))
                       }
                       onClick={(e) => e.stopPropagation()}
-                      inputProps={{ min: 0, max: 100, step: 1 }}
+                      min={0}
+                      max={100}
+                      step={1}
                       disabled={autoDistribute}
                       style={{ width: 90 }}
                     />
 
-                    {/* Unlimited */}
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          size="small"
-                          checked={item.unlimitedReuse}
-                          onChange={(e) =>
-                            updateItem(item.id, 'unlimitedReuse', e.target.checked)
-                          }
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      }
-                      label={
-                        <Typography variant="caption">
-                          {t('editor.drag_drop_image.col_unlimited')}
-                        </Typography>
-                      }
-                    />
+                    {/* Unlimited reuse */}
+                    <label
+                      className="flex items-center gap-1.5 cursor-pointer select-none"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-border accent-primary"
+                        checked={item.unlimitedReuse}
+                        onChange={(e) =>
+                          updateItem(item.id, 'unlimitedReuse', e.target.checked)
+                        }
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {t('editor.drag_drop_image.col_unlimited')}
+                      </span>
+                    </label>
 
-                    {/* Zones count */}
-                    <Chip
-                      size="small"
-                      label={t(
+                    {/* Zones count badge */}
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: getItemColor(item) + '26',
+                        color: getItemColor(item),
+                      }}
+                    >
+                      {t(
                         item.zones.length === 1
                           ? 'editor.drag_drop_image.zones_count_one'
                           : 'editor.drag_drop_image.zones_count_other',
                         { count: item.zones.length }
                       )}
-                      sx={{
-                        backgroundColor: alpha(getItemColor(item), 0.15),
-                        color: getItemColor(item),
-                      }}
-                    />
+                    </span>
 
-                    {/* Delete */}
-                    <IconButton
-                      size="small"
-                      color="error"
+                    {/* Delete item */}
+                    <button
+                      type="button"
+                      aria-label={t('editor.drag_drop_image.delete_item')}
+                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteItem(item.id);
                       }}
                     >
-                      <DeleteOutlineIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
 
-                  <Box className="mt-3 pt-3 border-t border-solid" sx={{ borderColor: 'divider' }}>
-                    <Box className="flex items-center justify-between gap-2 mb-2">
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                  {/* Zones section */}
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-xs font-semibold text-muted-foreground">
                         {t('editor.drag_drop_image.col_zones')}
-                      </Typography>
-                      <Button
-                        size="small"
-                        startIcon={<AddIcon />}
+                      </span>
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         onClick={(e) => {
                           e.stopPropagation();
                           addZoneToItem(item.id);
                         }}
                         disabled={item.zones.length >= 1}
                       >
+                        <Plus size={12} />
                         {t('editor.drag_drop_image.add_zone')}
-                      </Button>
-                    </Box>
+                      </button>
+                    </div>
 
-                    <Box className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2">
                       {item.zones.map((zone, zoneIndex) => (
-                        <Box
+                        <div
                           key={zone.id}
-                          className="flex items-center gap-2 flex-wrap rounded-md p-2"
-                          sx={{ backgroundColor: alpha(theme.palette.action.hover, 0.35) }}
+                          className="flex items-center gap-2 flex-wrap rounded-lg p-2 bg-muted/40"
                         >
-                          <Typography variant="caption" className="min-w-[54px]" sx={{ color: 'text.secondary' }}>
+                          <span className="text-xs text-muted-foreground min-w-[54px]">
                             {t('editor.drag_drop_image.zone_label', { index: zoneIndex + 1 })}
-                          </Typography>
-                          <TextField
-                            size="small"
-                            label={t('editor.drag_drop_image.left_label')}
+                          </span>
+                          <Input
                             type="number"
+                            placeholder={t('editor.drag_drop_image.left_label')}
                             value={zone.left}
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) =>
                               updateZonePosition(item.id, zone.id, 'left', Number(e.target.value) || 0)
                             }
-                            inputProps={{ step: 1 }}
+                            step={1}
                             style={{ width: 110 }}
                           />
-                          <TextField
-                            size="small"
-                            label={t('editor.drag_drop_image.top_label')}
+                          <Input
                             type="number"
+                            placeholder={t('editor.drag_drop_image.top_label')}
                             value={zone.top}
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) =>
                               updateZonePosition(item.id, zone.id, 'top', Number(e.target.value) || 0)
                             }
-                            inputProps={{ step: 1 }}
+                            step={1}
                             style={{ width: 110 }}
                           />
-                          <IconButton
-                            size="small"
-                            color="error"
+                          <button
+                            type="button"
+                            aria-label={t('editor.drag_drop_image.delete_zone')}
+                            className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteZone(item.id, zone.id);
                             }}
                           >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       ))}
-                    </Box>
-                  </Box>
-                </ItemCard>
+                    </div>
+                  </div>
+                </div>
               ))}
               {items.length === 0 && (
-                <Typography
-                  variant="body2"
-                  className="py-4 text-center"
-                  sx={{ color: 'text.secondary' }}
-                >
+                <p className="py-4 text-center text-sm text-muted-foreground">
                   {t('editor.drag_drop_image.add_item')}
-                </Typography>
+                </p>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           {/* Nav */}
-          <Box className="flex justify-between pt-2">
-            <Button variant="outlined" color="inherit" onClick={() => setStep(0)}>
-              ← {t('editor.drag_drop_image.step_1_label')}
-            </Button>
-            <Box className="flex gap-3">
-              <Button variant="outlined" color="inherit" onClick={onCancel}>
+          <div className="flex justify-between mt-6 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setStep(0)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
+              <ChevronLeft size={15} className="rtl:rotate-180" />
+              {t('common:back')}
+            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              >
                 {t('cancel')}
-              </Button>
-              <Button variant="contained" onClick={handleSave}>
-                {t('editor.drag_drop_image.step_2_label')} ✓
-              </Button>
-            </Box>
-          </Box>
-        </Box>
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="px-6 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                {t('common:save')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Add Group Dialog ─────────────────────────────────────────── */}
-      <Dialog
-        open={groupDialogOpen}
-        onClose={() => setGroupDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>{t('editor.drag_drop_image.add_group_dialog_title')}</DialogTitle>
-        <DialogContent>
-          <Box className="flex flex-col gap-3 pt-2">
-            <TextField
+      <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>{t('editor.drag_drop_image.add_group_dialog_title')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-2">
+            <Input
               autoFocus
-              label={t('editor.drag_drop_image.group_name_label')}
+              placeholder={t('editor.drag_drop_image.group_name_label')}
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
-              size="small"
-              fullWidth
             />
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <div>
+              <span className="text-xs font-medium text-muted-foreground">
                 {t('editor.drag_drop_image.group_color_label')}
-              </Typography>
-              <Box className="flex gap-2 flex-wrap mt-1">
+              </span>
+              <div className="flex gap-2 flex-wrap mt-1">
                 {GROUP_COLORS.map((c) => (
-                  <Box
+                  <button
                     key={c}
-                    onClick={() => setNewGroupColor(c)}
-                    className="rounded-full cursor-pointer"
-                    style={{ width: 28, height: 28, backgroundColor: resolveColor(c) }}
-                    sx={{
-                      border:
+                    type="button"
+                    aria-label={c}
+                    className="rounded-full transition-[box-shadow]"
+                    style={{
+                      width: 28,
+                      height: 28,
+                      backgroundColor: resolveColor(c),
+                      boxShadow:
                         newGroupColor === c
-                          ? `3px solid ${theme.palette.text.primary}`
-                          : '3px solid transparent',
+                          ? '0 0 0 3px hsl(var(--foreground))'
+                          : '0 0 0 3px transparent',
                     }}
+                    onClick={() => setNewGroupColor(c)}
                   />
                 ))}
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setGroupDialogOpen(false)}
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
+              {t('cancel')}
+            </button>
+            <Button
+              onClick={handleAddGroup}
+              disabled={!newGroupName.trim()}
+            >
+              {t('editor.drag_drop_image.add_group_confirm')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setGroupDialogOpen(false)} color="inherit">
-            {t('cancel')}
-          </Button>
-          <Button
-            onClick={handleAddGroup}
-            variant="contained"
-            disabled={!newGroupName.trim()}
-          >
-            {t('editor.drag_drop_image.add_group_confirm')}
-          </Button>
-        </DialogActions>
       </Dialog>
 
       {/* ── Add Item Dialog ──────────────────────────────────────────── */}
-      <Dialog
-        open={addItemDialogOpen}
-        onClose={() => setAddItemDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>{t('editor.drag_drop_image.add_item')}</DialogTitle>
-        <DialogContent>
-          <Box className="flex gap-3 justify-center pt-2">
-            <Button variant="outlined" onClick={() => addItem('text')}>
+      <Dialog open={addItemDialogOpen} onOpenChange={setAddItemDialogOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>{t('editor.drag_drop_image.add_item')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-3 justify-center pt-2">
+            <Button variant="outline" onClick={() => addItem('text')}>
               {t('editor.drag_drop_image.add_item_text')}
             </Button>
-            <Button variant="outlined" onClick={() => addItem('image')}>
+            <Button variant="outline" onClick={() => addItem('image')}>
               {t('editor.drag_drop_image.add_item_image')}
             </Button>
-          </Box>
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setAddItemDialogOpen(false)}
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
+              {t('cancel')}
+            </button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddItemDialogOpen(false)} color="inherit">
-            {t('cancel')}
-          </Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 }
 
