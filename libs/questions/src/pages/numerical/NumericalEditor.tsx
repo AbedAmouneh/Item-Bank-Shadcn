@@ -104,9 +104,9 @@ function NumericalEditor() {
   return (
     <div className="flex flex-col gap-4">
       {/* Answers section */}
-      <label className="block text-[0.8125rem] font-normal leading-tight text-muted-foreground">
+      <h4 className="text-sm font-semibold text-foreground">
         {t('editor.answers')} <span className="text-destructive">*</span>
-      </label>
+      </h4>
 
       {answers.map((answer, index) => (
         <NumericalAnswerRow
@@ -190,9 +190,9 @@ function NumericalEditor() {
       {/* Units list */}
       {showUnits && (
         <div className="flex flex-col gap-4">
-          <label className="block text-[0.8125rem] font-normal leading-tight text-muted-foreground">
+          <h4 className="text-sm font-semibold text-foreground">
             {t('editor.numerical.units')} <span className="text-destructive">*</span>
-          </label>
+          </h4>
 
           {units.map((unit, index) => (
             <NumericalUnitRow
