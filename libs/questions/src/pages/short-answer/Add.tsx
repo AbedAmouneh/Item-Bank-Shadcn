@@ -86,7 +86,7 @@ function Add() {
             <Input
               value={answer.text}
               onChange={(e) => handleAnswerChange(answer.id, e.target.value)}
-              placeholder={t('editor.short_answer.answer_placeholder')}
+              placeholder={t('editor.answer_placeholder')}
               className="flex-1 text-sm"
             />
 
@@ -127,7 +127,7 @@ function Add() {
         className="self-start flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
       >
         <Plus size={15} />
-        {t('editor.short_answer.add_answer')}
+        {t('editor.add_answer')}
       </button>
 
       <hr className="border-border" />
@@ -139,7 +139,7 @@ function Add() {
           <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
             <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
           </div>
-          <span className="text-sm text-foreground">{t('editor.short_answer.ignore_casing')}</span>
+          <span className="text-sm text-foreground">{t('editor.ignore_casing')}</span>
         </label>
 
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -147,7 +147,7 @@ function Add() {
           <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
             <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
           </div>
-          <span className="text-sm text-foreground">{t('editor.short_answer.require_unique_answers')}</span>
+          <span className="text-sm text-foreground">{t('editor.require_unique_answers')}</span>
         </label>
       </div>
 
