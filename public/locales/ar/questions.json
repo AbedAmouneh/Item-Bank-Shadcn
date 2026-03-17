@@ -189,7 +189,8 @@
             "cancel": "إلغاء",
             "save": "حفظ",
             "open_calculator": "فتح الآلة الحاسبة",
-            "open_math_editor": "فتح محرر الرياضيات"
+            "open_math_editor": "فتح محرر الرياضيات",
+            "select_unit": "اختر الوحدة"
         },
         "fill_in_blanks": {
             "toolbar_key": "مفتاح",
