@@ -124,7 +124,7 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
   if (!question.background_image) {
     return (
       <p className="text-sm text-muted-foreground">
-        {t('editor.background_image', { defaultValue: 'Background image' })}: {t('common:not_available', { defaultValue: 'Not available' })}
+        {t('editor.background_image')}: {t('common:not_available')}
       </p>
     );
   }
