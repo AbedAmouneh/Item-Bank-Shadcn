@@ -56,16 +56,16 @@ function AddEssay() {
       {/* Response format */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted-foreground">
-          {t('editor.essay.response_format')} *
+          {t('editor.response_format')} *
         </label>
         <Select value={responseFormat} onValueChange={handleResponseFormatChange}>
           <SelectTrigger className="text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="html">{t('editor.essay.format_html')}</SelectItem>
-            <SelectItem value="html_with_file_picker">{t('editor.essay.format_html_file_picker')}</SelectItem>
-            <SelectItem value="plain_text">{t('editor.essay.format_plain_text')}</SelectItem>
+            <SelectItem value="html">{t('editor.response_format_html')}</SelectItem>
+            <SelectItem value="html_with_file_picker">{t('editor.response_format_html_with_file_picker')}</SelectItem>
+            <SelectItem value="plain_text">{t('editor.response_format_plain_text')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -76,14 +76,14 @@ function AddEssay() {
         <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
           <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
         </div>
-        <span className="text-sm text-foreground">{t('editor.essay.enable_word_limit')}</span>
+        <span className="text-sm text-foreground">{t('editor.enable_word_limit')}</span>
       </label>
 
       {/* Word limit fields — conditional */}
       {enableWordLimit && (
         <div className="flex gap-4 items-end flex-wrap">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">{t('editor.essay.min_words')}</label>
+            <label className="text-xs font-medium text-muted-foreground">{t('editor.min_words')}</label>
             <Input
               type="number"
               value={minLimit}
@@ -93,7 +93,7 @@ function AddEssay() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">{t('editor.essay.max_words')}</label>
+            <label className="text-xs font-medium text-muted-foreground">{t('editor.max_words')}</label>
             <Input
               type="number"
               value={maxLimit}
@@ -115,7 +115,7 @@ function AddEssay() {
             <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
               <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
             </div>
-            <span className="text-sm text-foreground">{t('editor.essay.allow_attachments')}</span>
+            <span className="text-sm text-foreground">{t('editor.allow_attachments')}</span>
           </label>
 
           {allowAttachments && (
@@ -123,7 +123,7 @@ function AddEssay() {
               {/* Number of attachments + required toggle */}
               <div className="flex gap-4 items-end flex-wrap">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">{t('editor.essay.number_of_attachments')}</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t('editor.number_of_attachments')}</label>
                   <Input
                     type="number"
                     value={numberOfAttachments}
@@ -136,7 +136,7 @@ function AddEssay() {
 
               {/* Allowed file types — pill badges */}
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">{t('editor.essay.attachment_formats')}</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">{t('editor.attachments_format')}</p>
                 <div className="flex flex-wrap gap-2">
                   {['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'].map((format) => {
                     const active = (attachmentsFormat ?? []).includes(format);
