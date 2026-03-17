@@ -333,6 +333,7 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
             >
               <DropdownMenuPrimitive.Trigger asChild>
                 <button
+                  aria-label={t('row_menu')}
                   className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -466,6 +467,7 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
         </span>
         <div className="flex items-center gap-1">
           <button
+            aria-label={t('previous_page')}
             disabled={!table.getCanPreviousPage()}
             onClick={() => table.previousPage()}
             className="p-1.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
@@ -473,6 +475,7 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
             <ChevronLeft size={16} className="rtl:rotate-180" />
           </button>
           <button
+            aria-label={t('next_page')}
             disabled={!table.getCanNextPage()}
             onClick={() => table.nextPage()}
             className="p-1.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-foreground"
