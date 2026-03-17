@@ -1113,7 +1113,7 @@ export default function MultipleHotspotsEditor() {
 
       {/* Edit hotspot dialog */}
       <Dialog open={editDialogOpen} onOpenChange={(open) => { if (!open) handleEditClose(); }}>
-        <DialogContent className="max-w-xs">
+        <DialogContent className="max-w-xs max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Hotspot</DialogTitle>
           </DialogHeader>
