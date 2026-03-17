@@ -226,14 +226,14 @@ function AddMultipleChoice() {
         <div className="flex gap-4 items-center flex-wrap">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input type="checkbox" className="sr-only peer" checked={allowPartialCredit} onChange={handleAllowPartialCreditChange} />
-            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+            <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
               <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
             </div>
             <span className="text-sm text-foreground">{t('editor.allow_partial_credit')}</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input type="checkbox" className="sr-only peer" checked={allowShuffle} onChange={handleAllowShuffleChange} />
-            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+            <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
               <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
             </div>
             <span className="text-sm text-foreground">{t('editor.allow_shuffle')}</span>
