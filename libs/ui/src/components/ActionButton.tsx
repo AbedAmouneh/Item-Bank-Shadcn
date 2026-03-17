@@ -77,7 +77,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
             {dropdownItems.map((item) => (
               <DropdownMenuPrimitive.Item
                 key={item.key}
-                className="flex items-center px-3 py-2 text-sm rounded-md cursor-pointer text-popover-foreground hover:bg-accent transition-colors outline-none"
+                className="flex items-center px-3 py-2 text-sm rounded-md cursor-pointer text-popover-foreground hover:bg-accent focus:bg-accent transition-colors outline-none"
                 onSelect={() => {
                   item.onClick();
                   setMenuOpen(false);
