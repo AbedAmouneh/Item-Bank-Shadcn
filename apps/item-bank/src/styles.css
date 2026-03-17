@@ -105,6 +105,9 @@
     --table-head-color: 222 47% 11%;
     --table-row-border: 214 32% 91%;
     --table-head-border: 214 32% 85%;
+
+    /* ── Toggle switch ── */
+    --toggle-track: 215 16% 78%;          /* off-state track in light mode */
   }
 
   /* ─── DARK MODE ──────────────────────────────────────────────── */
@@ -206,6 +209,9 @@
     --table-head-color: 210 40% 98%;
     --table-row-border: 217 33% 20%;
     --table-head-border: 217 33% 22%;
+
+    /* ── Toggle switch ── */
+    --toggle-track: 215 16% 38%;          /* off-state track in dark mode */
   }
 }
 
