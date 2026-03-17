@@ -180,7 +180,7 @@ function SelectCorrectWordEditor({ questionText }: { questionText?: string }) {
             checked={allowPartialCredit}
             onChange={(e) => setValue('allowPartialCreditScoring', e.target.checked)}
           />
-          <div className="w-9 h-5 rounded-full bg-muted peer-checked/toggle:bg-primary relative transition-colors">
+          <div className="w-9 h-5 rounded-full bg-[hsl(var(--toggle-track))] peer-checked/toggle:bg-primary relative transition-colors">
             <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/toggle:translate-x-4 rtl:peer-checked/toggle:-translate-x-4" />
           </div>
           {t('editor.select_correct_word.partial_credit', { defaultValue: 'Allow partial credit' })}
