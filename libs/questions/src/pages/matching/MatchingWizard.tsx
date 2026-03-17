@@ -608,7 +608,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
             <button
               type="button"
               onClick={() => setFeedbackOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors rounded-xl"
+              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('editor.feedback_settings', { defaultValue: 'Feedback Settings' })}
               <ChevronDown
@@ -713,14 +713,14 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                     <button
                       type="button"
                       onClick={cancelLeftModeSwitch}
-                      className="px-3 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors"
+                      className="px-3 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       {t('no', { defaultValue: 'No' })}
                     </button>
                     <button
                       type="button"
                       onClick={confirmLeftModeSwitch}
-                      className="px-3 py-1 text-xs font-medium rounded-lg bg-warning text-warning-foreground hover:bg-warning/90 transition-colors"
+                      className="px-3 py-1 text-xs font-medium rounded-lg bg-warning text-warning-foreground hover:bg-warning/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       {t('yes', { defaultValue: 'Yes' })}
                     </button>
@@ -847,14 +847,14 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                     <button
                       type="button"
                       onClick={cancelRightModeSwitch}
-                      className="px-3 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors"
+                      className="px-3 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       {t('no', { defaultValue: 'No' })}
                     </button>
                     <button
                       type="button"
                       onClick={confirmRightModeSwitch}
-                      className="px-3 py-1 text-xs font-medium rounded-lg bg-warning text-warning-foreground hover:bg-warning/90 transition-colors"
+                      className="px-3 py-1 text-xs font-medium rounded-lg bg-warning text-warning-foreground hover:bg-warning/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       {t('yes', { defaultValue: 'Yes' })}
                     </button>
@@ -943,14 +943,14 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
             <button
               type="button"
               onClick={onCancel}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('cancel')}
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('editor.matching.step_2_label', { defaultValue: 'Matching' })}
               <ChevronRight size={15} className="rtl:rotate-180" />
@@ -1159,7 +1159,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
             <button
               type="button"
               onClick={() => setStep(0)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <ChevronLeft size={15} className="rtl:rotate-180" />
               {t('editor.matching.step_1_label', { defaultValue: 'Content' })}
@@ -1167,7 +1167,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
             <button
               type="submit"
               onClick={handleSave}
-              className="px-6 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="px-6 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('common:save')}
             </button>
@@ -1199,8 +1199,11 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
               return (
                 <div
                   key={rightItem.id}
+                  role={isMultiple ? 'checkbox' : 'radio'}
+                  aria-checked={isSelected}
+                  tabIndex={isDisabled ? -1 : 0}
                   className={cn(
-                    'flex items-center gap-2 p-2 rounded-lg border transition-colors',
+                    'flex items-center gap-2 p-2 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     isSelected ? 'border-primary bg-primary/6' : 'border-border',
                     isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                   )}
@@ -1214,6 +1217,20 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                       );
                     } else {
                       setChooserSelection(isSelected ? [] : [rightItem.id]);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if ((e.key === ' ' || e.key === 'Enter') && !isDisabled) {
+                      e.preventDefault();
+                      if (isMultiple) {
+                        setChooserSelection((prev) =>
+                          isSelected
+                            ? prev.filter((id) => id !== rightItem.id)
+                            : [...prev, rightItem.id],
+                        );
+                      } else {
+                        setChooserSelection(isSelected ? [] : [rightItem.id]);
+                      }
                     }
                   }}
                 >
@@ -1259,7 +1276,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
             <button
               type="button"
               onClick={handleChooserCancel}
-              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('cancel', { defaultValue: 'Cancel' })}
             </button>
@@ -1267,7 +1284,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
               type="button"
               onClick={handleChooserDone}
               disabled={chooserSelection.length === 0}
-              className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('done', { defaultValue: 'Done' })}
             </button>
