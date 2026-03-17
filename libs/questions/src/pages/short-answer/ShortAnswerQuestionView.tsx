@@ -1,39 +1,26 @@
-import { type QuestionRow } from '../../components/QuestionsTable';
-import { Box, TextField, useTheme, Button, styled, Typography } from "@mui/material";
-import { useState, useCallback, useMemo } from "react";
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { useTranslation } from "react-i18next";
+import { useState, useCallback, useMemo } from 'react';
+import { Check, RotateCcw, Lightbulb, Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button, Input, cn } from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type ShortAnswerQuestionViewProps = {
   question: QuestionRow;
 };
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
-
-const SolutionBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.semantic.solution.background,
-  border: `1px solid ${theme.palette.semantic.solution.border}`,
-}));
-
 const ShortAnswerQuestionView = ({ question }: ShortAnswerQuestionViewProps) => {
-  const theme = useTheme();
   const [checked, setChecked] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [answer, setAnswer] = useState('');
-  const { t } = useTranslation("questions");
+  const { t } = useTranslation('questions');
 
   const correctChoiceMatch = useMemo(() => {
-    if(answer.length === 0) return undefined;
-    return question.choices?.find(choice => choice.ignore_casing ? choice.answer.toLowerCase() === answer.toLowerCase() : choice.answer === answer)
+    if (answer.length === 0) return undefined;
+    return question.choices?.find((choice) =>
+      choice.ignore_casing
+        ? choice.answer.toLowerCase() === answer.toLowerCase()
+        : choice.answer === answer,
+    );
   }, [answer, question.choices]);
 
   const earnedMark = useMemo(() => {
@@ -54,81 +41,74 @@ const ShortAnswerQuestionView = ({ question }: ShortAnswerQuestionViewProps) => 
 
   const handleCheck = useCallback(() => {
     setChecked(true);
-  }, [])
+  }, []);
+
+  // Determine background color for the answer input after checking
+  const inputBgColor = (() => {
+    if (!checked) return undefined;
+    if (correctChoiceMatch && +correctChoiceMatch.fraction >= 1) return '#22c55e';
+    if (correctChoiceMatch && +correctChoiceMatch.fraction < 1) return '#f59e0b';
+    return '#ef4444';
+  })();
 
   return (
     <>
-      <Box>
-        <TextField
+      <div>
+        <Input
           placeholder={t('editor.add_answer')}
-          fullWidth
-          size="small"
           disabled={checked}
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '10px',
-              backgroundColor:
-                checked &&
-                correctChoiceMatch &&
-                +correctChoiceMatch.fraction >= 1
-                  ? theme.palette.success.main
-                  : checked &&
-                      correctChoiceMatch &&
-                      +correctChoiceMatch.fraction < 1
-                    ? theme.palette.warning.main
-                    : checked && !correctChoiceMatch
-                      ? theme.palette.error.main
-                      : theme.palette.background.paper,
-            },
-          }}
+          className={cn('rounded-[10px]')}
+          style={inputBgColor ? { backgroundColor: inputBgColor } : undefined}
         />
-      </Box>
+      </div>
 
       {showSolution && question.choices && question.choices.length > 0 && (
-        <SolutionBox className="p-4 mt-4 mb-4">
-          <Box className="flex items-start gap-3 mb-3">
-            <InfoOutlinedIcon
+        <div
+          className="p-4 mt-4 mb-4 rounded-xl border"
+          style={{
+            backgroundColor: 'hsl(var(--muted))',
+            borderColor: 'hsl(var(--border))',
+          }}
+        >
+          <div className="flex items-start gap-3 mb-3">
+            <Info
               className="text-xl mt-1 shrink-0"
-              sx={(theme) => ({ color: theme.palette.info.light })}
+              style={{ color: 'hsl(var(--primary))' }}
             />
-            <Typography
-              component="span"
+            <span
               className="font-semibold text-[0.95rem]"
-              sx={(theme) => ({ color: theme.palette.text.primary })}
+              style={{ color: 'hsl(var(--foreground))' }}
             >
               {t('correct_answers_are')}
-            </Typography>
-          </Box>
-          <Box component="ul" className="m-0 pl-9 list-none">
+            </span>
+          </div>
+          <ul className="m-0 ps-9 list-none">
             {question.choices.map((choice) => {
               const percent = Math.round(parseFloat(choice.fraction) * 100);
               return (
-                <Box
-                  component="li"
+                <li
                   key={choice.id}
                   className="text-[0.95rem] mb-1 last:mb-0"
-                  sx={(theme) => ({ color: theme.palette.info.light })}
+                  style={{ color: 'hsl(var(--primary))' }}
                 >
                   {percent}% {choice.answer}
-                </Box>
+                </li>
               );
             })}
-          </Box>
-        </SolutionBox>
+          </ul>
+        </div>
       )}
 
-      <Box className="flex items-center justify-between flex-wrap gap-4 mt-6">
-        <Box className="flex items-center gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-4 mt-6">
+        <div className="flex items-center gap-3">
           <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
             disabled={answer.length === 0}
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+            className="rounded-xl font-semibold"
           >
+            {checked ? <RotateCcw className="me-2 h-4 w-4" /> : <Check className="me-2 h-4 w-4" />}
             {checked ? t('retry') : t('check')}
           </Button>
           {checked &&
@@ -136,21 +116,19 @@ const ShortAnswerQuestionView = ({ question }: ShortAnswerQuestionViewProps) => 
             !showSolution && (
               <Button
                 onClick={handleShowSolution}
-                variant="contained"
-                startIcon={<LightbulbIcon />}
-                className="normal-case font-semibold"
-                sx={(theme) => ({ borderRadius: theme.spacing(1.5) })}
+                className="rounded-xl font-semibold"
               >
+                <Lightbulb className="me-2 h-4 w-4" />
                 {t('show_solution')}
               </Button>
             )}
-        </Box>
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        </div>
+        <div className="rounded-xl border border-border bg-card text-foreground py-2 px-4 font-semibold text-[0.95rem]">
           {checked ? `${earnedMark}/${question.mark}` : question.mark}
-        </MarkBox>
-      </Box>
+        </div>
+      </div>
     </>
   );
-}
+};
 
-export default ShortAnswerQuestionView
+export default ShortAnswerQuestionView;
