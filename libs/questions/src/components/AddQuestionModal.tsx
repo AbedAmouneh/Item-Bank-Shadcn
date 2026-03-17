@@ -87,14 +87,14 @@ export default function AddQuestionModal({
               <div className="relative">
                 <Search size={13} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
-                  className="ps-8 pe-3 py-1.5 text-sm rounded-xl border border-border bg-muted/50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary w-52 placeholder:text-muted-foreground text-foreground"
+                  className="ps-8 pe-3 py-1.5 text-sm rounded-xl border border-border bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary w-52 placeholder:text-muted-foreground text-foreground"
                   placeholder={t('search_question_types')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
 
-              <DialogPrimitive.Close className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+              <DialogPrimitive.Close className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                 <X size={16} />
               </DialogPrimitive.Close>
             </div>
