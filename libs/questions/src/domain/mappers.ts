@@ -101,14 +101,25 @@ export function toQuestionDto(question: QuestionDomain | QuestionDraft): Questio
         hotspots: question.hotspots || [],
       };
 
-    case 'numerical':
+    case 'numerical': {
+      // NumericalQuestionDraft uses correctAnswer/tolerance/unit (legacy single-answer form)
+      // while NumericalQuestion domain uses answers array — normalise to the DTO's answers shape.
+      const draft = question as { correctAnswer?: number; tolerance?: number; unit?: string };
+      const domain = question as { answers?: Array<{ id: string; answer: number; error: number; mark: number; feedback: boolean }> };
       return {
         ...baseDto,
         type: 'numerical',
-        correct_answer: question.correctAnswer ?? 0,
-        tolerance: question.tolerance,
-        unit: question.unit,
+        answers: domain.answers ?? [
+          {
+            id: crypto.randomUUID(),
+            answer: draft.correctAnswer ?? 0,
+            error: draft.tolerance ?? 0,
+            mark: (question as { mark?: number }).mark ?? 0,
+            feedback: false,
+          },
+        ],
       };
+    }
 
     case 'fill_in_blanks':
       return {
@@ -285,9 +296,7 @@ export function fromQuestionDto(dto: QuestionDTO): QuestionDomain {
       return {
         ...baseDomain,
         type: 'numerical',
-        correctAnswer: dto.correct_answer,
-        tolerance: dto.tolerance,
-        unit: dto.unit,
+        answers: dto.answers,
       };
 
     case 'fill_in_blanks':
