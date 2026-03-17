@@ -1,10 +1,8 @@
-import { Box, Typography, IconButton, useTheme, alpha } from '@mui/material';
-import type { QuestionRow } from '../../components/QuestionsTable';
-import { useTranslation } from 'react-i18next';
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
-import StopIcon from '@mui/icons-material/Stop';
+import { Pause, Play, Square } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { cn } from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 import RecordedAudioPlayer, { type RecordingItem } from './RecordedAudioPlayer';
 
 type RecordAudioQuestionViewProps = {
@@ -19,7 +17,6 @@ const formatTime = (seconds: number): string => {
 
 const RecordAudioQuestionView = ({ question }: RecordAudioQuestionViewProps) => {
   const { t } = useTranslation('questions');
-  const theme = useTheme();
 
   const minRecordings = useMemo(() => question.numberOfRecordingsMin ?? 1, [question.numberOfRecordingsMin]);
   const maxRecordings = useMemo(() => question.numberOfRecordingsMax ?? 3, [question.numberOfRecordingsMax]);
@@ -39,14 +36,13 @@ const RecordAudioQuestionView = ({ question }: RecordAudioQuestionViewProps) => 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordedSecondsRef = useRef(0);
 
-  const recordingsLabel =  useMemo(() => t('editor.record_audio.number_of_recordings_allowed') ?? 'Number of recordings allowed', [t]);
+  const recordingsLabel = useMemo(() => t('editor.record_audio.number_of_recordings_allowed') ?? 'Number of recordings allowed', [t]);
   const durationLabel = useMemo(() => t('editor.record_audio.recording_duration_seconds') ?? 'Recording duration (in seconds)', [t]);
   const recordedAudioLabel = useMemo(() => t('editor.record_audio.recorded_audio') ?? 'Recorded audio', [t]);
   const minLabel = useMemo(() => t('editor.record_audio.min') ?? 'min', [t]);
   const maxLabel = useMemo(() => t('editor.record_audio.max') ?? 'max', [t]);
 
   const canAddMore = useMemo(() => recordings.length < maxRecordings, [recordings, maxRecordings]);
-  //const canDelete = recordings.length > minRecordings;
   const stopDisabled = useMemo(() => recordingState === 'idle' || recordedSeconds < minDuration, [recordingState, recordedSeconds, minDuration]);
 
   const clearTimer = useCallback(() => {
@@ -179,7 +175,7 @@ const RecordAudioQuestionView = ({ question }: RecordAudioQuestionViewProps) => 
   }, []);
 
   return (
-    <Box className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {recordings.map((item) => (
         <RecordedAudioPlayer
           key={item.id}
@@ -190,71 +186,58 @@ const RecordAudioQuestionView = ({ question }: RecordAudioQuestionViewProps) => 
         />
       ))}
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 2,
-          py: 3,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton
+      {/* Recording controls */}
+      <div className="flex flex-col items-center gap-4 py-6">
+        <div className="flex items-center gap-4">
+          {/* Play / Pause button */}
+          <button
+            type="button"
             onClick={startOrResumeRecording}
             disabled={!canAddMore}
-            sx={{
-              width: 64,
-              height: 64,
-              border: `2px solid ${theme.palette.primary.main}`,
-              color: 'primary.main',
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.08),
-              },
-              '&:disabled': {
-                borderColor: theme.palette.action.disabled,
-                color: theme.palette.action.disabled,
-              },
-            }}
             aria-label={recordingState === 'recording' ? 'Pause' : 'Start recording'}
-          >
-            {recordingState === 'recording' ? (
-              <PauseIcon sx={{ fontSize: 32 }} />
-            ) : (
-              <PlayArrowIcon sx={{ fontSize: 32 }} />
+            className={cn(
+              'w-16 h-16 rounded-full border-2 flex items-center justify-center transition-colors',
+              canAddMore
+                ? 'border-primary text-primary hover:bg-primary/10'
+                : 'border-muted-foreground/30 text-muted-foreground/30 cursor-not-allowed'
             )}
-          </IconButton>
-          <IconButton
+          >
+            {recordingState === 'recording' ? <Pause size={28} /> : <Play size={28} />}
+          </button>
+
+          {/* Stop button */}
+          <button
+            type="button"
             onClick={handleStop}
             disabled={stopDisabled}
-            sx={{
-              width: 48,
-              height: 48,
-              border: `2px solid ${theme.palette.divider}`,
-              color: stopDisabled ? 'action.disabled' : 'text.secondary',
-              '&:hover': {
-                backgroundColor: stopDisabled ? 'transparent' : alpha(theme.palette.action.hover, 0.04),
-              },
-            }}
             aria-label="Stop recording"
+            className={cn(
+              'w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors',
+              stopDisabled
+                ? 'border-muted-foreground/30 text-muted-foreground/30 cursor-not-allowed'
+                : 'border-border text-muted-foreground hover:bg-accent'
+            )}
           >
-            <StopIcon />
-          </IconButton>
-        </Box>
-        <Typography variant="h4" fontFamily="monospace" color="text.primary">
-          {formatTime(recordedSeconds)}
-        </Typography>
-      </Box>
+            <Square size={20} />
+          </button>
+        </div>
 
-      <Box sx={{ mt: 0 }}>
-        <Typography className="text-center" variant="body2" color="text.secondary">
+        {/* Timer */}
+        <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
+          {formatTime(recordedSeconds)}
+        </span>
+      </div>
+
+      {/* Constraints info */}
+      <div>
+        <p className="text-center text-sm text-muted-foreground">
           {recordingsLabel}: {minLabel} {minRecordings}. {maxLabel} {maxRecordings}.
-        </Typography>
-        <Typography className="text-center" variant="body2" color="text.secondary">
+        </p>
+        <p className="text-center text-sm text-muted-foreground">
           {durationLabel}: {minLabel} {minDuration}. {maxLabel} {maxDuration}.
-        </Typography>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </div>
   );
 };
 
