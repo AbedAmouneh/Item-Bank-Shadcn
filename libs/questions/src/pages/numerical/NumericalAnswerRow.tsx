@@ -49,7 +49,7 @@ const NumericalAnswerRow = memo(function NumericalAnswerRow({
         value={String(answer.mark)}
         onValueChange={(value) => onChange(id, 'mark', Number(value))}
       >
-        <SelectTrigger className="w-28 text-sm h-9">
+        <SelectTrigger className="w-24 text-sm h-9">
           <SelectValue placeholder={t('mark')} />
         </SelectTrigger>
         <SelectContent>
