@@ -1,22 +1,8 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  Box,
-  Switch,
-  FormControlLabel,
-  Button,
-  Typography,
-  TextField,
-  IconButton,
-  Alert,
-  styled,
-  alpha,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
+import { GripVertical, Plus, Trash2, ImagePlus, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import { cn } from '@item-bank/ui';
 
 type SequencingItem = {
   id: string;
@@ -39,68 +25,6 @@ function moveItem<T>(list: T[], from: number, to: number): T[] {
   next.splice(to, 0, removed);
   return next;
 }
-
-const RowCard = styled(Box)(({ theme }) => ({
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.6)
-      : alpha(theme.palette.primary.main, 0.03),
-  transition: 'box-shadow 0.18s ease, border-color 0.12s ease, background-color 0.12s ease, transform 0.15s ease, opacity 0.15s ease',
-  '&[data-drag-over="true"]': {
-    borderColor: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? alpha(theme.palette.primary.main, 0.12)
-        : alpha(theme.palette.primary.main, 0.07),
-  },
-  '&[data-dragging="true"]': {
-    boxShadow: theme.shadows[8],
-    opacity: 0.88,
-    transform: 'scale(1.015)',
-    cursor: 'grabbing',
-    position: 'relative',
-    zIndex: 20,
-    pointerEvents: 'none',
-  },
-}));
-
-const DragHandle = styled(Box)(({ theme }) => ({
-  color: alpha(theme.palette.text.secondary, 0.5),
-  '&:focus-visible': {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: 2,
-    color: theme.palette.primary.main,
-  },
-  '&:active': { cursor: 'grabbing' },
-}));
-
-const ImageUploadArea = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'hasImage',
-})<{ hasImage?: boolean }>(({ theme, hasImage }) => ({
-  position: 'relative',
-  width: '100%',
-  height: 160,
-  borderRadius: theme.shape.borderRadius,
-  border: hasImage ? 'none' : `2px dashed ${theme.palette.divider}`,
-  backgroundColor: hasImage ? 'transparent' : alpha(theme.palette.action.hover, 0.5),
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  transition: theme.transitions.create(['border-color', 'background-color'], {
-    duration: theme.transitions.duration.short,
-  }),
-  '&:hover': {
-    backgroundColor: hasImage ? alpha(theme.palette.action.hover, 0.3) : alpha(theme.palette.action.hover, 0.7),
-  },
-  '& img': {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-    borderRadius: theme.shape.borderRadius,
-  },
-}));
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -213,15 +137,11 @@ function ImageSequencingEditor() {
   const handleImageChange = useCallback(
     async (id: string, file: File | null) => {
       if (!file?.type.startsWith('image/')) return;
-      try {
-        const dataUrl = await fileToDataUrl(file);
-        setValue(
-          'sequencingItems',
-          items.map((it) => (it.id === id ? { ...it, image: dataUrl } : it))
-        );
-      } catch (err) {
-        console.error('Failed to read image', err);
-      }
+      const dataUrl = await fileToDataUrl(file);
+      setValue(
+        'sequencingItems',
+        items.map((it) => (it.id === id ? { ...it, image: dataUrl } : it))
+      );
     },
     [setValue, items]
   );
@@ -331,172 +251,198 @@ function ImageSequencingEditor() {
   }, []);
 
   return (
-    <Box className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
 
-      <Box className="flex justify-between items-center flex-wrap gap-4">
-        <Typography variant="body2" className="font-semibold" sx={{ color: 'text.primary' }}>
+      {/* Header row: label + auto-distribute toggle */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <span className="text-sm font-semibold text-foreground">
           {t('editor.image_sequencing.rows_label')} *
-        </Typography>
-        <Box className="flex gap-4 items-center flex-wrap">
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={autoDistribute}
-                onChange={(e) => handleAutoDistributeChange(e.target.checked)}
-              />
-            }
-            label={t('editor.image_sequencing.auto_distribute')}
-            sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-          />
-        </Box>
-      </Box>
+        </span>
+        <div className="flex gap-4 items-center flex-wrap">
+          {/* Auto-distribute toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="sr-only peer/toggle"
+              checked={autoDistribute}
+              onChange={(e) => handleAutoDistributeChange(e.target.checked)}
+            />
+            <div className="w-9 h-5 rounded-full bg-muted peer-checked/toggle:bg-primary relative transition-colors">
+              <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/toggle:translate-x-4 rtl:peer-checked/toggle:-translate-x-4" />
+            </div>
+            <span className="text-sm text-foreground">
+              {t('editor.image_sequencing.auto_distribute')}
+            </span>
+          </label>
+        </div>
+      </div>
 
+      {/* Draggable row list */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div
+          className="flex flex-col gap-3 touch-none p-3"
+          ref={rowListRef}
+          role="list"
+          onPointerDown={handleContainerPointerDown}
+          onPointerMove={handleContainerPointerMove}
+          onPointerUp={handleContainerPointerUp}
+          onPointerCancel={handleContainerPointerUp}
+        >
+          {items.map((item, index) => {
+            const isDragging = dragSourceIndex === index;
+            const isDragOver = dragOverIndex === index && dragSource.current !== index;
 
-      <Box
-        className="flex flex-col gap-3 touch-none"
-        ref={rowListRef}
-        role="list"
-        onPointerDown={handleContainerPointerDown}
-        onPointerMove={handleContainerPointerMove}
-        onPointerUp={handleContainerPointerUp}
-        onPointerCancel={handleContainerPointerUp}
-      >
-        {items.map((item, index) => {
-          const isDragging = dragSourceIndex === index;
-          const isDragOver = dragOverIndex === index && dragSource.current !== index;
+            return (
+              <div
+                key={item.id}
+                className={cn(
+                  'relative flex gap-3 p-3 rounded-2xl border bg-card transition-colors',
+                  isDragging
+                    ? 'opacity-80 shadow-lg border-primary/30 z-20 pointer-events-none'
+                    : isDragOver
+                      ? 'border-primary bg-primary/[0.07]'
+                      : 'border-border hover:border-primary/20'
+                )}
+                role="listitem"
+                data-row-index={index}
+                data-drag-over={isDragOver ? 'true' : undefined}
+                data-dragging={isDragging ? 'true' : undefined}
+                style={
+                  isDragging
+                    ? {
+                        transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) scale(1.015)`,
+                        transition: 'box-shadow 0.18s ease, border-color 0.12s ease, background-color 0.12s ease',
+                      }
+                    : undefined
+                }
+              >
+                {/* Drag handle at middle start */}
+                <div className="flex items-center justify-center w-10 self-center">
+                  <div
+                    className="flex items-center p-1 rounded-lg shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/50 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 focus-visible:text-primary"
+                    data-drag-handle="true"
+                    tabIndex={0}
+                    aria-label={t('editor.image_sequencing.drag_handle_label', { index: index + 1 })}
+                    onKeyDown={(e) => handleHandleKeyDown(e, index)}
+                  >
+                    <GripVertical size={16} />
+                  </div>
+                </div>
 
-          return (
-            <RowCard
-              className="relative flex gap-3 p-3 rounded-2xl"
-              key={item.id}
-              role="listitem"
-              data-row-index={index}
-              data-drag-over={isDragOver ? 'true' : undefined}
-              data-dragging={isDragging ? 'true' : undefined}
-              style={
-                isDragging
-                  ? {
-                      transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) scale(1.015)`,
-                    }
-                  : undefined
-              }
-            >
-              {/* Drag handle positioned at middle left */}
-              <Box className="flex items-center justify-center" sx={{ width: 40, alignSelf: 'center' }}>
-                <DragHandle
-                  className="flex items-center p-1 rounded-lg shrink-0 cursor-grab"
-                  data-drag-handle="true"
-                  tabIndex={0}
-                  aria-label={t('editor.image_sequencing.drag_handle_label', { index: index + 1 })}
-                  onKeyDown={(e) => handleHandleKeyDown(e as React.KeyboardEvent, index)}
-                >
-                  <DragIndicatorIcon fontSize="small" />
-                </DragHandle>
-              </Box>
-
-              {/* Content area with image and mark */}
-              <Box className="flex-1 flex flex-col gap-2">
-                {/* Image area */}
-                <ImageUploadArea
-                  hasImage={!!item.image}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  {item.image ? (
-                    <img src={item.image} alt={`Sequence ${index + 1}`} />
-                  ) : (
-                    <AddPhotoAlternateOutlinedIcon sx={{ color: 'text.secondary' }} />
-                  )}
-                  <input
-                    ref={(el) => {
-                      fileInputRefs.current[item.id] = el;
+                {/* Content: image upload + mark field */}
+                <div className="flex-1 flex flex-col gap-2">
+                  {/* Image upload area */}
+                  <div
+                    className={cn(
+                      'relative w-full h-40 rounded-lg flex items-center justify-center overflow-hidden transition-colors',
+                      item.image
+                        ? 'border-0'
+                        : 'border-2 border-dashed border-border bg-muted/40 hover:bg-muted/70'
+                    )}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
                     }}
-                    type="file"
-                    accept="image/*"
-                    aria-label={t('editor.browse')}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      opacity: 0,
-                      cursor: 'pointer',
-                    }}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] ?? null;
-                      handleImageChange(item.id, file);
-                      e.target.value = '';
-                    }}
-                  />
-                </ImageUploadArea>
+                  >
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt=""
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                    ) : (
+                      <ImagePlus size={28} className="text-muted-foreground" />
+                    )}
+                    <input
+                      ref={(el) => {
+                        fileInputRefs.current[item.id] = el;
+                      }}
+                      type="file"
+                      accept="image/*"
+                      aria-label={t('editor.browse')}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null;
+                        handleImageChange(item.id, file);
+                        e.target.value = '';
+                      }}
+                    />
+                  </div>
 
-                {/* Mark field */}
-                <Box className="flex items-center gap-2">
-                  <Typography variant="body2" sx={{ color: 'text.secondary', minWidth: 35 }}>
-                    {t('mark')}:
-                  </Typography>
-                  <TextField
-                    value={item.markPercent}
-                    onChange={(e) => handleMarkChange(item.id, e.target.value)}
-                    type="number"
-                    size="small"
-                    disabled={autoDistribute}
-                    className="w-28"
-                    slotProps={{
-                      htmlInput: { min: 0, max: 100, step: 0.01 },
-                      input: { endAdornment: <Typography variant="caption">%</Typography> },
-                    }}
-                  />
-                </Box>
-              </Box>
+                  {/* Mark percent field */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground min-w-[35px]">
+                      {t('mark')}:
+                    </span>
+                    <div className="relative w-28 shrink-0">
+                      <input
+                        type="number"
+                        value={item.markPercent}
+                        onChange={(e) => handleMarkChange(item.id, e.target.value)}
+                        min={0}
+                        max={100}
+                        step={0.01}
+                        disabled={autoDistribute}
+                        className="w-full h-8 rounded-md border border-input bg-background pe-6 ps-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                      <span className="pointer-events-none absolute inset-y-0 end-2 flex items-center text-xs text-muted-foreground">
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-              {/* Delete button positioned at middle right */}
-              <Box className="flex items-center justify-center" sx={{ width: 40, alignSelf: 'center' }}>
-                <IconButton
-                  size="small"
-                  onClick={() => handleDeleteRow(item.id)}
-                  disabled={items.length <= 2}
-                  className="shrink-0"
-                  sx={{ color: 'error.main', '&:disabled': { opacity: 0.3 } }}
-                >
-                  <DeleteOutlineIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </RowCard>
-          );
-        })}
-      </Box>
+                {/* Delete button at middle end */}
+                <div className="flex items-center justify-center w-10 self-center">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteRow(item.id)}
+                    disabled={items.length <= 2}
+                    className="shrink-0 p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    aria-label={t('editor.image_sequencing.delete_row')}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      <Button
-        variant="text"
-        startIcon={<AddIcon />}
+      {/* Add image button */}
+      <button
+        type="button"
+        className="self-start flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
         onClick={handleAddRow}
-        className="self-start normal-case text-sm"
       >
+        <Plus size={15} />
         {t('editor.image_sequencing.add_row')}
-      </Button>
+      </button>
 
-
+      {/* Validation alerts */}
       {hasTooFewRows && (
-        <Alert severity="error" variant="outlined" className="text-sm">
-          {t('editor.image_sequencing.error_min_rows')}
-        </Alert>
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/[0.05] p-3 text-sm text-destructive">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <span>{t('editor.image_sequencing.error_min_rows')}</span>
+        </div>
       )}
       {hasEmptyImages && (
-        <Alert severity="warning" variant="outlined" className="text-sm">
-          {t('editor.image_sequencing.error_empty_images')}
-        </Alert>
+        <div className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-500/[0.05] p-3 text-sm text-amber-700 dark:text-amber-400">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <span>{t('editor.image_sequencing.error_empty_images')}</span>
+        </div>
       )}
       {!autoDistribute && !isTotalValid && items.length > 0 && (
-        <Alert severity="error" variant="outlined" className="text-sm">
-          {t('editor.image_sequencing.error_total_not_100', {
-            total: new Intl.NumberFormat(i18n.language).format(totalMark),
-          })}
-        </Alert>
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/[0.05] p-3 text-sm text-destructive">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <span>
+            {t('editor.image_sequencing.error_total_not_100', {
+              total: new Intl.NumberFormat(i18n.language).format(totalMark),
+            })}
+          </span>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
