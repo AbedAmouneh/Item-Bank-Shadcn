@@ -32,11 +32,11 @@ export default function AuthField({
           className={cn(
             'w-full rounded-2xl border bg-[hsl(var(--auth-field-background))]',
             'ps-10 py-3 text-sm text-foreground placeholder:text-muted-foreground',
-            'focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary',
+            'focus-visible:outline-none focus-visible:ring-1 focus-visible:border-primary focus-visible:ring-primary',
             'transition-colors duration-150',
             endAdornment ? 'pe-10' : 'pe-4',
             error
-              ? 'border-destructive focus:ring-destructive focus:border-destructive'
+              ? 'border-destructive focus-visible:ring-destructive focus-visible:border-destructive'
               : 'border-border hover:border-border/70'
           )}
           {...registration}
