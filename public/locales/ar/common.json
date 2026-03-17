@@ -1,6 +1,10 @@
 {
     "AuthorApp": "تطبيق المؤلف",
     "brand": "بنك العناصر",
+    "back": "رجوع",
+    "next": "التالي",
+    "not_available": "غير متاح",
+    "save": "حفظ",
     "switch_language": "تبديل اللغة",
     "switch_theme": "تبديل المظهر",
     "nav": {
@@ -37,6 +41,7 @@
         "email": "البريد الإلكتروني",
         "cancel": "إلغاء",
         "save": "حفظ",
+        "save_options": "خيارات الحفظ",
         "save_and_continue": "حفظ ومتابعة",
         "save_and_close": "حفظ وإغلاق",
         "current_password": "كلمة المرور الحالية",
