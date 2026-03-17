@@ -101,7 +101,7 @@ export default function AddQuestionModal({
           </div>
 
           {/* Tile grid */}
-          <div className="p-6 overflow-y-auto">
+          <div className="flex-1 min-h-0 p-6 overflow-y-auto">
             {filteredTypes.length > 0 ? (
               <div className="grid grid-cols-4 gap-1">
                 {filteredTypes.map((type) => (
