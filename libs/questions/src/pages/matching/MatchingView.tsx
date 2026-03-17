@@ -6,17 +6,8 @@ import {
   useRef,
   useEffect,
 } from 'react';
-import {
-  Box,
-  Button,
-  Typography,
-  Paper,
-  TextField,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { cn, Input } from '@item-bank/ui';
 import type { QuestionRow } from '../../components/QuestionsTable';
 
 // ─── Local types ──────────────────────────────────────────────────────────────
@@ -40,102 +31,15 @@ type MatchingViewProps = {
   question: QuestionRow;
 };
 
-// ─── Styled ───────────────────────────────────────────────────────────────────
+// ─── SVG color tokens ─────────────────────────────────────────────────────────
+// These read from the Tailwind CSS custom properties at runtime so they stay
+// in sync with the active theme (light / dark).
 
-const ItemChip = styled(Paper, {
-  shouldForwardProp: (p) =>
-    p !== 'isSelected' &&
-    p !== 'isConnected' &&
-    p !== 'isInvited' &&
-    p !== 'isCorrect' &&
-    p !== 'isWrong',
-})<{
-  isSelected?: boolean;
-  isConnected?: boolean;
-  isInvited?: boolean;
-  isCorrect?: boolean;
-  isWrong?: boolean;
-}>(({ theme, isSelected, isConnected, isInvited, isCorrect, isWrong }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: theme.spacing(1, 2),
-  minHeight: 48,
-  cursor: 'pointer',
-  transition: theme.transitions.create([
-    'outline',
-    'transform',
-    'background-color',
-    'border',
-  ]),
-  ...(isSelected && {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    transform: 'scale(1.02)',
-  }),
-  ...(isConnected && {
-    backgroundColor: alpha(theme.palette.primary.main, 0.12),
-  }),
-  ...(isInvited && {
-    outline: `2px dashed ${theme.palette.primary.main}`,
-  }),
-  ...(isCorrect && {
-    outline: `2px solid ${theme.palette.success.main}`,
-    backgroundColor: alpha(theme.palette.success.main, 0.08),
-  }),
-  ...(isWrong && {
-    outline: `2px solid ${theme.palette.error.main}`,
-    backgroundColor: alpha(theme.palette.error.main, 0.08),
-  }),
-}));
-
-const ImageCard = styled(Box, {
-  shouldForwardProp: (p) =>
-    p !== 'isSelected' &&
-    p !== 'isConnected' &&
-    p !== 'isInvited' &&
-    p !== 'isCorrect' &&
-    p !== 'isWrong',
-})<{
-  isSelected?: boolean;
-  isConnected?: boolean;
-  isInvited?: boolean;
-  isCorrect?: boolean;
-  isWrong?: boolean;
-}>(({ theme, isSelected, isConnected, isInvited, isCorrect, isWrong }) => ({
-  width: 120,
-  height: 90,
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.spacing(1),
-  overflow: 'hidden',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: theme.transitions.create([
-    'outline',
-    'transform',
-    'background-color',
-    'border',
-  ]),
-  ...(isSelected && {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    transform: 'scale(1.02)',
-  }),
-  ...(isConnected && {
-    backgroundColor: alpha(theme.palette.primary.main, 0.12),
-  }),
-  ...(isInvited && {
-    outline: `2px dashed ${theme.palette.primary.main}`,
-  }),
-  ...(isCorrect && {
-    outline: `2px solid ${theme.palette.success.main}`,
-    backgroundColor: alpha(theme.palette.success.main, 0.08),
-  }),
-  ...(isWrong && {
-    outline: `2px solid ${theme.palette.error.main}`,
-    backgroundColor: alpha(theme.palette.error.main, 0.08),
-  }),
-}));
+const SVG_COLOR_PRIMARY = 'hsl(var(--primary))';
+// Green-500 used as success indicator — matches Tailwind green-500 (#22c55e)
+const SVG_COLOR_SUCCESS = '#22c55e';
+// Destructive token maps to the error / wrong state
+const SVG_COLOR_ERROR = 'hsl(var(--destructive))';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -152,7 +56,6 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 const MatchingView = ({ question }: MatchingViewProps) => {
   const { t } = useTranslation('questions');
-  const theme = useTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const leftRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const rightRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
@@ -461,42 +364,45 @@ const MatchingView = ({ question }: MatchingViewProps) => {
 
       if (leftMode === 'image' && item.imageUrl) {
         return (
-          <ImageCard
+          <div
             key={item.id}
             ref={(el: HTMLDivElement | null) => { leftRefs.current.set(item.id, el); }}
-            isSelected={!checked && isSelected}
-            isConnected={!checked && isConn}
-            isCorrect={isCorrect}
-            isWrong={isWrong}
             onClick={() => handleLeftClick(item.id)}
-            sx={checked ? { cursor: 'default' } : undefined}
+            className={cn(
+              'w-[120px] h-[90px] border border-border rounded-lg overflow-hidden flex items-center justify-center transition-all',
+              checked ? 'cursor-default' : 'cursor-pointer',
+              !checked && isSelected && 'outline outline-2 outline-primary scale-[1.02]',
+              !checked && isConn && 'bg-primary/10',
+              isCorrect && 'outline outline-2 outline-green-500 bg-green-500/10 dark:bg-green-500/20',
+              isWrong && 'outline outline-2 outline-destructive bg-destructive/10 dark:bg-destructive/20',
+            )}
           >
             <img
               src={item.imageUrl}
               alt={item.text || item.id}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              className="w-full h-full object-contain"
               draggable={false}
             />
-          </ImageCard>
+          </div>
         );
       }
 
       return (
-        <ItemChip
+        <div
           key={item.id}
           ref={(el: HTMLDivElement | null) => { leftRefs.current.set(item.id, el); }}
-          elevation={1}
-          isSelected={!checked && isSelected}
-          isConnected={!checked && isConn}
-          isCorrect={isCorrect}
-          isWrong={isWrong}
           onClick={() => handleLeftClick(item.id)}
-          sx={checked ? { cursor: 'default' } : undefined}
+          className={cn(
+            'flex items-center justify-center px-4 py-2 min-h-[48px] rounded-lg border border-border bg-card shadow-sm transition-all',
+            checked ? 'cursor-default' : 'cursor-pointer',
+            !checked && isSelected && 'outline outline-2 outline-primary scale-[1.02]',
+            !checked && isConn && 'bg-primary/10',
+            isCorrect && 'outline outline-2 outline-green-500 bg-green-500/10 dark:bg-green-500/20',
+            isWrong && 'outline outline-2 outline-destructive bg-destructive/10 dark:bg-destructive/20',
+          )}
         >
-          <Typography variant="body2" textAlign="center">
-            {item.text}
-          </Typography>
-        </ItemChip>
+          <p className="text-sm text-foreground text-center">{item.text}</p>
+        </div>
       );
     },
     [selectedLeftId, isLeftConnected, leftMode, handleLeftClick, checked, getLeftItemResult, showSolution],
@@ -516,94 +422,78 @@ const MatchingView = ({ question }: MatchingViewProps) => {
 
       if (rightMode === 'image' && item.imageUrl) {
         return (
-          <ImageCard
+          <div
             key={item.id}
             ref={(el: HTMLDivElement | null) => { rightRefs.current.set(item.id, el); }}
-            isConnected={!checked && isConn}
-            isInvited={isInvited}
-            isCorrect={isCorrect}
-            isWrong={isWrong}
             onClick={() => handleRightClick(item.id)}
-            sx={checked ? { cursor: 'default' } : undefined}
+            className={cn(
+              'w-[120px] h-[90px] border border-border rounded-lg overflow-hidden flex items-center justify-center transition-all',
+              checked ? 'cursor-default' : 'cursor-pointer',
+              !checked && isConn && 'bg-primary/10',
+              isInvited && 'outline outline-2 outline-dashed outline-primary',
+              isCorrect && 'outline outline-2 outline-green-500 bg-green-500/10 dark:bg-green-500/20',
+              isWrong && 'outline outline-2 outline-destructive bg-destructive/10 dark:bg-destructive/20',
+            )}
           >
             <img
               src={item.imageUrl}
               alt={item.text || item.id}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              className="w-full h-full object-contain"
               draggable={false}
             />
-          </ImageCard>
+          </div>
         );
       }
 
       return (
-        <ItemChip
+        <div
           key={item.id}
           ref={(el: HTMLDivElement | null) => { rightRefs.current.set(item.id, el); }}
-          elevation={1}
-          isConnected={!checked && isConn}
-          isInvited={isInvited}
-          isCorrect={isCorrect}
-          isWrong={isWrong}
           onClick={() => handleRightClick(item.id)}
-          sx={checked ? { cursor: 'default' } : undefined}
+          className={cn(
+            'flex items-center justify-center px-4 py-2 min-h-[48px] rounded-lg border border-border bg-card shadow-sm transition-all',
+            checked ? 'cursor-default' : 'cursor-pointer',
+            !checked && isConn && 'bg-primary/10',
+            isInvited && 'outline outline-2 outline-dashed outline-primary',
+            isCorrect && 'outline outline-2 outline-green-500 bg-green-500/10 dark:bg-green-500/20',
+            isWrong && 'outline outline-2 outline-destructive bg-destructive/10 dark:bg-destructive/20',
+          )}
         >
-          <Typography variant="body2" textAlign="center">
-            {item.text}
-          </Typography>
-        </ItemChip>
+          <p className="text-sm text-foreground text-center">{item.text}</p>
+        </div>
       );
     },
     [isRightConnected, rightMode, handleRightClick, checked, selectedLeftId, getRightItemResult, showSolution],
   );
 
   return (
-    <Box className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {/* Question text */}
       {question.question_text && (
-        <Typography
-          variant="body1"
-          component="div"
+        <div
+          className="text-sm text-foreground"
           dangerouslySetInnerHTML={{ __html: question.question_text }}
         />
       )}
 
       {/* Matching area */}
-      <Box
+      <div
         ref={containerRef}
         onClick={handleContainerClick}
-        sx={{ position: 'relative', display: 'flex', gap: 2, minHeight: 200 }}
+        className="relative flex gap-4 min-h-[200px]"
       >
         {/* Left column */}
-        <Box
-          sx={{
-            flex: 2,
-            minWidth: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1.5,
-            alignItems: 'stretch',
-          }}
-        >
+        <div className="flex-[2] min-w-0 flex flex-col gap-3 items-stretch">
           {leftItems.map((item) => renderLeftItem(item))}
-        </Box>
+        </div>
 
         {/* Spacer for SVG lines */}
-        <Box sx={{ flex: 1, minWidth: 0 }} />
+        <div className="flex-1 min-w-0" />
 
         {/* Right column */}
-        <Box
-          sx={{
-            flex: 2,
-            minWidth: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1.5,
-            alignItems: 'stretch',
-          }}
-        >
+        <div className="flex-[2] min-w-0 flex flex-col gap-3 items-stretch">
           {shuffledRightItems.map((item) => renderRightItem(item))}
-        </Box>
+        </div>
 
         {/* SVG overlay for connection lines */}
         <svg
@@ -624,12 +514,12 @@ const MatchingView = ({ question }: MatchingViewProps) => {
 
             // After check: color lines green/red; solution mode = all green
             const lineColor = showSolution
-              ? theme.palette.success.main
+              ? SVG_COLOR_SUCCESS
               : checked
               ? getLineResult(line.leftId, line.rightId) === 'correct'
-                ? theme.palette.success.main
-                : theme.palette.error.main
-              : theme.palette.primary.main;
+                ? SVG_COLOR_SUCCESS
+                : SVG_COLOR_ERROR
+              : SVG_COLOR_PRIMARY;
 
             return (
               <g key={lineKey}>
@@ -676,7 +566,7 @@ const MatchingView = ({ question }: MatchingViewProps) => {
                       cx={midX}
                       cy={midY}
                       r={10}
-                      fill={theme.palette.error.main}
+                      fill={SVG_COLOR_ERROR}
                       opacity={0.85}
                     />
                     <text
@@ -697,53 +587,58 @@ const MatchingView = ({ question }: MatchingViewProps) => {
             );
           })}
         </svg>
-      </Box>
+      </div>
 
       {/* Check Answer / Try Again / Show Solution buttons */}
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <div className="flex gap-3">
         {!checked ? (
-          <Button
-            variant="contained"
+          <button
+            type="button"
             disabled={!allLeftConnected}
             onClick={handleCheckAnswer}
+            className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {t('editor.matching.check_answer')}
-          </Button>
+          </button>
         ) : (
           <>
-            <Button variant="outlined" onClick={handleTryAgain}>
+            <button
+              type="button"
+              onClick={handleTryAgain}
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
               {t('editor.matching.try_again')}
-            </Button>
+            </button>
             {hasWrongAnswer && !showSolution && (
-              <Button variant="contained" onClick={handleShowSolution}>
+              <button
+                type="button"
+                onClick={handleShowSolution}
+                className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
                 {t('editor.matching.show_solution')}
-              </Button>
+              </button>
             )}
           </>
         )}
-      </Box>
+      </div>
 
       {/* Justification field */}
       {justification !== 'disabled' && (
-        <Box>
-          <Typography variant="body2" fontWeight={500} className="mb-1">
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">
             {t('matching.justification_label', {
               defaultValue: 'Justify your answer',
             })}
             {justification === 'required' ? ' *' : ''}
-          </Typography>
-          <TextField
-            fullWidth
-            multiline
-            minRows={2}
-            maxRows={4}
+          </p>
+          <Input
             value={justificationText}
             onChange={(e) => setJustificationText(e.target.value)}
-            size="small"
+            className="w-full"
           />
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
