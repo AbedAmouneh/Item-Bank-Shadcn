@@ -10,11 +10,6 @@ module.exports = {
     join(__dirname, '../../libs/**/*!(*.stories|*.spec).{ts,tsx,html}'),
     ...createGlobPatternsForDependencies(__dirname),
   ],
-  // Use true so Tailwind utilities override MUI/Emotion when using className on styled components
-  important: true,
-  corePlugins: {
-    preflight: false,
-  },
   theme: {
     extend: {
       borderRadius: {
