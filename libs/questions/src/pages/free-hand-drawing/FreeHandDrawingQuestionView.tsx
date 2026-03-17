@@ -1,24 +1,22 @@
-import { Box, IconButton, Tooltip, Select, MenuItem, Slider, TextField, Typography, Checkbox, FormControlLabel, useTheme, alpha, styled } from '@mui/material';
+import { useRef, useState, useCallback, useEffect } from 'react';
+import { Pencil, Minus, Square, Circle as CircleIcon, Pentagon, Type, Hand, Undo, Redo, RotateCcw, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { HexColorInput, HexColorPicker } from 'react-colorful';
 import { Stage, Layer, Line, Rect, Circle, Text, Image as KonvaImage, Transformer, Group } from 'react-konva';
 import type Konva from 'konva';
-import { useRef, useState, useCallback, useEffect } from 'react';
-import { HexColorInput, HexColorPicker } from 'react-colorful';
-import type { QuestionRow } from '../../components/QuestionsTable';
 import {
-  Edit as PencilIcon,
-  Remove as LineIcon,
-  CropFree as RectangleIcon,
-  RadioButtonUnchecked as CircleIcon,
-  Pentagon as PolygonIcon,
-  TextFields as TextIcon,
-  PanTool as PanIcon,
-  Undo as UndoIcon,
-  Redo as RedoIcon,
-  Refresh as ResetIcon,
-  ZoomIn as ZoomInIcon,
-  ZoomOut as ZoomOutIcon,
-  Fullscreen as FullscreenIcon,
-} from '@mui/icons-material';
+  cn,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@item-bank/ui';
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type FreeHandDrawingQuestionViewProps = {
   question: QuestionRow;
@@ -63,40 +61,35 @@ const DEFAULT_STROKE_COLOR = '#000000';
 const DEFAULT_STROKE_WIDTH = 2;
 const DEFAULT_FONT_SIZE = 23;
 
-const ToolbarContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
-  borderBottom: `1px solid ${theme.palette.divider}`,
-}));
-
-const ToolbarGroup = styled(Box)(({ theme }) => ({
-  borderRight: `1px solid ${theme.palette.divider}`,
-  '&:last-child': {
-    borderRight: 'none',
-  },
-}));
-
-const StyledIconButton = styled(IconButton)<{ selected?: boolean }>(({ theme, selected }) => ({
-  backgroundColor: selected
-    ? theme.palette.mode === 'dark'
-      ? alpha(theme.palette.primary.main, 0.2)
-      : alpha(theme.palette.primary.main, 0.1)
-    : 'transparent',
-  color: selected ? theme.palette.primary.main : theme.palette.text.secondary,
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.primary.main, 0.3)
-      : alpha(theme.palette.primary.main, 0.15),
-  },
-}));
-
-const CanvasContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
-}));
-
-const PropertiesSidebar = styled(Box)(({ theme }) => ({
-  borderLeft: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],
-}));
+/** Shared icon button used throughout the toolbar. */
+const ToolbarIconButton = ({
+  selected,
+  onClick,
+  disabled,
+  'aria-label': ariaLabel,
+  children,
+}: {
+  selected?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
+  'aria-label': string;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    aria-label={ariaLabel}
+    onClick={onClick}
+    disabled={disabled}
+    className={cn(
+      'p-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
+      selected
+        ? 'bg-primary/10 text-primary dark:bg-primary/20'
+        : 'bg-transparent text-muted-foreground hover:bg-primary/15 dark:hover:bg-primary/30',
+    )}
+  >
+    {children}
+  </button>
+);
 
 const FreeHandDrawingQuestionView = ({
   question,
@@ -104,7 +97,6 @@ const FreeHandDrawingQuestionView = ({
   canvasHeight = 600,
   backgroundImage = null,
 }: FreeHandDrawingQuestionViewProps) => {
-  const theme = useTheme();
   const [tool, setTool] = useState<Tool>('pencil');
   const [lines, setLines] = useState<DrawingLine[]>([]);
   const [shapes, setShapes] = useState<DrawingShape[]>([]);
@@ -519,7 +511,7 @@ const FreeHandDrawingQuestionView = ({
       if (!stage) return;
       const pointerPos = stage.getPointerPosition();
       if (!pointerPos) return;
-      
+
       const x = (pointerPos.x - stagePos.x) / (stageScale.x || 1);
       const y = (pointerPos.y - stagePos.y) / (stageScale.y || 1);
 
@@ -579,542 +571,548 @@ const FreeHandDrawingQuestionView = ({
     }
   }, [saveToHistory]);
 
+  // Void usage of question prop to satisfy TypeScript without modifying logic.
+  void question;
+
   return (
-    <Box ref={containerRef}>
-      <ToolbarContainer className="flex items-center flex-wrap gap-1 p-2">
+    <TooltipProvider>
+      <div ref={containerRef}>
+        {/* Toolbar */}
+        <div className="flex items-center flex-wrap gap-1 p-2 bg-muted border-b border-border dark:bg-muted/80">
 
-        <ToolbarGroup className="flex items-center gap-1 py-0 px-2">
-          <Tooltip title="Pencil">
-            <StyledIconButton
-              size="small"
-              selected={tool === 'pencil'}
-              onClick={() => setTool('pencil')}
-            >
-              <PencilIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Line">
-            <StyledIconButton
-              size="small"
-              selected={tool === 'line'}
-              onClick={() => setTool('line')}
-            >
-              <LineIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Rectangle">
-            <StyledIconButton
-              size="small"
-              selected={tool === 'rectangle'}
-              onClick={() => setTool('rectangle')}
-            >
-              <RectangleIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Circle">
-            <StyledIconButton
-              size="small"
-              selected={tool === 'circle'}
-              onClick={() => setTool('circle')}
-            >
-              <CircleIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Polygon">
-            <StyledIconButton
-              size="small"
-              selected={tool === 'polygon'}
-              onClick={() => setTool('polygon')}
-            >
-              <PolygonIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Text">
-            <StyledIconButton
-              size="small"
-              selected={tool === 'text'}
-              onClick={() => setTool('text')}
-            >
-              <TextIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-        </ToolbarGroup>
+          {/* Drawing tools group */}
+          <div className="flex items-center gap-1 py-0 ps-2 pe-2 border-e border-border">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Pencil" selected={tool === 'pencil'} onClick={() => setTool('pencil')}>
+                  <Pencil className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Pencil</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Line" selected={tool === 'line'} onClick={() => setTool('line')}>
+                  <Minus className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Line</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Rectangle" selected={tool === 'rectangle'} onClick={() => setTool('rectangle')}>
+                  <Square className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Rectangle</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Circle" selected={tool === 'circle'} onClick={() => setTool('circle')}>
+                  <CircleIcon className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Circle</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Polygon" selected={tool === 'polygon'} onClick={() => setTool('polygon')}>
+                  <Pentagon className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Polygon</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Text" selected={tool === 'text'} onClick={() => setTool('text')}>
+                  <Type className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Text</TooltipContent>
+            </Tooltip>
+          </div>
 
-        <ToolbarGroup className="flex items-center gap-1 py-0 px-2">
-          <Tooltip title="Pan">
-            <StyledIconButton
-              size="small"
-              selected={tool === 'pan'}
-              onClick={() => setTool('pan')}
-            >
-              <PanIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Undo">
-            <StyledIconButton size="small" onClick={handleUndo} disabled={historyIndex.current <= 0}>
-              <UndoIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Redo">
-            <StyledIconButton
-              size="small"
-              onClick={handleRedo}
-              disabled={historyIndex.current >= history.current.length - 1}
-            >
-              <RedoIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title="Reset">
-            <StyledIconButton size="small" onClick={handleReset}>
-              <ResetIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-        </ToolbarGroup>
+          {/* Pan / history group */}
+          <div className="flex items-center gap-1 py-0 ps-2 pe-2 border-e border-border">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Pan" selected={tool === 'pan'} onClick={() => setTool('pan')}>
+                  <Hand className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Pan</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Undo" onClick={handleUndo} disabled={historyIndex.current <= 0}>
+                  <Undo className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Undo</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton
+                  aria-label="Redo"
+                  onClick={handleRedo}
+                  disabled={historyIndex.current >= history.current.length - 1}
+                >
+                  <Redo className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Redo</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Reset" onClick={handleReset}>
+                  <RotateCcw className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Reset</TooltipContent>
+            </Tooltip>
+          </div>
 
-        <ToolbarGroup className="flex items-center gap-1 py-0 px-2">
-          <Tooltip title="Zoom Out">
-            <StyledIconButton size="small" onClick={handleZoomOut}>
-              <ZoomOutIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Select
-            value={zoom}
-            onChange={(e) => handleZoomChange(Number(e.target.value))}
-            size="small"
-            MenuProps={{
-              container: isFullscreen ? containerRef.current : undefined,
-              disablePortal: isFullscreen,
-            }}
-            sx={{
-              minWidth: 80,
-              height: 32,
-              '& .MuiSelect-select': {
-                py: 0.5,
-                fontSize: '0.875rem',
-              },
-            }}
+          {/* Zoom group */}
+          <div className="flex items-center gap-1 py-0 ps-2 pe-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Zoom Out" onClick={handleZoomOut}>
+                  <ZoomOut className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Zoom Out</TooltipContent>
+            </Tooltip>
+            <Select
+              value={String(zoom)}
+              onValueChange={(val) => handleZoomChange(Number(val))}
+            >
+              <SelectTrigger className="h-8 w-20 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25%</SelectItem>
+                <SelectItem value="50">50%</SelectItem>
+                <SelectItem value="75">75%</SelectItem>
+                <SelectItem value="100">100%</SelectItem>
+                <SelectItem value="125">125%</SelectItem>
+                <SelectItem value="150">150%</SelectItem>
+                <SelectItem value="200">200%</SelectItem>
+                <SelectItem value="300">300%</SelectItem>
+                <SelectItem value="400">400%</SelectItem>
+              </SelectContent>
+            </Select>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label="Zoom In" onClick={handleZoomIn}>
+                  <ZoomIn className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>Zoom In</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ToolbarIconButton aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'} onClick={handleFullscreen}>
+                  <Maximize className="h-4 w-4" />
+                </ToolbarIconButton>
+              </TooltipTrigger>
+              <TooltipContent>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* Canvas area */}
+        <div className="flex justify-center items-stretch gap-4 p-4 overflow-auto bg-muted/50 dark:bg-muted/20">
+          <Stage
+            ref={stageRef}
+            width={canvasWidth}
+            height={canvasHeight}
+            scaleX={stageScale.x}
+            scaleY={stageScale.y}
+            x={stagePos.x}
+            y={stagePos.y}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onTouchStart={handleMouseDown}
+            onTouchMove={handleMouseMove}
+            onTouchEnd={handleMouseUp}
+            onClick={checkDeselect}
+            onTap={checkDeselect}
+            style={{ cursor: tool === 'pencil' || tool === 'polygon' ? 'crosshair' : 'default' }}
           >
-            <MenuItem value={25}>25%</MenuItem>
-            <MenuItem value={50}>50%</MenuItem>
-            <MenuItem value={75}>75%</MenuItem>
-            <MenuItem value={100}>100%</MenuItem>
-            <MenuItem value={125}>125%</MenuItem>
-            <MenuItem value={150}>150%</MenuItem>
-            <MenuItem value={200}>200%</MenuItem>
-            <MenuItem value={300}>300%</MenuItem>
-            <MenuItem value={400}>400%</MenuItem>
-          </Select>
-          <Tooltip title="Zoom In">
-            <StyledIconButton size="small" onClick={handleZoomIn}>
-              <ZoomInIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-          <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
-            <StyledIconButton size="small" onClick={handleFullscreen}>
-              <FullscreenIcon fontSize="small" />
-            </StyledIconButton>
-          </Tooltip>
-        </ToolbarGroup>
-      </ToolbarContainer>
-
-      <CanvasContainer className="flex justify-center items-stretch gap-4 p-4 overflow-auto">
-        <Stage
-          ref={stageRef}
-          width={canvasWidth}
-          height={canvasHeight}
-          scaleX={stageScale.x}
-          scaleY={stageScale.y}
-          x={stagePos.x}
-          y={stagePos.y}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onTouchStart={handleMouseDown}
-          onTouchMove={handleMouseMove}
-          onTouchEnd={handleMouseUp}
-          onClick={checkDeselect}
-          onTap={checkDeselect}
-          style={{ cursor: tool === 'pencil' || tool === 'polygon' ? 'crosshair' : 'default' }}
-        >
-          <Layer>
-            <Rect
-              name="bg"
-              x={0}
-              y={0}
-              width={canvasWidth}
-              height={canvasHeight}
-              fill="#ffffff"
-              stroke={theme.palette.divider}
-              strokeWidth={1}
-            />
-
-            {backgroundImg && (
-              <KonvaImage
-                image={backgroundImg}
+            <Layer>
+              <Rect
+                name="bg"
                 x={0}
                 y={0}
                 width={canvasWidth}
                 height={canvasHeight}
-                listening={false}
-                opacity={1}
+                fill="#ffffff"
+                stroke="#e5e7eb"
+                strokeWidth={1}
               />
-            )}
 
-            {lines.map((line, i) => {
-              const key = `line-${i}`;
-              return (
+              {backgroundImg && (
+                <KonvaImage
+                  image={backgroundImg}
+                  x={0}
+                  y={0}
+                  width={canvasWidth}
+                  height={canvasHeight}
+                  listening={false}
+                  opacity={1}
+                />
+              )}
+
+              {lines.map((line, i) => {
+                const key = `line-${i}`;
+                return (
+                  <Line
+                    key={key}
+                    ref={(node) => {
+                      if (node) nodeRefs.current[key] = node;
+                      else delete nodeRefs.current[key];
+                    }}
+                    x={line.x ?? 0}
+                    y={line.y ?? 0}
+                    points={line.points}
+                    stroke={line.color}
+                    strokeWidth={line.strokeWidth}
+                    opacity={line.opacity ?? 1}
+                    tension={0.5}
+                    lineCap="round"
+                    lineJoin="round"
+                    draggable={tool === 'pan'}
+                    onClick={tool === 'pan' ? () => setSelectedId(key) : undefined}
+                    onTap={tool === 'pan' ? () => setSelectedId(key) : undefined}
+                    onDragEnd={
+                      tool === 'pan'
+                        ? (e) => {
+                            const node = e.target;
+                            setLines((prev) => {
+                              const next = [...prev];
+                              next[i] = { ...next[i], x: node.x(), y: node.y() };
+                              saveToHistory({ lines: next });
+                              return next;
+                            });
+                            setTimeout(updateDeleteButtonPosition, 0);
+                          }
+                        : undefined
+                    }
+                  />
+                );
+              })}
+
+
+              {shapes.map((shape, i) => {
+                const key = `shape-${i}`;
+                const setRef = (node: Konva.Node | null) => {
+                  if (node) nodeRefs.current[key] = node;
+                  else delete nodeRefs.current[key];
+                };
+                const handleShapeDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
+                  const node = e.target;
+                  setShapes((prev) => {
+                    const next = [...prev];
+                    next[i] = { ...next[i], x: node.x(), y: node.y() };
+                    saveToHistory({ shapes: next });
+                    return next;
+                  });
+                  setTimeout(updateDeleteButtonPosition, 0);
+                };
+                const handleRectTransformEnd = (e: Konva.KonvaEventObject<Event>) => {
+                  const node = e.target as Konva.Rect;
+                  const scaleX = node.scaleX();
+                  const scaleY = node.scaleY();
+                  node.scaleX(1);
+                  node.scaleY(1);
+                  setShapes((prev) => {
+                    const next = [...prev];
+                    next[i] = {
+                      ...next[i],
+                      x: node.x(),
+                      y: node.y(),
+                      width: Math.max(5, node.width() * scaleX),
+                      height: Math.max(5, node.height() * scaleY),
+                    };
+                    saveToHistory({ shapes: next });
+                    return next;
+                  });
+                  setTimeout(updateDeleteButtonPosition, 0);
+                };
+                const handleCircleTransformEnd = (e: Konva.KonvaEventObject<Event>) => {
+                  const node = e.target as Konva.Circle;
+                  const scaleX = node.scaleX();
+                  const scaleY = node.scaleY();
+                  node.scaleX(1);
+                  node.scaleY(1);
+                  const radius = Math.max(5, node.radius() * Math.max(scaleX, scaleY));
+                  setShapes((prev) => {
+                    const next = [...prev];
+                    next[i] = { ...next[i], x: node.x(), y: node.y(), radius };
+                    saveToHistory({ shapes: next });
+                    return next;
+                  });
+                  setTimeout(updateDeleteButtonPosition, 0);
+                };
+                const selectProps =
+                  tool === 'pan'
+                    ? {
+                        draggable: true,
+                        onClick: () => setSelectedId(key),
+                        onTap: () => setSelectedId(key),
+                        ref: setRef,
+                        onDragEnd: handleShapeDragEnd,
+                      }
+                    : { ref: setRef };
+                if (shape.type === 'line' && shape.points) {
+                  return (
+                    <Line
+                      key={key}
+                      points={shape.points}
+                      stroke={shape.color}
+                      strokeWidth={shape.strokeWidth}
+                      opacity={shape.opacity ?? 1}
+                      {...selectProps}
+                    />
+                  );
+                }
+                if (shape.type === 'rectangle') {
+                  return (
+                    <Rect
+                      key={key}
+                      x={shape.x}
+                      y={shape.y}
+                      width={shape.width || 0}
+                      height={shape.height || 0}
+                      stroke={shape.color}
+                      strokeWidth={shape.strokeWidth}
+                      fill={shape.useFill ? shape.fillColor || DEFAULT_STROKE_COLOR : 'transparent'}
+                      opacity={shape.opacity ?? 1}
+                      {...selectProps}
+                      onTransformEnd={tool === 'pan' ? handleRectTransformEnd : undefined}
+                    />
+                  );
+                }
+                if (shape.type === 'circle') {
+                  return (
+                    <Circle
+                      key={key}
+                      x={shape.x}
+                      y={shape.y}
+                      radius={shape.radius || 0}
+                      stroke={shape.color}
+                      strokeWidth={shape.strokeWidth}
+                      fill={shape.useFill ? shape.fillColor || DEFAULT_STROKE_COLOR : 'transparent'}
+                      opacity={shape.opacity ?? 1}
+                      {...selectProps}
+                      onTransformEnd={tool === 'pan' ? handleCircleTransformEnd : undefined}
+                    />
+                  );
+                }
+                if (shape.type === 'text') {
+                  return (
+                    <Text
+                      key={key}
+                      x={shape.x}
+                      y={shape.y}
+                      text={shape.text || ''}
+                      fontSize={shape.fontSize || 23}
+                      fill={shape.color}
+                      opacity={shape.opacity ?? 1}
+                      {...selectProps}
+                    />
+                  );
+                }
+                if (shape.type === 'polygon' && shape.points && shape.points.length >= POLYGON_MIN_POINTS) {
+                  return (
+                    <Line
+                      key={key}
+                      points={shape.points}
+                      stroke={shape.color}
+                      strokeWidth={shape.strokeWidth}
+                      fill={shape.useFill ? shape.fillColor || DEFAULT_STROKE_COLOR : 'transparent'}
+                      opacity={shape.opacity ?? 1}
+                      closed
+                      {...selectProps}
+                    />
+                  );
+                }
+                return null;
+              })}
+
+              {tool === 'polygon' && polygonPoints.length >= 2 && (
                 <Line
-                  key={key}
-                  ref={(node) => {
-                    if (node) nodeRefs.current[key] = node;
-                    else delete nodeRefs.current[key];
-                  }}
-                  x={line.x ?? 0}
-                  y={line.y ?? 0}
-                  points={line.points}
-                  stroke={line.color}
-                  strokeWidth={line.strokeWidth}
-                  opacity={line.opacity ?? 1}
+                  points={polygonPoints}
+                  stroke={DEFAULT_STROKE_COLOR}
+                  strokeWidth={DEFAULT_STROKE_WIDTH}
+                  closed={false}
+                />
+              )}
+              {tool === 'polygon' &&
+                polygonPoints.length >= 2 &&
+                Array.from({ length: Math.floor(polygonPoints.length / 2) }, (_, i) => [polygonPoints[i * 2], polygonPoints[i * 2 + 1]]).map(([px, py], i) => (
+                  <Circle key={`poly-pt-${i}`} x={px} y={py} radius={4} fill="#000000" stroke="#fff" strokeWidth={1} />
+                ))}
+
+
+              {isDrawing.current && tool === 'pencil' && currentLine.length > 0 && (
+                <Line
+                  points={currentLine}
+                  stroke={DEFAULT_STROKE_COLOR}
+                  strokeWidth={DEFAULT_STROKE_WIDTH}
                   tension={0.5}
                   lineCap="round"
                   lineJoin="round"
-                  draggable={tool === 'pan'}
-                  onClick={tool === 'pan' ? () => setSelectedId(key) : undefined}
-                  onTap={tool === 'pan' ? () => setSelectedId(key) : undefined}
-                  onDragEnd={
-                    tool === 'pan'
-                      ? (e) => {
-                          const node = e.target;
-                          setLines((prev) => {
-                            const next = [...prev];
-                            next[i] = { ...next[i], x: node.x(), y: node.y() };
-                            saveToHistory({ lines: next });
-                            return next;
-                          });
-                          setTimeout(updateDeleteButtonPosition, 0);
-                        }
-                      : undefined
-                  }
                 />
-              );
-            })}
+              )}
 
-
-            {shapes.map((shape, i) => {
-              const key = `shape-${i}`;
-              const setRef = (node: Konva.Node | null) => {
-                if (node) nodeRefs.current[key] = node;
-                else delete nodeRefs.current[key];
-              };
-              const handleShapeDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
-                const node = e.target;
-                setShapes((prev) => {
-                  const next = [...prev];
-                  next[i] = { ...next[i], x: node.x(), y: node.y() };
-                  saveToHistory({ shapes: next });
-                  return next;
-                });
-                setTimeout(updateDeleteButtonPosition, 0);
-              };
-              const handleRectTransformEnd = (e: Konva.KonvaEventObject<Event>) => {
-                const node = e.target as Konva.Rect;
-                const scaleX = node.scaleX();
-                const scaleY = node.scaleY();
-                node.scaleX(1);
-                node.scaleY(1);
-                setShapes((prev) => {
-                  const next = [...prev];
-                  next[i] = {
-                    ...next[i],
-                    x: node.x(),
-                    y: node.y(),
-                    width: Math.max(5, node.width() * scaleX),
-                    height: Math.max(5, node.height() * scaleY),
-                  };
-                  saveToHistory({ shapes: next });
-                  return next;
-                });
-                setTimeout(updateDeleteButtonPosition, 0);
-              };
-              const handleCircleTransformEnd = (e: Konva.KonvaEventObject<Event>) => {
-                const node = e.target as Konva.Circle;
-                const scaleX = node.scaleX();
-                const scaleY = node.scaleY();
-                node.scaleX(1);
-                node.scaleY(1);
-                const radius = Math.max(5, node.radius() * Math.max(scaleX, scaleY));
-                setShapes((prev) => {
-                  const next = [...prev];
-                  next[i] = { ...next[i], x: node.x(), y: node.y(), radius };
-                  saveToHistory({ shapes: next });
-                  return next;
-                });
-                setTimeout(updateDeleteButtonPosition, 0);
-              };
-              const selectProps =
-                tool === 'pan'
-                  ? {
-                      draggable: true,
-                      onClick: () => setSelectedId(key),
-                      onTap: () => setSelectedId(key),
-                      ref: setRef,
-                      onDragEnd: handleShapeDragEnd,
-                    }
-                  : { ref: setRef };
-              if (shape.type === 'line' && shape.points) {
-                return (
-                  <Line
-                    key={key}
-                    points={shape.points}
-                    stroke={shape.color}
-                    strokeWidth={shape.strokeWidth}
-                    opacity={shape.opacity ?? 1}
-                    {...selectProps}
-                  />
-                );
-              }
-              if (shape.type === 'rectangle') {
-                return (
-                  <Rect
-                    key={key}
-                    x={shape.x}
-                    y={shape.y}
-                    width={shape.width || 0}
-                    height={shape.height || 0}
-                    stroke={shape.color}
-                    strokeWidth={shape.strokeWidth}
-                    fill={shape.useFill ? shape.fillColor || DEFAULT_STROKE_COLOR : 'transparent'}
-                    opacity={shape.opacity ?? 1}
-                    {...selectProps}
-                    onTransformEnd={tool === 'pan' ? handleRectTransformEnd : undefined}
-                  />
-                );
-              }
-              if (shape.type === 'circle') {
-                return (
-                  <Circle
-                    key={key}
-                    x={shape.x}
-                    y={shape.y}
-                    radius={shape.radius || 0}
-                    stroke={shape.color}
-                    strokeWidth={shape.strokeWidth}
-                    fill={shape.useFill ? shape.fillColor || DEFAULT_STROKE_COLOR : 'transparent'}
-                    opacity={shape.opacity ?? 1}
-                    {...selectProps}
-                    onTransformEnd={tool === 'pan' ? handleCircleTransformEnd : undefined}
-                  />
-                );
-              }
-              if (shape.type === 'text') {
-                return (
-                  <Text
-                    key={key}
-                    x={shape.x}
-                    y={shape.y}
-                    text={shape.text || ''}
-                    fontSize={shape.fontSize || 23}
-                    fill={shape.color}
-                    opacity={shape.opacity ?? 1}
-                    {...selectProps}
-                  />
-                );
-              }
-              if (shape.type === 'polygon' && shape.points && shape.points.length >= POLYGON_MIN_POINTS) {
-                return (
-                  <Line
-                    key={key}
-                    points={shape.points}
-                    stroke={shape.color}
-                    strokeWidth={shape.strokeWidth}
-                    fill={shape.useFill ? shape.fillColor || DEFAULT_STROKE_COLOR : 'transparent'}
-                    opacity={shape.opacity ?? 1}
-                    closed
-                    {...selectProps}
-                  />
-                );
-              }
-              return null;
-            })}
-
-            {tool === 'polygon' && polygonPoints.length >= 2 && (
-              <Line
-                points={polygonPoints}
-                stroke={DEFAULT_STROKE_COLOR}
-                strokeWidth={DEFAULT_STROKE_WIDTH}
-                closed={false}
-              />
-            )}
-            {tool === 'polygon' &&
-              polygonPoints.length >= 2 &&
-              Array.from({ length: Math.floor(polygonPoints.length / 2) }, (_, i) => [polygonPoints[i * 2], polygonPoints[i * 2 + 1]]).map(([px, py], i) => (
-                <Circle key={`poly-pt-${i}`} x={px} y={py} radius={4} fill="#000000" stroke="#fff" strokeWidth={1} />
-              ))}
-
-
-            {isDrawing.current && tool === 'pencil' && currentLine.length > 0 && (
-              <Line
-                points={currentLine}
-                stroke={DEFAULT_STROKE_COLOR}
-                strokeWidth={DEFAULT_STROKE_WIDTH}
-                tension={0.5}
-                lineCap="round"
-                lineJoin="round"
-              />
-            )}
-
-            {isDrawing.current && currentShape && tool === 'line' && currentShape.points && (
-              <Line
-                points={currentShape.points}
-                stroke={currentShape.color || DEFAULT_STROKE_COLOR}
-                strokeWidth={currentShape.strokeWidth ?? DEFAULT_STROKE_WIDTH}
-              />
-            )}
-            {isDrawing.current && currentShape && tool === 'rectangle' && (
-              <Rect
-                x={currentShape.x || 0}
-                y={currentShape.y || 0}
-                width={currentShape.width || 0}
-                height={currentShape.height || 0}
-                stroke={currentShape.color || DEFAULT_STROKE_COLOR}
-                strokeWidth={currentShape.strokeWidth ?? DEFAULT_STROKE_WIDTH}
-                fill="transparent"
-              />
-            )}
-            {isDrawing.current && currentShape && tool === 'circle' && (
-              <Circle
-                x={currentShape.x || 0}
-                y={currentShape.y || 0}
-                radius={currentShape.radius || 0}
-                stroke={currentShape.color || DEFAULT_STROKE_COLOR}
-                strokeWidth={currentShape.strokeWidth ?? DEFAULT_STROKE_WIDTH}
-                fill="transparent"
-              />
-            )}
-
-            {(tool === 'pan' || tool === 'text') && (
-              <Transformer
-                ref={transformerRef}
-                borderDash={tool === 'text' ? [4, 4] : undefined}
-                enabledAnchors={tool === 'text' ? [] : undefined}
-                rotateEnabled={tool === 'text' ? false : undefined}
-                flipEnabled={false}
-                boundBoxFunc={(oldBox, newBox) => {
-                  if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
-                    return oldBox;
-                  }
-                  return newBox;
-                }}
-              />
-            )}
-
-            {tool === 'pan' && selectedId && deleteButtonPos && (
-              <Group
-                name="delete-button"
-                x={deleteButtonPos.x}
-                y={deleteButtonPos.y}
-                onClick={handleDelete}
-                onTap={handleDelete}
-                onMouseEnter={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) {
-                    stage.container().style.cursor = 'pointer';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) {
-                    stage.container().style.cursor = 'default';
-                  }
-                }}
-              >
+              {isDrawing.current && currentShape && tool === 'line' && currentShape.points && (
+                <Line
+                  points={currentShape.points}
+                  stroke={currentShape.color || DEFAULT_STROKE_COLOR}
+                  strokeWidth={currentShape.strokeWidth ?? DEFAULT_STROKE_WIDTH}
+                />
+              )}
+              {isDrawing.current && currentShape && tool === 'rectangle' && (
+                <Rect
+                  x={currentShape.x || 0}
+                  y={currentShape.y || 0}
+                  width={currentShape.width || 0}
+                  height={currentShape.height || 0}
+                  stroke={currentShape.color || DEFAULT_STROKE_COLOR}
+                  strokeWidth={currentShape.strokeWidth ?? DEFAULT_STROKE_WIDTH}
+                  fill="transparent"
+                />
+              )}
+              {isDrawing.current && currentShape && tool === 'circle' && (
                 <Circle
-                  radius={12}
-                  fill={theme.palette.error.main}
-                  stroke={theme.palette.error.dark}
-                  strokeWidth={2}
+                  x={currentShape.x || 0}
+                  y={currentShape.y || 0}
+                  radius={currentShape.radius || 0}
+                  stroke={currentShape.color || DEFAULT_STROKE_COLOR}
+                  strokeWidth={currentShape.strokeWidth ?? DEFAULT_STROKE_WIDTH}
+                  fill="transparent"
                 />
-                <Text
-                  text="×"
-                  fontSize={18}
-                  fontStyle="bold"
-                  fill="white"
-                  align="center"
-                  verticalAlign="middle"
-                  x={-6}
-                  y={-9}
-                  width={12}
-                  height={18}
+              )}
+
+              {(tool === 'pan' || tool === 'text') && (
+                <Transformer
+                  ref={transformerRef}
+                  borderDash={tool === 'text' ? [4, 4] : undefined}
+                  enabledAnchors={tool === 'text' ? [] : undefined}
+                  rotateEnabled={tool === 'text' ? false : undefined}
+                  flipEnabled={false}
+                  boundBoxFunc={(oldBox, newBox) => {
+                    if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
+                      return oldBox;
+                    }
+                    return newBox;
+                  }}
                 />
-              </Group>
-            )}
-          </Layer>
-        </Stage>
-        {showShapeProperties && selectedDrawable && (
-          <PropertiesSidebar
-          className="w-[280px] min-w-[280px] p-4"
-            onMouseDownCapture={(e) => {
-              if (!openColorPicker) return;
-              const target = e.target as Node;
-              if (openColorPicker === 'stroke') {
-                if (strokeColorPickerRef.current?.contains(target)) return;
-                if (strokeColorSwatchRef.current?.contains(target)) return;
-              }
-              if (openColorPicker === 'fill') {
-                if (fillColorPickerRef.current?.contains(target)) return;
-                if (fillColorSwatchRef.current?.contains(target)) return;
-              }
-              setOpenColorPicker(null);
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Properties
-            </Typography>
-            <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-              {selectedShape?.type === 'text' ? 'Text color' : 'Stroke color'}
-            </Typography>
-            <Box sx={{ mt: 0.5, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box
-                ref={strokeColorSwatchRef}
-                sx={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: '50%',
-                  border: `1px solid ${theme.palette.divider}`,
-                  bgcolor: selectedStrokeColor,
-                  cursor: 'pointer',
-                }}
-                onClick={() => setOpenColorPicker((prev) => (prev === 'stroke' ? null : 'stroke'))}
-              />
-              <HexColorInput
-                prefixed
-                color={selectedStrokeColor}
-                onChange={updateSelectedStrokeColor}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: theme.palette.text.primary,
-                  fontSize: '0.95rem',
-                  width: 90,
-                  outline: 'none',
-                }}
-              />
-            </Box>
-            {openColorPicker === 'stroke' && (
-              <Box ref={strokeColorPickerRef} sx={{ mb: 2.5 }}>
-                <HexColorPicker
+              )}
+
+              {tool === 'pan' && selectedId && deleteButtonPos && (
+                <Group
+                  name="delete-button"
+                  x={deleteButtonPos.x}
+                  y={deleteButtonPos.y}
+                  onClick={handleDelete}
+                  onTap={handleDelete}
+                  onMouseEnter={(e) => {
+                    const stage = e.target.getStage();
+                    if (stage) {
+                      stage.container().style.cursor = 'pointer';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    const stage = e.target.getStage();
+                    if (stage) {
+                      stage.container().style.cursor = 'default';
+                    }
+                  }}
+                >
+                  <Circle
+                    radius={12}
+                    fill="#ef4444"
+                    stroke="#b91c1c"
+                    strokeWidth={2}
+                  />
+                  <Text
+                    text="×"
+                    fontSize={18}
+                    fontStyle="bold"
+                    fill="white"
+                    align="center"
+                    verticalAlign="middle"
+                    x={-6}
+                    y={-9}
+                    width={12}
+                    height={18}
+                  />
+                </Group>
+              )}
+            </Layer>
+          </Stage>
+
+          {/* Properties sidebar */}
+          {showShapeProperties && selectedDrawable && (
+            <div
+              className="w-[280px] min-w-[280px] p-4 border-s border-border bg-background dark:bg-card"
+              onMouseDownCapture={(e) => {
+                if (!openColorPicker) return;
+                const target = e.target as Node;
+                if (openColorPicker === 'stroke') {
+                  if (strokeColorPickerRef.current?.contains(target)) return;
+                  if (strokeColorSwatchRef.current?.contains(target)) return;
+                }
+                if (openColorPicker === 'fill') {
+                  if (fillColorPickerRef.current?.contains(target)) return;
+                  if (fillColorSwatchRef.current?.contains(target)) return;
+                }
+                setOpenColorPicker(null);
+              }}
+            >
+              <h3 className="text-base font-semibold text-foreground mb-2">Properties</h3>
+              <p className="text-sm font-medium text-muted-foreground mb-1.5">
+                {selectedShape?.type === 'text' ? 'Text color' : 'Stroke color'}
+              </p>
+              <div className="mt-0.5 mb-2.5 flex items-center gap-1">
+                <div
+                  ref={strokeColorSwatchRef}
+                  className="w-3.5 h-3.5 rounded-full border border-border cursor-pointer shrink-0"
+                  style={{ backgroundColor: selectedStrokeColor }}
+                  onClick={() => setOpenColorPicker((prev) => (prev === 'stroke' ? null : 'stroke'))}
+                />
+                <HexColorInput
+                  prefixed
                   color={selectedStrokeColor}
                   onChange={updateSelectedStrokeColor}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'inherit',
+                    fontSize: '0.95rem',
+                    width: 90,
+                    outline: 'none',
+                  }}
                 />
-              </Box>
-            )}
+              </div>
+              {openColorPicker === 'stroke' && (
+                <div ref={strokeColorPickerRef} className="mb-2.5">
+                  <HexColorPicker
+                    color={selectedStrokeColor}
+                    onChange={updateSelectedStrokeColor}
+                  />
+                </div>
+              )}
 
-            {supportsFill && (
-              <>
-                <FormControlLabel
-                  sx={{ mb: 1.5 }}
-                  control={
-                    <Checkbox
+              {supportsFill && (
+                <>
+                  <label className="flex items-center gap-2 mb-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-border accent-primary"
                       checked={!!selectedShape.useFill}
                       onChange={(e) => {
                         const checked = e.target.checked;
@@ -1132,122 +1130,113 @@ const FreeHandDrawingQuestionView = ({
                         });
                       }}
                     />
-                  }
-                  label="Fill color"
-                />
-                {!!selectedShape.useFill && (
-                  <>
-                    <Box sx={{ mt: 0.5, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        ref={fillColorSwatchRef}
-                        sx={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: '50%',
-                          border: `1px solid ${theme.palette.divider}`,
-                          bgcolor: selectedShape.fillColor || DEFAULT_STROKE_COLOR,
-                          cursor: 'pointer',
-                        }}
-                        onClick={() => setOpenColorPicker((prev) => (prev === 'fill' ? null : 'fill'))}
-                      />
-                      <HexColorInput
-                        prefixed
-                        color={selectedShape.fillColor || DEFAULT_STROKE_COLOR}
-                        onChange={updateSelectedFillColor}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: theme.palette.text.primary,
-                          fontSize: '0.95rem',
-                          width: 90,
-                          outline: 'none',
-                        }}
-                      />
-                    </Box>
-                    {openColorPicker === 'fill' && (
-                      <Box ref={fillColorPickerRef} sx={{ mb: 2.5 }}>
-                        <HexColorPicker
+                    <span className="text-sm text-foreground">Fill color</span>
+                  </label>
+                  {!!selectedShape.useFill && (
+                    <>
+                      <div className="mt-0.5 mb-2.5 flex items-center gap-1">
+                        <div
+                          ref={fillColorSwatchRef}
+                          className="w-3.5 h-3.5 rounded-full border border-border cursor-pointer shrink-0"
+                          style={{ backgroundColor: selectedShape.fillColor || DEFAULT_STROKE_COLOR }}
+                          onClick={() => setOpenColorPicker((prev) => (prev === 'fill' ? null : 'fill'))}
+                        />
+                        <HexColorInput
+                          prefixed
                           color={selectedShape.fillColor || DEFAULT_STROKE_COLOR}
                           onChange={updateSelectedFillColor}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'inherit',
+                            fontSize: '0.95rem',
+                            width: 90,
+                            outline: 'none',
+                          }}
                         />
-                      </Box>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+                      </div>
+                      {openColorPicker === 'fill' && (
+                        <div ref={fillColorPickerRef} className="mb-2.5">
+                          <HexColorPicker
+                            color={selectedShape.fillColor || DEFAULT_STROKE_COLOR}
+                            onChange={updateSelectedFillColor}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
 
-            {selectedShape?.type === 'text' && selectedTextShape && (
-              <>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  Text Content
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  value={selectedTextShape.text || ''}
-                  onChange={(e) => {
-                    const nextText = e.target.value;
+              {selectedShape?.type === 'text' && selectedTextShape && (
+                <>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Text Content</p>
+                  <Textarea
+                    value={selectedTextShape.text || ''}
+                    onChange={(e) => {
+                      const nextText = e.target.value;
+                      setShapes((prev) => {
+                        if (selectedShapeIndex < 0 || !prev[selectedShapeIndex] || prev[selectedShapeIndex].type !== 'text') {
+                          return prev;
+                        }
+                        const next = [...prev];
+                        next[selectedShapeIndex] = { ...next[selectedShapeIndex], text: nextText };
+                        return next;
+                      });
+                    }}
+                    className="mb-2.5"
+                  />
+                </>
+              )}
+
+              <p className="text-sm font-medium text-muted-foreground mb-1">
+                {selectedShape?.type === 'text'
+                  ? `Font size: ${Math.round(selectedTextShape?.fontSize ?? DEFAULT_FONT_SIZE)}px`
+                  : `Stroke width: ${Math.round(selectedStrokeWidth)}px`}
+              </p>
+              <input
+                type="range"
+                className="w-full mb-2.5 accent-primary"
+                min={selectedShape?.type === 'text' ? 8 : 1}
+                max={selectedShape?.type === 'text' ? 72 : 20}
+                value={selectedShape?.type === 'text' ? selectedTextShape?.fontSize ?? DEFAULT_FONT_SIZE : selectedStrokeWidth}
+                onChange={(e) => {
+                  const nextValue = Number(e.target.value);
+                  if (selectedShape?.type === 'text') {
                     setShapes((prev) => {
-                      if (selectedShapeIndex < 0 || !prev[selectedShapeIndex] || prev[selectedShapeIndex].type !== 'text') {
+                      if (selectedShapeIndex < 0 || !prev[selectedShapeIndex]) {
                         return prev;
                       }
                       const next = [...prev];
-                      next[selectedShapeIndex] = { ...next[selectedShapeIndex], text: nextText };
+                      if (next[selectedShapeIndex].type !== 'text') return prev;
+                      next[selectedShapeIndex] = { ...next[selectedShapeIndex], fontSize: nextValue };
                       return next;
                     });
-                  }}
-                  sx={{ mb: 2.5 }}
-                />
-              </>
-            )}
+                    return;
+                  }
+                  updateSelectedStrokeWidth(nextValue);
+                }}
+              />
 
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              {selectedShape?.type === 'text'
-                ? `Font size: ${Math.round(selectedTextShape?.fontSize ?? DEFAULT_FONT_SIZE)}px`
-                : `Stroke width: ${Math.round(selectedStrokeWidth)}px`}
-            </Typography>
-            <Slider
-              min={selectedShape?.type === 'text' ? 8 : 1}
-              max={selectedShape?.type === 'text' ? 72 : 20}
-              valueLabelDisplay="auto"
-              value={selectedShape?.type === 'text' ? selectedTextShape?.fontSize ?? DEFAULT_FONT_SIZE : selectedStrokeWidth}
-              onChange={(_, value) => {
-                const nextValue = Array.isArray(value) ? value[0] : value;
-                if (selectedShape?.type === 'text') {
-                  setShapes((prev) => {
-                    if (selectedShapeIndex < 0 || !prev[selectedShapeIndex]) {
-                      return prev;
-                    }
-                    const next = [...prev];
-                    if (next[selectedShapeIndex].type !== 'text') return prev;
-                    next[selectedShapeIndex] = { ...next[selectedShapeIndex], fontSize: nextValue };
-                    return next;
-                  });
-                  return;
-                }
-                updateSelectedStrokeWidth(nextValue);
-              }}
-              sx={{ mb: 2.5 }}
-            />
-
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Opacity: {Math.round(selectedOpacity * 100)}%
-            </Typography>
-            <Slider
-              min={0}
-              max={100}
-              value={Math.round(selectedOpacity * 100)}
-              onChange={(_, value) => {
-                const nextOpacityPercent = Array.isArray(value) ? value[0] : value;
-                updateSelectedOpacity(nextOpacityPercent / 100);
-              }}
-            />
-          </PropertiesSidebar>
-        )}
-      </CanvasContainer>
-    </Box>
+              <p className="text-sm font-medium text-muted-foreground mb-1">
+                Opacity: {Math.round(selectedOpacity * 100)}%
+              </p>
+              <input
+                type="range"
+                className="w-full accent-primary"
+                min={0}
+                max={100}
+                value={Math.round(selectedOpacity * 100)}
+                onChange={(e) => {
+                  const nextOpacityPercent = Number(e.target.value);
+                  updateSelectedOpacity(nextOpacityPercent / 100);
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </TooltipProvider>
   );
 };
 
