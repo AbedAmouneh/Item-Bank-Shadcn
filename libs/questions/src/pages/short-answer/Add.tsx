@@ -86,7 +86,7 @@ function Add() {
             <Input
               value={answer.text}
               onChange={(e) => handleAnswerChange(answer.id, e.target.value)}
-              placeholder={t('editor.answer_placeholder')}
+              placeholder={t('editor.answer_placeholder', { index: index + 1 })}
               className="flex-1 text-sm"
             />
 
