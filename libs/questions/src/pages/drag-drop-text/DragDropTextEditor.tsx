@@ -6,31 +6,19 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  MenuItem,
-  Select,
-  Switch,
-  TextField,
-  Typography,
-  FormControlLabel,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import CircleIcon from '@mui/icons-material/Circle';
+import { Plus, Trash2, Circle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
+import {
+  cn,
+  Input,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@item-bank/ui';
 
 const KEY_REGEX_SOURCE = '\\[\\[([^\\]]+)\\]\\]';
 
@@ -70,6 +58,16 @@ export const DRAG_DROP_GROUP_COLORS = [
   'error',
   'info',
 ] as const;
+
+/** Maps the semantic group color name to a concrete hex value used for inline styles. */
+const GROUP_COLOR_HEX: Record<string, string> = {
+  primary:   '#6366f1',
+  secondary: '#8b5cf6',
+  success:   '#22c55e',
+  warning:   '#f59e0b',
+  error:     '#ef4444',
+  info:      '#3b82f6',
+};
 
 type GroupColor = (typeof DRAG_DROP_GROUP_COLORS)[number];
 
@@ -181,28 +179,6 @@ function distributeMarks(count: number): number[] {
   return [...Array(count - 1).fill(base), remainder];
 }
 
-const RowCard = styled(Box)(({ theme }) => ({
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.6)
-      : alpha(theme.palette.primary.main, 0.03),
-  borderRadius: theme.spacing(1.5),
-}));
-
-const GroupChip = styled(Box)(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.75),
-  padding: theme.spacing(0.5, 1.5),
-  borderRadius: theme.spacing(3),
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.5)
-      : alpha(theme.palette.primary.main, 0.04),
-}));
-
 type DragDropTextEditorProps = {
   questionText?: string;
   onAddKey: (key: string) => void;
@@ -212,7 +188,6 @@ type DragDropTextEditorProps = {
 
 function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }: DragDropTextEditorProps) {
   const { t, i18n } = useTranslation('questions');
-  const theme = useTheme();
   const { watch, setValue, register, unregister, getValues } = useFormContext();
 
   const watchedItems = watch('dragDropItems');
@@ -571,85 +546,92 @@ function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }
   }, [uniqueParsedKeys, items]);
 
   return (
-    <Box className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {hasNoKeys && (
-        <Alert severity="error" variant="outlined" className="text-sm">
+        <div role="alert" className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {t('editor.drag_drop_text.error_no_key')}
-        </Alert>
+        </div>
       )}
       {duplicateParsedKeys.length > 0 && (
-        <Alert severity="error" variant="outlined" className="text-sm">
+        <div role="alert" className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {t('editor.drag_drop_text.error_duplicate_keys_in_text', {
             keys: duplicateParsedKeys.map((key) => `[[${key}]]`).join(', '),
           })}
-        </Alert>
+        </div>
       )}
       {duplicateRowKeys.length > 0 && (
-        <Alert severity="error" variant="outlined" className="text-sm">
+        <div role="alert" className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {t('editor.drag_drop_text.error_key_duplicate')}
-        </Alert>
+        </div>
       )}
 
-      <Box className="flex justify-between items-center flex-wrap gap-4">
-        <Typography variant="body2" className="font-semibold" sx={{ color: 'text.primary' }}>
+      {/* Groups section header */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <p className="text-sm font-semibold text-foreground">
           {t('editor.drag_drop_text.groups_label')}
-        </Typography>
-        <Button
-          variant="text"
-          startIcon={<AddIcon />}
+        </p>
+        <button
+          type="button"
+          className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
           onClick={handleAddGroupOpen}
-          className="normal-case text-sm shrink-0"
         >
+          <Plus size={15} />
           {t('editor.drag_drop_text.add_group')}
-        </Button>
-      </Box>
+        </button>
+      </div>
 
+      {/* Group chips */}
       {groups.length > 0 && (
-        <Box className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           {groups.map((group) => {
-            const paletteKey = group.color as GroupColor;
-            const paletteColor = theme.palette[paletteKey];
+            const hex = GROUP_COLOR_HEX[group.color] ?? GROUP_COLOR_HEX['primary'];
             return (
-              <GroupChip key={group.id}>
-                <CircleIcon sx={{ fontSize: 12, color: paletteColor.main }} />
-                <Typography variant="caption" sx={{ color: 'text.primary', fontWeight: 500 }}>
+              <div
+                key={group.id}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl border border-border bg-card"
+              >
+                <Circle size={10} style={{ color: hex }} className="fill-current shrink-0" />
+                <span className="text-xs font-medium text-foreground">
                   {group.name}
-                </Typography>
-                <IconButton
-                  size="small"
+                </span>
+                <button
+                  type="button"
                   onClick={() => handleDeleteGroup(group.id)}
-                  className="p-0.5 ml-1"
-                  sx={{ color: 'text.disabled' }}
+                  className="ms-0.5 p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
                   aria-label={t('editor.drag_drop_text.delete_group')}
                 >
-                  <DeleteOutlineIcon sx={{ fontSize: 14 }} />
-                </IconButton>
-              </GroupChip>
+                  <Trash2 size={12} />
+                </button>
+              </div>
             );
           })}
-        </Box>
+        </div>
       )}
 
-      <Box className="flex justify-between items-center flex-wrap gap-4">
-        <Typography variant="body2" className="font-semibold" sx={{ color: 'text.primary' }}>
+      {/* Items section header with auto-distribute toggle */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <p className="text-sm font-semibold text-foreground">
           {t('editor.drag_drop_text.items_label')} *
-        </Typography>
-        <FormControlLabel
-          control={
-            <Switch
-              size="small"
-              checked={autoDistribute}
-              onChange={(e) => handleAutoDistributeChange(e.target.checked)}
-            />
-          }
-          label={t('editor.drag_drop_text.auto_distribute')}
-          sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.875rem' } }}
-        />
-      </Box>
+        </p>
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            role="switch"
+            className="h-4 w-4 rounded-sm border border-input accent-primary cursor-pointer"
+            checked={autoDistribute}
+            onChange={(e) => handleAutoDistributeChange(e.target.checked)}
+          />
+          <span className="text-sm text-foreground">
+            {t('editor.drag_drop_text.auto_distribute')}
+          </span>
+        </label>
+      </div>
 
+      {/* Items table */}
       {items.length > 0 && (
-        <Box className="flex flex-col gap-2">
-          <Box
+        <div className="flex flex-col gap-2">
+          {/* Column headers */}
+          <div
             className="grid gap-2 px-3 pb-1"
             style={{ gridTemplateColumns: '1fr 1fr 140px 80px 80px 28px' }}
           >
@@ -661,267 +643,248 @@ function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }
               t('editor.drag_drop_text.col_unlimited'),
               '',
             ].map((label, i) => (
-              <Typography
+              <span
                 key={i}
-                variant="caption"
-                className="font-semibold uppercase tracking-wide"
-                sx={{ color: 'text.disabled', fontSize: '0.625rem' }}
+                className="text-[0.625rem] font-semibold uppercase tracking-wide text-muted-foreground"
               >
                 {label}
-              </Typography>
+              </span>
             ))}
-          </Box>
+          </div>
 
+          {/* Item rows */}
           {items.map((item) => (
-            <RowCard
+            <div
               key={item.id}
-              className="grid items-center gap-2 p-2"
+              className="grid items-center gap-2 p-2 rounded-xl border border-border bg-card/60 dark:bg-card/40"
               style={{ gridTemplateColumns: '1fr 1fr 140px 80px 80px 28px' }}
             >
-              <TextField
-                size="small"
-                value={keyDraftByItemId[item.id] ?? item.key}
-                onChange={(e) => handleKeyDraftChange(item.id, e.target.value)}
-                onBlur={() => commitItemKeyChange(item.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    commitItemKeyChange(item.id);
-                  }
-                  if (e.key === 'Escape') {
-                    clearKeyRowState(item.id);
-                  }
-                }}
-                error={!!keyErrorByItemId[item.id]}
-                helperText={keyErrorByItemId[item.id]}
-                placeholder={t('editor.drag_drop_text.key_label')}
-                required
-                slotProps={{
-                  htmlInput: { title: t('editor.drag_drop_text.key_edit_sync_hint') },
-                }}
-                sx={(th) => ({
-                  '& .MuiOutlinedInput-root': { backgroundColor: th.palette.background.paper },
-                })}
-              />
+              {/* Key field with inline error */}
+              <div className="flex flex-col gap-1">
+                <Input
+                  className={cn('text-sm', keyErrorByItemId[item.id] && 'border-destructive')}
+                  value={keyDraftByItemId[item.id] ?? item.key}
+                  onChange={(e) => handleKeyDraftChange(item.id, e.target.value)}
+                  onBlur={() => commitItemKeyChange(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      commitItemKeyChange(item.id);
+                    }
+                    if (e.key === 'Escape') {
+                      clearKeyRowState(item.id);
+                    }
+                  }}
+                  placeholder={t('editor.drag_drop_text.key_label')}
+                  required
+                  title={t('editor.drag_drop_text.key_edit_sync_hint')}
+                />
+                {keyErrorByItemId[item.id] && (
+                  <span className="text-xs text-destructive">{keyErrorByItemId[item.id]}</span>
+                )}
+              </div>
 
-              <TextField
-                size="small"
+              {/* Answer field */}
+              <Input
+                className={cn('text-sm', !item.answer.trim() && 'border-destructive')}
                 value={item.answer}
                 onChange={(e) => handleAnswerChange(item.id, e.target.value)}
                 placeholder={t('editor.drag_drop_text.answer_placeholder')}
-                error={!item.answer.trim()}
                 required
-                sx={(th) => ({
-                  '& .MuiOutlinedInput-root': { backgroundColor: th.palette.background.paper },
-                })}
               />
 
-              <Select
-                size="small"
+              {/* Group selector — native select avoids introducing another shadcn dependency */}
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-50"
                 value={item.groupId}
                 onChange={(e) => handleGroupChange(item.id, e.target.value)}
-                displayEmpty
-                renderValue={(val) => {
-                  if (!val) {
-                    return (
-                      <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-                        {t('editor.drag_drop_text.no_group')}
-                      </Typography>
-                    );
-                  }
-                  const g = groups.find((gr) => gr.id === val);
-                  if (!g) return val;
-                  const pk = g.color as GroupColor;
-                  return (
-                    <Box className="flex items-center gap-1">
-                      <CircleIcon sx={{ fontSize: 10, color: theme.palette[pk].main }} />
-                      <Typography variant="body2">{g.name}</Typography>
-                    </Box>
-                  );
-                }}
-                sx={(th) => ({
-                  backgroundColor: th.palette.background.paper,
-                  fontSize: '0.875rem',
-                })}
+                aria-label={t('editor.drag_drop_text.col_group')}
               >
-                <MenuItem value="">
-                  <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-                    {t('editor.drag_drop_text.no_group')}
-                  </Typography>
-                </MenuItem>
-                {groups.map((g) => {
-                  const pk = g.color as GroupColor;
-                  return (
-                    <MenuItem key={g.id} value={g.id}>
-                      <Box className="flex items-center gap-1.5">
-                        <CircleIcon sx={{ fontSize: 12, color: theme.palette[pk].main }} />
-                        {g.name}
-                      </Box>
-                    </MenuItem>
-                  );
-                })}
-              </Select>
+                <option value="">{t('editor.drag_drop_text.no_group')}</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
 
-              <TextField
-                size="small"
-                type="number"
-                value={item.markPercent}
-                onChange={(e) => handleMarkPercentChange(item.id, e.target.value)}
-                disabled={autoDistribute}
-                slotProps={{
-                  htmlInput: { min: 0, max: 100, step: 0.01 },
-                  input: { endAdornment: <Typography variant="caption">%</Typography> },
-                }}
-                sx={(th) => ({
-                  '& .MuiOutlinedInput-root': { backgroundColor: th.palette.background.paper },
-                })}
-              />
+              {/* Mark % field */}
+              <div className="relative flex items-center">
+                <Input
+                  className="text-sm pe-5"
+                  type="number"
+                  value={item.markPercent}
+                  onChange={(e) => handleMarkPercentChange(item.id, e.target.value)}
+                  disabled={autoDistribute}
+                  min={0}
+                  max={100}
+                  step={0.01}
+                />
+                <span className="absolute end-2 text-xs text-muted-foreground pointer-events-none">%</span>
+              </div>
 
-              <Box className="flex justify-center">
-                <Checkbox
-                  size="small"
+              {/* Unlimited reuse checkbox */}
+              <div className="flex justify-center">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded-sm border border-input accent-primary cursor-pointer"
                   checked={item.unlimitedReuse}
                   onChange={(e) => handleUnlimitedReuseChange(item.id, e.target.checked)}
+                  aria-label={t('editor.drag_drop_text.col_unlimited')}
                 />
-              </Box>
+              </div>
 
-              <Box className="flex justify-center">
-                <IconButton
-                  size="small"
+              {/* Delete item */}
+              <div className="flex justify-center">
+                <button
+                  type="button"
                   onClick={() => handleDeleteItem(item.key)}
-                  sx={{ color: 'text.disabled' }}
+                  className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors"
                   aria-label={t('editor.drag_drop_text.delete_item')}
                 >
-                  <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Box>
-            </RowCard>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
-      <Button
-        variant="text"
-        startIcon={<AddIcon />}
+      {/* Add item button */}
+      <button
+        type="button"
+        className="self-start flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
         onClick={handleAddItemDialogOpen}
-        className="self-start normal-case text-sm"
       >
+        <Plus size={15} />
         {t('editor.drag_drop_text.add_item')}
-      </Button>
+      </button>
 
+      {/* Validation alerts */}
       {keyMismatch && (
-        <Alert severity="error" variant="outlined" className="text-sm">
+        <div role="alert" className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {t('editor.drag_drop_text.error_key_mismatch')}
-        </Alert>
+        </div>
       )}
       {hasEmptyAnswers && (
-        <Alert severity="warning" variant="outlined" className="text-sm">
+        <div role="alert" className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
           {t('editor.drag_drop_text.error_empty_answers')}
-        </Alert>
+        </div>
       )}
       {!autoDistribute && !isTotalValid && items.length > 0 && (
-        <Alert severity="error" variant="outlined" className="text-sm">
+        <div role="alert" className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {t('editor.drag_drop_text.error_total_not_100', {
             total: new Intl.NumberFormat(i18n.language).format(totalMark),
           })}
-        </Alert>
+        </div>
       )}
 
-      <Dialog open={addItemDialogOpen} onClose={handleAddItemDialogClose} maxWidth="xs" fullWidth>
-        <DialogTitle>{t('editor.drag_drop_text.add_item_dialog_title')}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label={t('editor.drag_drop_text.key_label')}
-            fullWidth
-            value={newItemKey}
-            onChange={(e) => {
-              setNewItemKey(e.target.value);
-              setNewItemKeyError('');
-            }}
-            error={!!newItemKeyError}
-            helperText={newItemKeyError}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddItemConfirm();
-              }
-            }}
-          />
+      {/* Add item dialog */}
+      <Dialog open={addItemDialogOpen} onOpenChange={(open) => { if (!open) handleAddItemDialogClose(); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('editor.drag_drop_text.add_item_dialog_title')}</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-1 pt-2">
+            <Input
+              autoFocus
+              placeholder={t('editor.drag_drop_text.key_label')}
+              value={newItemKey}
+              onChange={(e) => {
+                setNewItemKey(e.target.value);
+                setNewItemKeyError('');
+              }}
+              className={cn(newItemKeyError && 'border-destructive')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddItemConfirm();
+                }
+              }}
+            />
+            {newItemKeyError && (
+              <span className="text-xs text-destructive">{newItemKeyError}</span>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-2 flex-row justify-end">
+            <Button variant="outline" type="button" onClick={handleAddItemDialogClose}>
+              {t('cancel')}
+            </Button>
+            <Button type="button" onClick={handleAddItemConfirm}>
+              {t('editor.drag_drop_text.add_item_insert')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleAddItemDialogClose}>{t('cancel')}</Button>
-          <Button onClick={handleAddItemConfirm} variant="contained">
-            {t('editor.drag_drop_text.add_item_insert')}
-          </Button>
-        </DialogActions>
       </Dialog>
 
-      <Dialog open={addGroupDialogOpen} onClose={handleAddGroupClose} maxWidth="xs" fullWidth>
-        <DialogTitle>{t('editor.drag_drop_text.add_group_dialog_title')}</DialogTitle>
-        <DialogContent className="flex flex-col gap-4 pt-4">
-          <TextField
-            autoFocus
-            label={t('editor.drag_drop_text.group_name_label')}
-            fullWidth
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddGroupConfirm();
-              }
-            }}
-          />
-          <Box>
-            <Typography
-              variant="caption"
-              className="mb-2 block"
-              sx={{ color: 'text.secondary' }}
+      {/* Add group dialog */}
+      <Dialog open={addGroupDialogOpen} onOpenChange={(open) => { if (!open) handleAddGroupClose(); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('editor.drag_drop_text.add_group_dialog_title')}</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 pt-2">
+            <Input
+              autoFocus
+              placeholder={t('editor.drag_drop_text.group_name_label')}
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddGroupConfirm();
+                }
+              }}
+            />
+
+            <div>
+              <span className="mb-2 block text-xs font-medium text-muted-foreground">
+                {t('editor.drag_drop_text.group_color_label')}
+              </span>
+              <div className="flex gap-2 flex-wrap">
+                {DRAG_DROP_GROUP_COLORS.map((colorKey) => {
+                  const hex = GROUP_COLOR_HEX[colorKey];
+                  const isSelected = newGroupColor === colorKey;
+                  return (
+                    <div
+                      key={colorKey}
+                      role="radio"
+                      aria-checked={isSelected}
+                      tabIndex={0}
+                      onClick={() => setNewGroupColor(colorKey)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') setNewGroupColor(colorKey);
+                      }}
+                      className="w-8 h-8 rounded-full cursor-pointer transition-[border-color] duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      style={{
+                        backgroundColor: hex,
+                        border: isSelected ? '3px solid hsl(var(--foreground))' : '3px solid transparent',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-2 flex-row justify-end">
+            <Button variant="outline" type="button" onClick={handleAddGroupClose}>
+              {t('cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAddGroupConfirm}
+              disabled={!newGroupName.trim()}
             >
-              {t('editor.drag_drop_text.group_color_label')}
-            </Typography>
-            <Box className="flex gap-2 flex-wrap">
-              {DRAG_DROP_GROUP_COLORS.map((colorKey) => (
-                <Box
-                  key={colorKey}
-                  role="radio"
-                  aria-checked={newGroupColor === colorKey}
-                  tabIndex={0}
-                  onClick={() => setNewGroupColor(colorKey)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') setNewGroupColor(colorKey);
-                  }}
-                  className="w-8 h-8 rounded-full cursor-pointer"
-                  sx={{
-                    backgroundColor: theme.palette[colorKey].main,
-                    border: newGroupColor === colorKey
-                      ? `3px solid ${theme.palette.text.primary}`
-                      : `3px solid transparent`,
-                    transition: 'border-color 0.15s ease',
-                    '&:focus-visible': {
-                      outline: `2px solid ${theme.palette.primary.main}`,
-                      outlineOffset: 2,
-                    },
-                  }}
-                />
-              ))}
-            </Box>
-          </Box>
+              {t('editor.drag_drop_text.add_group_confirm')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleAddGroupClose}>{t('cancel')}</Button>
-          <Button
-            onClick={handleAddGroupConfirm}
-            variant="contained"
-            disabled={!newGroupName.trim()}
-          >
-            {t('editor.drag_drop_text.add_group_confirm')}
-          </Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 }
 
