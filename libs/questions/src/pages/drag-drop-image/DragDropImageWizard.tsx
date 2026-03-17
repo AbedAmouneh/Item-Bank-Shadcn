@@ -1223,7 +1223,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
 
       {/* ── Add Group Dialog ─────────────────────────────────────────── */}
       <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
-        <DialogContent className="max-w-xs">
+        <DialogContent className="max-w-xs max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_image.add_group_dialog_title')}</DialogTitle>
           </DialogHeader>
@@ -1280,7 +1280,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
 
       {/* ── Add Item Dialog ──────────────────────────────────────────── */}
       <Dialog open={addItemDialogOpen} onOpenChange={setAddItemDialogOpen}>
-        <DialogContent className="max-w-xs">
+        <DialogContent className="max-w-xs max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_image.add_item')}</DialogTitle>
           </DialogHeader>
