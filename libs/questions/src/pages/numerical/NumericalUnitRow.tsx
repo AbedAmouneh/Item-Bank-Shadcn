@@ -1,6 +1,7 @@
 import 'mathlive';
 import { memo, useState, useCallback, useEffect, useRef, createElement } from 'react';
 import { Calculator, Trash2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -122,6 +123,7 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
   onRemove,
   canRemove,
 }: NumericalUnitRowProps) {
+  const { t } = useTranslation('questions');
   const id = unit.id;
   const [mathDialogOpen, setMathDialogOpen] = useState(false);
   const [mathInputValue, setMathInputValue] = useState('');
@@ -184,12 +186,12 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
 
   return (
     <>
-      <div className="flex items-center gap-2 p-3 rounded-xl border border-border bg-muted/20 flex-wrap">
+      <div className="flex items-center gap-2 p-3 rounded-xl border border-border bg-muted/20">
         {showCalculatorIcon ? (
-          <div className="relative flex-1" style={{ minWidth: 140 }}>
+          <div className="relative flex-1 min-w-[140px]">
             {/* Floating label */}
             <span className="absolute -top-2 start-2.5 z-10 pointer-events-none text-xs leading-none px-0.5 bg-background text-muted-foreground">
-              Unit *
+              {t('editor.numerical.unit')} *
             </span>
             {/* Math display + open dialog trigger */}
             <div
@@ -198,7 +200,7 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
               onClick={handleOpenMathDialog}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenMathDialog(); }}
               className="flex items-center cursor-pointer ps-2 pe-1 h-9 rounded-md border border-input bg-background hover:border-foreground transition-colors"
-              aria-label="Open math editor"
+              aria-label={t('editor.numerical.open_math_editor')}
             >
               <div className="flex flex-1 items-center overflow-hidden min-w-0">
                 {createElement('math-field', {
@@ -228,7 +230,7 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
                   handleOpenMathDialog();
                 }}
                 className="p-0.5 rounded text-primary hover:bg-transparent transition-colors"
-                aria-label="Open calculator"
+                aria-label={t('editor.numerical.open_calculator')}
               >
                 <Calculator size={18} />
               </button>
@@ -238,9 +240,8 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
           <Input
             value={unit.unit}
             onChange={(e) => onChange(id, 'unit', e.target.value)}
-            className="flex-1 text-sm"
-            placeholder="Unit *"
-            style={{ minWidth: 140 }}
+            className="flex-1 min-w-[140px] text-sm"
+            placeholder={`${t('editor.numerical.unit')} *`}
           />
         )}
 
@@ -252,7 +253,7 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
           disabled={index === 0}
           onChange={(e) => onChange(id, 'multiplier', e.target.value)}
           className="w-28 text-sm"
-          placeholder="Multiplier *"
+          placeholder={`${t('editor.numerical.multiplier')} *`}
           step="any"
         />
 
@@ -261,7 +262,7 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
             type="button"
             onClick={() => onRemove(id)}
             className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors shrink-0"
-            aria-label="Remove unit"
+            aria-label={t('editor.numerical.delete_unit')}
           >
             <Trash2 size={14} />
           </button>
@@ -273,12 +274,12 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
       <Dialog open={mathDialogOpen} onOpenChange={(open) => { if (!open) handleCloseMathDialog(); }}>
         <DialogContent className="max-w-2xl overflow-visible rounded-lg">
           <DialogHeader className="flex flex-row items-center justify-between py-1">
-            <DialogTitle className="text-xl font-semibold">Insert/Edit Math</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">{t('editor.numerical.insert_edit_math')}</DialogTitle>
             <button
               type="button"
               onClick={handleCloseMathDialog}
               className="p-1.5 rounded-md text-primary hover:bg-accent transition-colors"
-              aria-label="Close"
+              aria-label={t('editor.numerical.close')}
             >
               <X size={18} />
             </button>
@@ -302,10 +303,10 @@ const NumericalUnitRow = memo(function NumericalUnitRow({
 
           <DialogFooter className="gap-2 sm:gap-2 flex-row justify-end">
             <Button variant="outline" onClick={handleCloseMathDialog} type="button">
-              Cancel
+              {t('editor.numerical.cancel')}
             </Button>
             <Button onClick={handleSaveMath} type="button">
-              Save
+              {t('editor.numerical.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

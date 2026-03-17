@@ -183,7 +183,13 @@
             "delete_answer": "Delete answer",
             "unit": "Unit",
             "multiplier": "Multiplier",
-            "delete_unit": "Delete unit"
+            "delete_unit": "Delete unit",
+            "insert_edit_math": "Insert/Edit Math",
+            "close": "Close",
+            "cancel": "Cancel",
+            "save": "Save",
+            "open_calculator": "Open calculator",
+            "open_math_editor": "Open math editor"
         },
         "fill_in_blanks": {
             "toolbar_key": "Key",

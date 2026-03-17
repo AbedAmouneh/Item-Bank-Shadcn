@@ -183,7 +183,13 @@
             "delete_answer": "حذف الإجابة",
             "unit": "الوحدة",
             "multiplier": "المضاعف",
-            "delete_unit": "حذف الوحدة"
+            "delete_unit": "حذف الوحدة",
+            "insert_edit_math": "إدراج/تعديل صيغة رياضية",
+            "close": "إغلاق",
+            "cancel": "إلغاء",
+            "save": "حفظ",
+            "open_calculator": "فتح الآلة الحاسبة",
+            "open_math_editor": "فتح محرر الرياضيات"
         },
         "fill_in_blanks": {
             "toolbar_key": "مفتاح",
