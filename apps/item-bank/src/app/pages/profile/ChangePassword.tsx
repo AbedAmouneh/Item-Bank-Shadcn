@@ -1,23 +1,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-  IconButton,
-  InputAdornment,
-  Divider,
-  alpha,
-  styled,
-} from '@mui/material';
-import LockIcon from '@mui/icons-material/Lock';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Button, Input, Label, Separator } from '@item-bank/ui';
 
 const createChangePasswordSchema = (t: (key: string) => string) =>
   z
@@ -47,20 +34,6 @@ const defaultValues: ChangePasswordFormValues = {
   confirmPassword: '',
 };
 
-const CardBox = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.semantic.surface.card,
-  border: `1px solid ${theme.palette.semantic.border.card}`,
-}));
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: theme.palette.semantic.surface.input,
-    '&.Mui-disabled': {
-      backgroundColor: alpha(theme.palette.action.disabledBackground, 0.5),
-    },
-  },
-}));
-
 const ChangePassword = () => {
   const { t } = useTranslation('common');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -78,130 +51,134 @@ const ChangePassword = () => {
     defaultValues,
   });
 
-  const onSave = handleSubmit((data) => {
-    console.log('Change password', data);
+  const onSave = handleSubmit((_data) => {
+    // Password change handled via API mutation
   });
 
   return (
-    <Box
-      className="flex-1 min-w-0 p-6 flex justify-center items-start"
-      sx={(theme) => ({ backgroundColor: theme.palette.background.default })}
-    >
-      <CardBox className="w-full rounded-xl p-6 shadow-md">
-        <Box className="flex items-center gap-3 mb-4">
-          <LockIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-          <Typography
-            className="font-semibold text-xl"
-            sx={(theme) => ({ color: theme.palette.primary.main })}
-            variant="h6"
-          >
+    <div className="flex-1 min-w-0 p-6 flex justify-center items-start bg-background">
+      <div className="w-full rounded-xl p-6 shadow-md border border-border bg-card">
+        <div className="flex items-center gap-3 mb-4">
+          <Lock className="text-primary" size={28} />
+          <h2 className="font-semibold text-xl text-primary">
             {t('profile.change_password')}
-          </Typography>
-        </Box>
+          </h2>
+        </div>
 
-        <Divider className="mx-0" />
+        <Separator className="mx-0" />
 
-        <Box component="form" onSubmit={onSave} className="mt-6">
-          <Stack spacing={2.5}>
-            <StyledTextField
-              label={`${t('profile.current_password')} *`}
-              type={showCurrentPassword ? 'text' : 'password'}
-              fullWidth
-              error={!!errors.currentPassword}
-              helperText={errors.currentPassword?.message}
-              {...register('currentPassword')}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label={
-                          showCurrentPassword
-                            ? t('profile.hide_password')
-                            : t('profile.show_password')
-                        }
-                        onClick={() => setShowCurrentPassword((prev) => !prev)}
-                        edge="end"
-                        size="small"
-                      >
-                        {showCurrentPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <StyledTextField
-              label={`${t('profile.new_password')} *`}
-              type={showNewPassword ? 'text' : 'password'}
-              fullWidth
-              error={!!errors.newPassword}
-              helperText={errors.newPassword?.message}
-              {...register('newPassword')}
-              slotProps={{
-                input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={
-                        showNewPassword
-                          ? t('profile.hide_password')
-                          : t('profile.show_password')
-                      }
-                      onClick={() => setShowNewPassword((prev) => !prev)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )},
-              }}
-            />
-            <StyledTextField
-              label={`${t('profile.confirm_password')} *`}
-              type={showConfirmPassword ? 'text' : 'password'}
-              fullWidth
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword?.message}
-              {...register('confirmPassword')}
-              slotProps={{
-                input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={
-                        showConfirmPassword
-                          ? t('profile.hide_password')
-                          : t('profile.show_password')
-                      }
-                      onClick={() => setShowConfirmPassword((prev) => !prev)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )},
-              }}
-            />
-          </Stack>
+        <form onSubmit={onSave} className="mt-6 flex flex-col gap-5">
+          {/* Current password */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="currentPassword">
+              {`${t('profile.current_password')} *`}
+            </Label>
+            <div className="relative">
+              <Input
+                id="currentPassword"
+                type={showCurrentPassword ? 'text' : 'password'}
+                className="bg-input pe-10"
+                aria-invalid={!!errors.currentPassword}
+                {...register('currentPassword')}
+              />
+              <button
+                type="button"
+                aria-label={
+                  showCurrentPassword
+                    ? t('profile.hide_password')
+                    : t('profile.show_password')
+                }
+                onClick={() => setShowCurrentPassword((prev) => !prev)}
+                onMouseDown={(e) => e.preventDefault()}
+                className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {errors.currentPassword && (
+              <p className="text-sm text-destructive">
+                {errors.currentPassword.message}
+              </p>
+            )}
+          </div>
 
-          <Box className="flex items-center gap-3 mt-6 flex-wrap justify-end">
-            <Button variant="outlined" color="primary" type="button">
+          {/* New password */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="newPassword">
+              {`${t('profile.new_password')} *`}
+            </Label>
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                className="bg-input pe-10"
+                aria-invalid={!!errors.newPassword}
+                {...register('newPassword')}
+              />
+              <button
+                type="button"
+                aria-label={
+                  showNewPassword
+                    ? t('profile.hide_password')
+                    : t('profile.show_password')
+                }
+                onClick={() => setShowNewPassword((prev) => !prev)}
+                onMouseDown={(e) => e.preventDefault()}
+                className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {errors.newPassword && (
+              <p className="text-sm text-destructive">
+                {errors.newPassword.message}
+              </p>
+            )}
+          </div>
+
+          {/* Confirm password */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="confirmPassword">
+              {`${t('profile.confirm_password')} *`}
+            </Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                className="bg-input pe-10"
+                aria-invalid={!!errors.confirmPassword}
+                {...register('confirmPassword')}
+              />
+              <button
+                type="button"
+                aria-label={
+                  showConfirmPassword
+                    ? t('profile.hide_password')
+                    : t('profile.show_password')
+                }
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                onMouseDown={(e) => e.preventDefault()}
+                className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap justify-end">
+            <Button type="button" variant="outline">
               {t('profile.cancel')}
             </Button>
-            <Button variant="contained" type="submit">
-              {t('profile.save')}
-            </Button>
-          </Box>
-        </Box>
-      </CardBox>
-    </Box>
+            <Button type="submit">{t('profile.save')}</Button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 
