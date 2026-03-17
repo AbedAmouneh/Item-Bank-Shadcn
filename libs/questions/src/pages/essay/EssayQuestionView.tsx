@@ -1,37 +1,16 @@
-import {
-  Box,
-  TextField,
-  styled,
-  Typography,
-  Alert,
-  alpha,
-  useTheme,
-} from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Editor } from '@tinymce/tinymce-react';
-import type { QuestionRow } from '../../components/QuestionsTable';
 import { useState, useMemo, useCallback } from 'react';
+
+import { Editor } from '@tinymce/tinymce-react';
+import { Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import { cn } from '@item-bank/ui';
+
+import type { QuestionRow } from '../../components/QuestionsTable';
 
 type EssayQuestionViewProps = {
   question: QuestionRow;
 };
-
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
-
-const EditorWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  overflow: 'hidden',
-  border: `1px solid ${theme.palette.divider}`,
-  '& .tox-tinymce': {
-    border: 'none !important',
-  },
-}));
 
 function stripHtml(value: string): string {
   if (typeof DOMParser === 'undefined') {
@@ -43,7 +22,7 @@ function stripHtml(value: string): string {
 }
 
 const EssayQuestionView = ({ question }: EssayQuestionViewProps) => {
-  const theme = useTheme();
+  const isDarkMode = document.documentElement.classList.contains('dark');
   const [response, setResponse] = useState('');
   const { t, i18n } = useTranslation('questions');
 
@@ -65,18 +44,18 @@ const EssayQuestionView = ({ question }: EssayQuestionViewProps) => {
     () => ({
       height: 300,
       menubar: false,
-      skin: theme.palette.mode === 'dark' ? 'oxide-dark' : 'oxide',
-      content_css: theme.palette.mode === 'dark' ? 'dark' : 'default',
+      skin: isDarkMode ? 'oxide-dark' : 'oxide',
+      content_css: isDarkMode ? 'dark' : 'default',
       directionality: (i18n.language === 'ar' ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
       toolbar_mode: 'floating' as const,
       statusbar: false,
       placeholder: t('editor.essay.enter_response'),
-      content_style:
-        theme.palette.mode === 'dark'
-          ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: ${theme.palette.background.default}; color: ${alpha(theme.palette.text.primary, 0.9)}; }`
-          : 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; }',
+      content_style: isDarkMode
+        ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: #1e1e2e; color: rgba(255,255,255,0.9); }`
+        : 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 16px; background-color: #ffffff; color: rgba(0,0,0,0.9); }',
     }),
-    [i18n.language, t, theme]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [i18n.language, t, isDarkMode]
   );
 
   const filePickerCallback = useCallback(
@@ -129,9 +108,14 @@ const EssayQuestionView = ({ question }: EssayQuestionViewProps) => {
 
   return (
     <>
-      <Box className="flex flex-col gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-6">
         {isHtmlMode ? (
-          <EditorWrapper>
+          <div
+            className={cn(
+              'rounded-[0.375rem] overflow-hidden border border-border',
+              '[&_.tox-tinymce]:!border-0'
+            )}
+          >
             <Editor
               tinymceScriptSrc="/tinymce/tinymce.min.js"
               licenseKey="gpl"
@@ -143,55 +127,59 @@ const EssayQuestionView = ({ question }: EssayQuestionViewProps) => {
                   : htmlEditorInit
               }
             />
-          </EditorWrapper>
+          </div>
         ) : (
-          <TextField
-            multiline
+          <textarea
             rows={10}
-            fullWidth
+            className={cn(
+              'w-full rounded-[0.375rem] border border-border bg-card px-3 py-2',
+              'text-sm text-foreground placeholder:text-muted-foreground',
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+              'resize-none'
+            )}
             placeholder={t('editor.essay.enter_response') || 'Enter your response...'}
             value={response}
             onChange={(e) => setResponse(e.target.value)}
-            sx={(muiTheme) => ({
-              '& .MuiOutlinedInput-root': {
-                borderRadius: muiTheme.spacing(1.5),
-                backgroundColor: muiTheme.palette.background.paper,
-              },
-            })}
           />
         )}
 
-        <Box className="flex gap-4 justify-end">
-          <Box
-            className="flex items-center gap-2 py-1 px-2 text-sm"
-            sx={(theme) => ({ color: theme.palette.text.secondary })}
-          >
-            <Typography variant="caption">
+        <div className="flex gap-4 justify-end">
+          <div className="flex items-center gap-2 py-1 px-2 text-sm text-muted-foreground">
+            <span className="text-xs">
               {t('editor.essay.words') || 'Words'}: {wordCount}
-            </Typography>
-            <Typography variant="caption">•</Typography>
-            <Typography variant="caption">
+            </span>
+            <span className="text-xs">•</span>
+            <span className="text-xs">
               {t('editor.essay.characters') || 'Characters'}: {charCount}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+            </span>
+          </div>
+        </div>
+      </div>
 
-      <Alert
-        severity="info"
-        icon={<InfoOutlinedIcon fontSize="inherit" />}
-        variant="outlined"
-        className="mb-4"
+      <div
+        className={cn(
+          'flex items-start gap-3 mb-4 rounded-[0.375rem] border border-border px-4 py-3',
+          'text-sm text-foreground'
+        )}
+        role="alert"
       >
-        {t('editor.essay.manual_grading_message')}
-      </Alert>
+        <Info className="mt-0.5 size-4 shrink-0 text-blue-500" aria-hidden="true" />
+        <span>{t('editor.essay.manual_grading_message')}</span>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <span className="text-sm text-muted-foreground">
           {t('editor.essay.manual_grading_title')}
-        </Typography>
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">{question.mark}</MarkBox>
-      </Box>
+        </span>
+        <div
+          className={cn(
+            'py-2 px-4 font-semibold text-[0.95rem] rounded-[0.375rem]',
+            'bg-card border border-border text-foreground'
+          )}
+        >
+          {question.mark}
+        </div>
+      </div>
     </>
   );
 };
