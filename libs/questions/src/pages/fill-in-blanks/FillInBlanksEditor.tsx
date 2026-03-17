@@ -235,7 +235,7 @@ function FillInBlanksEditor({
                 checked={manualMarking}
                 onChange={handleManualMarkingChange}
               />
-              <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+              <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
                 <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
               </div>
               <span className="text-sm text-foreground">
@@ -252,7 +252,7 @@ function FillInBlanksEditor({
                 checked={requireUniqueKeyAnswers}
                 onChange={handleRequireUniqueKeyAnswersChange}
               />
-              <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+              <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
                 <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
               </div>
               <span className="text-sm text-foreground">
@@ -339,7 +339,7 @@ function FillInBlanksEditor({
                               )
                             }
                           />
-                          <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative peer-disabled:opacity-50">
+                          <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative peer-disabled:opacity-50">
                             <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
                           </div>
                           <span className="text-xs text-foreground">{t('editor.ignore_casing')}</span>
