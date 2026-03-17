@@ -1,25 +1,17 @@
 import 'mathlive';
-import { type QuestionRow } from '../../components/QuestionsTable';
-import {
-  Box,
-  TextField,
-  useTheme,
-  Button,
-  styled,
-  Typography,
-  FormControl,
-  FormControlLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-} from '@mui/material';
 import { useState, useCallback, useMemo, useRef, useEffect, createElement } from 'react';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Check, RotateCcw, Lightbulb, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import {
+  cn,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@item-bank/ui';
+import { type QuestionRow } from '../../components/QuestionsTable';
 
 type NumericalQuestionViewProps = {
   question: QuestionRow;
@@ -65,21 +57,7 @@ const UnitMath = ({ latex, size = '0.95rem' }: UnitMathProps) => {
   });
 };
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
-
-const SolutionBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.semantic.solution.background,
-  border: `1px solid ${theme.palette.semantic.solution.border}`,
-}));
-
 const NumericalQuestionView = ({ question }: NumericalQuestionViewProps) => {
-  const theme = useTheme();
   const [checked, setChecked] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -118,7 +96,6 @@ const NumericalQuestionView = ({ question }: NumericalQuestionViewProps) => {
   const effectiveAnswerValue = useMemo(() => {
     if (parsedValue === undefined) return undefined;
     if (!hasUnits || !selectedUnit) return parsedValue;
-
 
     const multiplier = typeof selectedUnit.multiplier === 'number'
       ? selectedUnit.multiplier
@@ -188,148 +165,132 @@ const NumericalQuestionView = ({ question }: NumericalQuestionViewProps) => {
 
   return (
     <>
-      <Box>
-    
-      {showSolution && numericalAnswers.length > 0 && (
-        <SolutionBox className="p-4 mt-4 mb-4">
-          <Box className="flex items-start gap-3 mb-3">
-            <InfoOutlinedIcon
-              className="text-xl mt-1 shrink-0"
-              sx={{ color: theme.palette.info.light }}
-            />
-            <Typography
-              component="span"
-              className="font-semibold text-[0.95rem]"
-              sx={{ color: theme.palette.text.primary }}
-            >
-              {t('correct_answers_are')}
-            </Typography>
-          </Box>
-          <Box component="ul" className="m-0 pl-9 list-none">
-            {numericalAnswers.flatMap((a, i) => {
-              const mult = (u: { multiplier: number | string }) =>
-                typeof u.multiplier === 'number' ? u.multiplier : (parseFloat(String(u.multiplier)) || 1);
-              if (hasUnits && numericalUnits.length > 0) {
-                return numericalUnits.map((u) => (
-                  <Box
-                    component="li"
-                    key={`${a.id ?? i}-${u.id}`}
-                    className="text-[0.95rem] mb-1 last:mb-0"
-                    sx={{ color: theme.palette.info.light, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0 0.25em' }}
+      <div>
+
+        {showSolution && numericalAnswers.length > 0 && (
+          <div
+            className="p-4 mt-4 mb-4 rounded-xl border"
+            style={{
+              backgroundColor: 'hsl(var(--solution-background))',
+              borderColor: 'hsl(var(--solution-border))',
+            }}
+          >
+            <div className="flex items-start gap-3 mb-3">
+              <Info
+                size={18}
+                className="mt-1 shrink-0 text-blue-600 dark:text-blue-400"
+              />
+              <span className="font-semibold text-[0.95rem] text-foreground">
+                {t('correct_answers_are')}
+              </span>
+            </div>
+            <ul className="m-0 ps-9 list-none">
+              {numericalAnswers.flatMap((a, i) => {
+                const mult = (u: { multiplier: number | string }) =>
+                  typeof u.multiplier === 'number' ? u.multiplier : (parseFloat(String(u.multiplier)) || 1);
+                if (hasUnits && numericalUnits.length > 0) {
+                  return numericalUnits.map((u) => (
+                    <li
+                      key={`${a.id ?? i}-${u.id}`}
+                      className="text-[0.95rem] mb-1 last:mb-0 flex items-center flex-wrap gap-x-[0.25em] text-blue-600 dark:text-blue-400"
+                    >
+                      <span className="inline-flex items-center gap-[0.15em]">
+                        {a.mark}% {a.answer * mult(u)} <UnitMath latex={u.unit} size="0.9rem" />
+                      </span>
+                      {a.error ? (
+                        <span className="inline-flex items-center gap-[0.15em]">
+                          ± {a.error * mult(u)} <UnitMath latex={u.unit} size="0.9rem" />
+                        </span>
+                      ) : null}
+                    </li>
+                  ));
+                }
+                return [
+                  <li
+                    key={a.id ?? i}
+                    className="text-[0.95rem] mb-1 last:mb-0 text-blue-600 dark:text-blue-400"
                   >
-                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '0.15em' }}>
-                      {a.mark}% {a.answer * mult(u)} <UnitMath latex={u.unit} size="0.9rem" />
-                    </Box>
-                    {a.error ? (
-                      <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '0.15em' }}>
-                        ± {a.error * mult(u)} <UnitMath latex={u.unit} size="0.9rem" />
-                      </Box>
-                    ) : null}
-                  </Box>
-                ));
-              }
-              return [
-                <Box
-                  component="li"
-                  key={a.id ?? i}
-                  className="text-[0.95rem] mb-1 last:mb-0"
-                  sx={{ color: theme.palette.info.light }}
-                >
-                  {a.mark}% {a.answer}
-                  {a.error ? ` ± ${a.error}` : ''}
-                </Box>,
-              ];
-            })}
-          </Box>
-        </SolutionBox>
-      )}
+                    {a.mark}% {a.answer}
+                    {a.error ? ` ± ${a.error}` : ''}
+                  </li>,
+                ];
+              })}
+            </ul>
+          </div>
+        )}
 
-
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <TextField
+        <div className="flex gap-[0.375rem] items-start flex-wrap">
+          <Input
             placeholder={t('editor.add_answer')}
-            fullWidth={!hasUnits}
-            size="small"
             type="number"
             disabled={checked}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            slotProps={{ htmlInput: { step: 'any' } }}
-            sx={{
-              flex: hasUnits ? '1 1 260px' : undefined,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '10px',
-                backgroundColor: isCorrect
-                  ? theme.palette.success.main
-                  : isPartial
-                    ? theme.palette.warning.main
-                    : isWrong
-                      ? theme.palette.error.main
-                      : theme.palette.background.paper,
-              },
-            }}
+            step="any"
+            className={cn(
+              'text-sm',
+              hasUnits ? 'flex-[1_1_260px]' : 'w-full',
+              isCorrect ? 'border-green-500 bg-green-50 dark:bg-green-950/30' :
+              isPartial ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30' :
+              isWrong ? 'border-destructive bg-destructive/10' : ''
+            )}
           />
 
           {hasUnits && unitInputMethod === 'drop_down' && (
-            <FormControl size="small" sx={{ minWidth: 200, flex: '0 0 200px' }}>
+            <div className="flex-[0_0_200px] min-w-[200px]">
               <Select
-                displayEmpty
                 disabled={checked}
                 value={unitValue}
-                onChange={(e) => setUnitValue(e.target.value)}
-                renderValue={(selected) =>
-                  selected ? <UnitMath latex={String(selected)} /> : <em>Select unit</em>
-                }
+                onValueChange={(value) => setUnitValue(value)}
               >
-                <MenuItem value="">
-                  <em>Select unit</em>
-                </MenuItem>
-                {numericalUnits.map((u) => (
-                  <MenuItem key={u.id} value={u.unit}>
-                    <UnitMath latex={u.unit} />
-                  </MenuItem>
-                ))}
+                <SelectTrigger className="text-sm">
+                  <SelectValue placeholder={<em>{t('editor.numerical.select_unit')}</em>} />
+                </SelectTrigger>
+                <SelectContent>
+                  {numericalUnits.map((u) => (
+                    <SelectItem key={u.id} value={u.unit}>
+                      <UnitMath latex={u.unit} />
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </FormControl>
+            </div>
           )}
 
           {hasUnits && unitInputMethod === 'text_input' && (
-            <TextField
-              placeholder="Unit"
-              size="small"
+            <Input
+              placeholder={t('editor.numerical.unit')}
               disabled={checked}
               value={unitValue}
               onChange={(e) => setUnitValue(e.target.value)}
-              sx={{ minWidth: 200, flex: '0 0 200px' }}
+              className="text-sm min-w-[200px] flex-[0_0_200px]"
             />
           )}
 
           {hasUnits && unitInputMethod === 'multiple_choice_selection' && (
-            <FormControl sx={{ flex: '1 1 260px', minWidth: 240 }}>
-              <RadioGroup
-                row
-                value={unitValue}
-                onChange={(e) => setUnitValue(e.target.value)}
-              >
-                {numericalUnits.map((u) => (
-                  <FormControlLabel
-                    key={u.id}
+            <div className="flex flex-wrap gap-3 flex-[1_1_260px] min-w-[240px]">
+              {numericalUnits.map((u) => (
+                <label key={u.id} className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="radio"
                     value={u.unit}
-                    control={<Radio size="small" disabled={checked} />}
-                    label={<UnitMath latex={u.unit} />}
+                    checked={unitValue === u.unit}
+                    onChange={(e) => setUnitValue(e.target.value)}
+                    disabled={checked}
+                    className="accent-primary"
                   />
-                ))}
-              </RadioGroup>
-            </FormControl>
+                  <UnitMath latex={u.unit} />
+                </label>
+              ))}
+            </div>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4 mt-6">
-        <Box className="flex items-center gap-3">
-          <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
+      <div className="flex items-center justify-between flex-wrap gap-4 mt-6">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
             disabled={
               inputValue === '' ||
               (hasUnits &&
@@ -337,29 +298,37 @@ const NumericalQuestionView = ({ question }: NumericalQuestionViewProps) => {
                 (unitInputMethod === 'text_input' ? !unitValue.trim() : !unitIsValidForHandling))
             }
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={{ borderRadius: theme.spacing(1.5) }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {checked ? t('retry') : t('check')}
-          </Button>
+            {checked ? (
+              <>
+                <RotateCcw size={16} />
+                {t('retry')}
+              </>
+            ) : (
+              <>
+                <Check size={16} />
+                {t('check')}
+              </>
+            )}
+          </button>
           {checked && !isCorrect && !showSolution && (
-            <Button
+            <button
+              type="button"
               onClick={handleShowSolution}
-              variant="contained"
-              startIcon={<LightbulbIcon />}
-              className="normal-case font-semibold"
-              sx={{ borderRadius: theme.spacing(1.5) }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              <Lightbulb size={16} />
               {t('show_solution')}
-            </Button>
+            </button>
           )}
-        </Box>
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        </div>
+        <div className="py-2 ps-4 pe-4 font-semibold text-[0.95rem] rounded-xl border border-border bg-card text-foreground">
           {checked
             ? `${Number.isInteger(earnedMark) ? earnedMark : Number(earnedMark.toFixed(1))}/${question.mark}`
             : question.mark}
-        </MarkBox>
-      </Box>
+        </div>
+      </div>
     </>
   );
 };
