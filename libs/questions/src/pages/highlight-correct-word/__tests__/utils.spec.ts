@@ -5,6 +5,7 @@ import {
   decodeCorrectPhrases,
   findPhrasePositions,
   normalizePhrase,
+  PENALTY_OPTIONS,
   tokenizeText,
 } from '../utils';
 
@@ -263,5 +264,31 @@ describe('computeScore', () => {
   it('returns isFullyCorrect false when no correct runs are defined', () => {
     const result = computeScore(10, 0, [], []);
     expect(result.isFullyCorrect).toBe(false);
+  });
+});
+
+describe('PENALTY_OPTIONS', () => {
+  it('starts with 100', () => {
+    expect(PENALTY_OPTIONS[0]).toBe(100);
+  });
+
+  it('ends with 0', () => {
+    expect(PENALTY_OPTIONS[PENALTY_OPTIONS.length - 1]).toBe(0);
+  });
+
+  it('contains 50', () => {
+    expect(PENALTY_OPTIONS).toContain(50);
+  });
+
+  it('has no negative values', () => {
+    expect(PENALTY_OPTIONS.every((v) => v >= 0)).toBe(true);
+  });
+
+  it('has no values above 100', () => {
+    expect(PENALTY_OPTIONS.every((v) => v <= 100)).toBe(true);
+  });
+
+  it('has no duplicate values', () => {
+    expect(new Set(PENALTY_OPTIONS).size).toBe(PENALTY_OPTIONS.length);
   });
 });
