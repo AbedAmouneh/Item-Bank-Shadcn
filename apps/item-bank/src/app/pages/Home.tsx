@@ -5,6 +5,7 @@ import {
   QuestionsTable,
   type QuestionType,
   type QuestionFormData,
+  type QuestionChoice,
   QuestionViewShell,
   type QuestionRow,
 } from '@item-bank/questions';
@@ -66,7 +67,7 @@ function rowToFormData(row: QuestionRow): QuestionFormData | null {
   if (row.type === 'short_answer') {
     const choices = row.choices ?? [];
     const answers = choices.length > 0
-      ? choices.map((c) => ({
+      ? choices.map((c: QuestionChoice) => ({
           id: crypto.randomUUID(),
           text: c.answer,
           mark: Math.round(parseFloat(c.fraction ?? '0') * 100),
@@ -280,7 +281,7 @@ const Home = () => {
       />
 
       {/* Editor Dialog */}
-      <Dialog open={isEditorOpen} onOpenChange={(open) => { if (!open) closeEditor(); }}>
+      <Dialog open={isEditorOpen} onOpenChange={(open: boolean) => { if (!open) closeEditor(); }}>
         <DialogContent className="max-w-3xl">
           {(questionToEdit ? questionToEdit.type : selectedQuestionType.current) && (
             <QuestionEditorShell
@@ -295,7 +296,7 @@ const Home = () => {
       </Dialog>
 
       {/* Question View Dialog */}
-      <Dialog open={questionViewOpen} onOpenChange={(open) => { if (!open) setQuestionViewOpen(false); }}>
+      <Dialog open={questionViewOpen} onOpenChange={(open: boolean) => { if (!open) setQuestionViewOpen(false); }}>
         <DialogContent
           className={selectedQuestion.current?.type === 'free_hand_drawing' ? 'max-w-5xl' : 'max-w-3xl'}
         >

@@ -150,7 +150,7 @@ const General = () => {
               </p>
               <Button
                 size="sm"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
                   handleAvatarClick();
                 }}
