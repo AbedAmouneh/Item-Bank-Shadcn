@@ -164,7 +164,7 @@ function NavBar() {
         <div className="flex items-center gap-2 shrink-0">
           {/* Notifications */}
           <IconTooltip label={t('table_actions.notifications')}>
-            <button className={iconBtnClass}>
+            <button className={iconBtnClass} aria-label={t('table_actions.notifications')}>
               <span className="relative">
                 <Bell size={18} />
                 <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-destructive" />
@@ -174,28 +174,28 @@ function NavBar() {
 
           {/* Fullscreen */}
           <IconTooltip label={t('table_actions.fullscreen')}>
-            <button className={iconBtnClass} onClick={toggleFullscreen}>
+            <button className={iconBtnClass} aria-label={t('table_actions.fullscreen')} onClick={toggleFullscreen}>
               {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
             </button>
           </IconTooltip>
 
           {/* Theme toggle */}
           <IconTooltip label={t('table_actions.theme')}>
-            <button className={iconBtnClass} onClick={switchTheme}>
+            <button className={iconBtnClass} aria-label={t('table_actions.theme')} onClick={switchTheme}>
               {mode === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
           </IconTooltip>
 
           {/* Language toggle */}
           <IconTooltip label={t('table_actions.language')}>
-            <button className={iconBtnClass} onClick={handleLanguageToggle}>
+            <button className={iconBtnClass} aria-label={t('table_actions.language')} onClick={handleLanguageToggle}>
               <Languages size={18} />
             </button>
           </IconTooltip>
 
           {/* Logout */}
           <IconTooltip label={t('table_actions.logout')}>
-            <button className={iconBtnClass} onClick={logout}>
+            <button className={iconBtnClass} aria-label={t('table_actions.logout')} onClick={logout}>
               <LogOut size={18} className="rtl:scale-x-[-1]" />
             </button>
           </IconTooltip>
