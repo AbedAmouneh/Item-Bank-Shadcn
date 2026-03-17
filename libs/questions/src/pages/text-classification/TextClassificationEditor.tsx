@@ -1,31 +1,17 @@
 import { memo, useState, useCallback, useMemo } from 'react';
-import {
-  Box,
-  TextField,
-  Typography,
-  IconButton,
-  Button,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
-  Radio,
-  RadioGroup,
-  Switch,
-  Collapse,
-  Alert,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import CampaignIcon from '@mui/icons-material/Campaign';
+import { ChevronDown, ChevronUp, Trash2, Plus, Megaphone } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Editor } from '@tinymce/tinymce-react';
+import {
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  cn,
+} from '@item-bank/ui';
 import type { QuestionFormData } from '../../components/QuestionEditorShell';
 
 type TextClassificationColor =
@@ -49,48 +35,12 @@ const JUSTIFICATION_FRACTION_OPTIONS = [
   100, 90, 80, 75, 70, 60, 50, 40, 33.3, 30, 25, 20, 15, 10, 5, 0,
 ];
 
-const CategoryCard = styled(Box)(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.spacing(2),
-  overflow: 'hidden',
-  marginBottom: theme.spacing(2),
-}));
-
-const CategoryHeader = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1.5),
-  padding: theme.spacing(1.5, 2),
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.4)
-      : alpha(theme.palette.action.hover, 0.3),
-}));
-
-const AnswerRow = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1, 2),
-  '&:not(:last-of-type)': {
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-  },
-}));
-
-const EditorWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  '& .tox-tinymce': {
-    border: 'none !important',
-  },
-}));
-
 function TextClassificationEditor() {
-  const { watch, setValue, register, formState: { errors, isSubmitted } } = useFormContext<QuestionFormData>();
+  const { watch, setValue, formState: { errors: _errors, isSubmitted } } = useFormContext<QuestionFormData>();
   const { t, i18n } = useTranslation(['questions', 'common']);
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
+
+  // Determine dark mode from the document class list
+  const isDarkMode = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
 
   const colorOptions: { value: TextClassificationColor; label: string }[] = [
     { value: 'blue', label: t('editor.text_classification.color_blue') },
@@ -107,6 +57,7 @@ function TextClassificationEditor() {
   const autoDistribute = watch('textClassificationAutoDistribute') ?? true;
   const justification = watch('textClassificationJustification') ?? 'disabled';
   const justificationFraction = watch('textClassificationJustificationFraction') ?? 30;
+
   // Local UI state
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -217,227 +168,268 @@ function TextClassificationEditor() {
   );
 
   return (
-    <Box className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5">
       {/* Justification */}
-      <Box className="flex items-center gap-3 flex-wrap">
-        <Box className="flex items-center gap-1">
-          <Typography variant="body2" fontWeight={500}>
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-foreground">
             {t('editor.text_classification.justification_label')}
-          </Typography>
+          </p>
           <Select
-            size="small"
             value={justification}
-            onChange={(e) =>
-              setValue('textClassificationJustification', e.target.value as 'disabled' | 'optional' | 'required', { shouldDirty: true })
+            onValueChange={(value) =>
+              setValue('textClassificationJustification', value as 'disabled' | 'optional' | 'required', { shouldDirty: true })
             }
-            sx={{ minWidth: 140 }}
           >
-            <MenuItem value="disabled">{t('editor.text_classification.justification_disabled')}</MenuItem>
-            <MenuItem value="optional">{t('editor.text_classification.justification_optional')}</MenuItem>
-            <MenuItem value="required">{t('editor.text_classification.justification_required')}</MenuItem>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="disabled">{t('editor.text_classification.justification_disabled')}</SelectItem>
+              <SelectItem value="optional">{t('editor.text_classification.justification_optional')}</SelectItem>
+              <SelectItem value="required">{t('editor.text_classification.justification_required')}</SelectItem>
+            </SelectContent>
           </Select>
-        </Box>
+        </div>
+
         {justification !== 'disabled' && (
-          <Box className="flex items-center gap-1">
-            <Typography variant="body2" fontWeight={500}>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-foreground">
               {t('editor.text_classification.justification_fraction_label')}
-            </Typography>
+            </p>
             <Select
-              size="small"
-              value={justificationFraction}
-              onChange={(e) =>
-                setValue('textClassificationJustificationFraction', Number(e.target.value), { shouldDirty: true })
+              value={String(justificationFraction)}
+              onValueChange={(value) =>
+                setValue('textClassificationJustificationFraction', Number(value), { shouldDirty: true })
               }
-              sx={{ minWidth: 100 }}
             >
-              {JUSTIFICATION_FRACTION_OPTIONS.map((opt) => (
-                <MenuItem key={opt} value={opt}>
-                  {opt} %
-                </MenuItem>
-              ))}
+              <SelectTrigger className="w-[110px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {JUSTIFICATION_FRACTION_OPTIONS.map((opt) => (
+                  <SelectItem key={opt} value={String(opt)}>
+                    {opt} %
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Layout + Auto-distribute row */}
-      <Box className="flex items-center justify-between flex-wrap gap-3">
-        <Box className="flex items-center gap-2">
-          <Typography variant="body2" fontWeight={500}>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-foreground">
             {t('editor.text_classification.layout_label')}
-          </Typography>
-          <RadioGroup
-            row
-            value={layout}
-            onChange={(e) => setValue('textClassificationLayout', e.target.value as 'columns' | 'rows', { shouldDirty: true })}
-          >
-            <FormControlLabel value="columns" control={<Radio size="small" />} label={t('editor.text_classification.layout_columns')} />
-            <FormControlLabel value="rows" control={<Radio size="small" />} label={t('editor.text_classification.layout_rows')} />
-          </RadioGroup>
-        </Box>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={autoDistribute}
-              onChange={(e) => setValue('textClassificationAutoDistribute', e.target.checked, { shouldDirty: true })}
-              size="small"
-            />
-          }
-          label={t('editor.text_classification.auto_distribute')}
-        />
-      </Box>
+          </p>
+          <div className="flex items-center gap-3" role="radiogroup">
+            <label className="flex items-center gap-1.5 cursor-pointer text-sm text-foreground">
+              <input
+                type="radio"
+                name="tc-layout"
+                value="columns"
+                checked={layout === 'columns'}
+                onChange={() => setValue('textClassificationLayout', 'columns', { shouldDirty: true })}
+                className="accent-primary"
+              />
+              {t('editor.text_classification.layout_columns')}
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer text-sm text-foreground">
+              <input
+                type="radio"
+                name="tc-layout"
+                value="rows"
+                checked={layout === 'rows'}
+                onChange={() => setValue('textClassificationLayout', 'rows', { shouldDirty: true })}
+                className="accent-primary"
+              />
+              {t('editor.text_classification.layout_rows')}
+            </label>
+          </div>
+        </div>
+
+        <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground">
+          <input
+            type="checkbox"
+            checked={autoDistribute}
+            onChange={(e) => setValue('textClassificationAutoDistribute', e.target.checked, { shouldDirty: true })}
+            className="accent-primary"
+          />
+          {t('editor.text_classification.auto_distribute')}
+        </label>
+      </div>
 
       {/* Validation error banner */}
       {validationErrors.length > 0 && (
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 flex flex-col gap-1">
           {validationErrors.map((err, i) => (
-            <Typography key={i} variant="body2">{err}</Typography>
+            <p key={i} className="text-sm text-destructive">{err}</p>
           ))}
-        </Alert>
+        </div>
       )}
 
       {/* Categories list */}
       {categories.map((category, catIndex) => (
-        <CategoryCard key={category.id}>
-          <CategoryHeader>
-            <IconButton
-              size="small"
+        <div
+          key={category.id}
+          className="rounded-2xl border border-border overflow-hidden"
+        >
+          {/* Category header */}
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-muted/50 dark:bg-muted/30">
+            {/* Expand/collapse toggle */}
+            <button
+              type="button"
               onClick={() => toggleCategoryExpanded(category.id)}
+              className="p-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+              aria-label={expandedCategories[category.id] !== false
+                ? t('editor.text_classification.collapse_category')
+                : t('editor.text_classification.expand_category')}
             >
               {expandedCategories[category.id] !== false ? (
-                <ExpandLessIcon fontSize="small" />
+                <ChevronUp size={15} />
               ) : (
-                <ExpandMoreIcon fontSize="small" />
+                <ChevronDown size={15} />
               )}
-            </IconButton>
+            </button>
 
-            <TextField
-              size="small"
-              placeholder={t('editor.text_classification.category_name_placeholder')}
-              value={category.name}
-              onChange={(e) => updateCategory(catIndex, 'name', e.target.value)}
-              error={isSubmitted && !category.name?.trim()}
-              helperText={isSubmitted && !category.name?.trim() ? t('editor.text_classification.category_field_required') : ''}
-              sx={{ flex: 1 }}
-            />
+            {/* Category name input */}
+            <div className="flex-1">
+              <Input
+                placeholder={t('editor.text_classification.category_name_placeholder')}
+                value={category.name}
+                onChange={(e) => updateCategory(catIndex, 'name', e.target.value)}
+                className={cn(
+                  'h-8 text-sm',
+                  isSubmitted && !category.name?.trim() && 'border-destructive focus-visible:ring-destructive',
+                )}
+              />
+              {isSubmitted && !category.name?.trim() && (
+                <p className="text-xs text-destructive mt-0.5">
+                  {t('editor.text_classification.category_field_required')}
+                </p>
+              )}
+            </div>
 
-            <Box className="flex items-center gap-1">
-              <Typography variant="caption" color="text.secondary">
+            {/* Color selector */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">
                 {t('editor.text_classification.color_label')}
-              </Typography>
+              </span>
               <Select
-                size="small"
                 value={category.color}
-                onChange={(e) => updateCategory(catIndex, 'color', e.target.value)}
-                sx={{ minWidth: 130 }}
-                renderValue={(value) => {
-                  const color = value as TextClassificationColor;
-                  return (
-                    <Box className="flex items-center gap-1">
-                      <Box
-                        sx={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: '3px',
-                          backgroundColor: COLOR_MAP[color] ?? COLOR_MAP.blue,
-                        }}
-                      />
-                      <Typography variant="body2">
-                        {colorOptions.find(o => o.value === color)?.label ?? color}
-                      </Typography>
-                    </Box>
-                  );
-                }}
+                onValueChange={(value) => updateCategory(catIndex, 'color', value)}
               >
-                {colorOptions.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>
-                    <Box className="flex items-center gap-2">
-                      <Box
-                        sx={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: '3px',
-                          backgroundColor: COLOR_MAP[opt.value],
-                        }}
+                <SelectTrigger className="w-[140px] h-8 text-sm">
+                  <SelectValue>
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="inline-block w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: COLOR_MAP[category.color as TextClassificationColor] ?? COLOR_MAP.blue }}
                       />
-                      {opt.label}
-                    </Box>
-                  </MenuItem>
-                ))}
+                      <span className="text-sm">
+                        {colorOptions.find(o => o.value === category.color)?.label ?? category.color}
+                      </span>
+                    </span>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {colorOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="inline-block w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                          style={{ backgroundColor: COLOR_MAP[opt.value] }}
+                        />
+                        {opt.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </Box>
+            </div>
 
+            {/* Delete category (only shown when > 2 categories) */}
             {categories.length > 2 && (
-              <IconButton
-                size="small"
+              <button
+                type="button"
                 onClick={() => removeCategory(catIndex)}
-                color="error"
+                className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                aria-label={t('editor.text_classification.delete_category')}
               >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+                <Trash2 size={15} />
+              </button>
             )}
-          </CategoryHeader>
+          </div>
 
-          <Collapse in={expandedCategories[category.id] !== false}>
-            <Box className="px-2 py-1">
+          {/* Category body — collapsible */}
+          {expandedCategories[category.id] !== false && (
+            <div className="px-2 py-1">
               {category.answers.map((answer, ansIndex) => (
-                <Box key={answer.id}>
-                  <AnswerRow>
-                    <TextField
-                      size="small"
+                <div key={answer.id}>
+                  {/* Answer row */}
+                  <div
+                    className={cn(
+                      'flex items-center gap-2 px-2 py-2',
+                      ansIndex !== category.answers.length - 1 && 'border-b border-border/50',
+                    )}
+                  >
+                    <Input
                       placeholder={t('editor.text_classification.answer_placeholder', { index: ansIndex + 1 })}
                       value={answer.text}
                       onChange={(e) => updateAnswer(catIndex, ansIndex, 'text', e.target.value)}
-                      sx={{ flex: 1 }}
+                      className="flex-1 text-sm h-8"
                     />
 
                     {!autoDistribute && (
-                      <Box className="flex items-center gap-0.5">
-                        <TextField
-                          size="small"
+                      <div className="flex items-center gap-1">
+                        <Input
                           type="number"
                           value={answer.markPercent}
                           onChange={(e) => updateAnswer(catIndex, ansIndex, 'markPercent', parseFloat(e.target.value) || 0)}
-                          sx={{ width: 80 }}
-                          slotProps={{
-                            htmlInput: { min: 0, max: 100, step: 0.01 },
-                          }}
+                          className="w-20 text-sm h-8"
+                          min={0}
+                          max={100}
+                          step={0.01}
                         />
-                        <Typography variant="body2" color="text.secondary">%</Typography>
-                      </Box>
+                        <span className="text-sm text-muted-foreground">%</span>
+                      </div>
                     )}
 
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          size="small"
-                          checked={feedbackToggles[answer.id] ?? false}
-                          onChange={() => toggleAnswerFeedback(answer.id)}
-                        />
-                      }
-                      label={<Typography variant="caption">{t('editor.feedback')}</Typography>}
-                      sx={{ mr: 0 }}
-                    />
+                    {/* Feedback toggle */}
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={feedbackToggles[answer.id] ?? false}
+                        onChange={() => toggleAnswerFeedback(answer.id)}
+                        className="accent-primary"
+                      />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {t('editor.feedback')}
+                      </span>
+                    </label>
 
-                    <IconButton
-                      size="small"
+                    <button
+                      type="button"
                       onClick={() => removeAnswer(catIndex, ansIndex)}
-                      color="error"
+                      className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                      aria-label={t('editor.text_classification.delete_answer')}
                     >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </AnswerRow>
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
 
-                  {/* Answer feedback TinyMCE */}
-                  <Collapse in={feedbackToggles[answer.id] ?? false}>
-                    <Box sx={{ px: 2, pb: 2 }}>
-                      <Box className="flex items-center gap-1 mb-1 mt-1">
-                        <CampaignIcon sx={{ fontSize: 16 }} color="action" />
-                        <Typography variant="caption" fontWeight={500}>
+                  {/* Answer feedback TinyMCE — collapsible */}
+                  {(feedbackToggles[answer.id] ?? false) && (
+                    <div className="px-2 pb-2">
+                      <div className="flex items-center gap-1 mb-1 mt-1">
+                        <Megaphone size={14} className="text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground">
                           {t('editor.choice_feedback')}
-                        </Typography>
-                      </Box>
-                      <EditorWrapper>
+                        </span>
+                      </div>
+                      <div className="rounded-xl overflow-hidden border border-border/20">
                         <Editor
                           tinymceScriptSrc="/tinymce/tinymce.min.js"
                           licenseKey="gpl"
@@ -445,39 +437,39 @@ function TextClassificationEditor() {
                           onEditorChange={(value) => updateAnswer(catIndex, ansIndex, 'feedback', value)}
                           init={feedbackEditorInit}
                         />
-                      </EditorWrapper>
-                    </Box>
-                  </Collapse>
-                </Box>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
 
-              <Box className="py-2 px-2">
-                <Button
-                  startIcon={<AddIcon />}
-                  size="small"
+              <div className="py-2 px-2">
+                <button
+                  type="button"
                   onClick={() => addAnswer(catIndex)}
-                  variant="text"
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
+                  <Plus size={12} />
                   {t('editor.add_answer')}
-                </Button>
-              </Box>
-            </Box>
-          </Collapse>
-        </CategoryCard>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       ))}
 
       {/* Add category button */}
-      <Box className="flex justify-center">
-        <Button
-          startIcon={<AddIcon />}
+      <div className="flex justify-center">
+        <button
+          type="button"
           onClick={addCategory}
-          variant="outlined"
-          size="small"
+          className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors border border-primary/30 hover:border-primary/60 rounded-lg px-4 py-1.5"
         >
+          <Plus size={15} />
           {t('editor.text_classification.add_category')}
-        </Button>
-      </Box>
-    </Box>
+        </button>
+      </div>
+    </div>
   );
 }
 
