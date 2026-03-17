@@ -442,5 +442,6 @@
     },
     "answer_placeholder": "Answer {{index}}",
     "require_unique_answers": "Require unique answers"
-  }
+  },
+  "no_questions": "No questions found"
 }
