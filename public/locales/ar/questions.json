@@ -172,6 +172,19 @@
         "file_category_presentations": "عروض تقديمية",
         "file_category_images": "صور",
         "file_category_video": "فيديو",
+        "numerical": {
+            "unit_handling": "معالجة الوحدة",
+            "unit_input_method": "طريقة إدخال الوحدة",
+            "unit_penalty": "عقوبة الوحدة (%)",
+            "add_unit": "إضافة وحدة",
+            "units": "الوحدات",
+            "answer": "الإجابة",
+            "error_margin": "هامش الخطأ",
+            "delete_answer": "حذف الإجابة",
+            "unit": "الوحدة",
+            "multiplier": "المضاعف",
+            "delete_unit": "حذف الوحدة"
+        },
         "fill_in_blanks": {
             "toolbar_key": "مفتاح",
             "key_insertion_default": "[[KeyText]]",

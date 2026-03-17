@@ -172,6 +172,19 @@
         "file_category_presentations": "Presentations",
         "file_category_images": "Images",
         "file_category_video": "Video",
+        "numerical": {
+            "unit_handling": "Unit handling",
+            "unit_input_method": "Unit is entered using",
+            "unit_penalty": "Unit penalty (%)",
+            "add_unit": "Add unit",
+            "units": "Units",
+            "answer": "Answer",
+            "error_margin": "Error margin",
+            "delete_answer": "Delete answer",
+            "unit": "Unit",
+            "multiplier": "Multiplier",
+            "delete_unit": "Delete unit"
+        },
         "fill_in_blanks": {
             "toolbar_key": "Key",
             "key_insertion_default": "[[KeyText]]",
