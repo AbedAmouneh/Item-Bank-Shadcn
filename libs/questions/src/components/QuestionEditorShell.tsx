@@ -1429,7 +1429,7 @@ function QuestionEditorShellForm({
                       <button
                         type="button"
                         onClick={handleKeyDialogClose}
-                        className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-muted transition-colors text-foreground"
+                        className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         {questionType === 'highlight_correct_word'
                           ? t('editor.highlight_correct_word.dialog_cancel_btn')
@@ -1438,7 +1438,7 @@ function QuestionEditorShellForm({
                       <button
                         type="button"
                         onClick={handleKeyInsert}
-                        className="px-3 py-1.5 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                        className="px-3 py-1.5 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         {questionType === 'highlight_correct_word'
                           ? t('editor.highlight_correct_word.dialog_insert_btn')
@@ -1618,13 +1618,13 @@ function QuestionEditorShellForm({
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-6 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+                className="px-6 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('common:profile.cancel')}
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+                className="px-6 py-2.5 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('common:profile.save')}
               </button>
@@ -1656,14 +1656,14 @@ function QuestionEditorShellForm({
               <button
                 type="button"
                 onClick={handleCloseRenameDialog}
-                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleConfirmRename}
-                className="px-4 py-2 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="px-4 py-2 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('rename_key')}
               </button>
@@ -1687,14 +1687,14 @@ function QuestionEditorShellForm({
               <button
                 type="button"
                 onClick={handleCloseDeleteDialog}
-                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="px-4 py-2 text-sm rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                className="px-4 py-2 text-sm rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('delete')}
               </button>
