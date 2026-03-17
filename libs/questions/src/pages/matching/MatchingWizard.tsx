@@ -1,50 +1,28 @@
-import {
+import React, {
   memo,
   useCallback,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Alert,
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  IconButton,
-  MenuItem,
-  Radio,
-  Select,
-  Step,
-  StepLabel,
-  Stepper,
-  Switch,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-  alpha,
-  styled,
-  useTheme,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import ListAltIcon from '@mui/icons-material/ListAlt';
-import LinkIcon from '@mui/icons-material/Link';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import { Check, ChevronLeft, ChevronRight, Plus, Trash2, Image as ImageIcon, ChevronDown, GitBranch } from 'lucide-react';
 import { Editor } from '@tinymce/tinymce-react';
 import type { Editor as TinyMCEEditor } from 'tinymce';
 import { useTranslation } from 'react-i18next';
+import {
+  cn,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@item-bank/ui';
 import type { QuestionFormData } from '../../components/QuestionEditorShell';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -106,43 +84,6 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
 }
 
-// ─── Styled components ───────────────────────────────────────────────────────
-
-const DropZone = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'hasImage' && prop !== 'hasError',
-})<{ hasImage?: boolean; hasError?: boolean }>(({ theme, hasImage, hasError }) => ({
-  position: 'relative',
-  width: '100%',
-  height: 140,
-  borderRadius: theme.shape.borderRadius,
-  border: hasImage
-    ? 'none'
-    : `2px dashed ${hasError ? theme.palette.error.main : theme.palette.divider}`,
-  backgroundColor: hasImage
-    ? 'transparent'
-    : alpha(theme.palette.action.hover, 0.5),
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  gap: theme.spacing(0.5),
-  transition: theme.transitions.create(['border-color', 'background-color'], {
-    duration: theme.transitions.duration.short,
-  }),
-  '&:hover': {
-    backgroundColor: hasImage
-      ? alpha(theme.palette.action.hover, 0.3)
-      : alpha(theme.palette.action.hover, 0.7),
-  },
-  '& img': {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-    borderRadius: theme.shape.borderRadius,
-  },
-}));
-
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 type MatchingWizardProps = {
@@ -155,8 +96,7 @@ type MatchingWizardProps = {
 
 function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) {
   const { t, i18n } = useTranslation('questions');
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+  const isDark = document.documentElement.classList.contains('dark');
 
   // ── Step state ────────────────────────────────────────────────────────────
 
@@ -319,8 +259,8 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
 
   // ── Mode switch handlers ──────────────────────────────────────────────────
 
-  const handleLeftModeChange = useCallback((_: unknown, val: 'text' | 'image' | null) => {
-    if (!val || val === leftMode) return;
+  const handleLeftModeChange = useCallback((val: 'text' | 'image') => {
+    if (val === leftMode) return;
     pendingLeftMode.current = val;
     setLeftModeSwitchWarning(true);
   }, [leftMode]);
@@ -335,8 +275,8 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
     setLeftModeSwitchWarning(false);
   }, []);
 
-  const handleRightModeChange = useCallback((_: unknown, val: 'text' | 'image' | null) => {
-    if (!val || val === rightMode) return;
+  const handleRightModeChange = useCallback((val: 'text' | 'image') => {
+    if (val === rightMode) return;
     pendingRightMode.current = val;
     setRightModeSwitchWarning(true);
   }, [rightMode]);
@@ -515,85 +455,92 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
     }
   }, [step, handleNext]);
 
+  // ── Steps definition ──────────────────────────────────────────────────────
+
+  const steps = [
+    t('editor.matching.step_1_label', { defaultValue: 'Content' }),
+    t('editor.matching.step_2_label', { defaultValue: 'Matching' }),
+  ];
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <Box className="flex flex-col gap-6 p-6">
-      {/* Stepper */}
-      <Stepper activeStep={step} alternativeLabel>
-        <Step onClick={() => handleStepClick(0)} sx={{ cursor: 'pointer' }}>
-          <StepLabel
-            StepIconComponent={() => (
-              <ListAltIcon color={step === 0 ? 'primary' : 'disabled'} />
+    <div className="flex flex-col gap-6 p-6">
+      {/* Step bar */}
+      <div className="flex items-center gap-0 mb-6">
+        {steps.map((stepLabel, i) => (
+          <React.Fragment key={i}>
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => handleStepClick(i)}
+            >
+              <div className={cn(
+                'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors',
+                i < step ? 'bg-primary text-primary-foreground' :
+                i === step ? 'border-2 border-primary bg-primary/10 text-primary' :
+                'border-2 border-border bg-muted text-muted-foreground'
+              )}>
+                {i < step ? <Check size={13} /> : i + 1}
+              </div>
+              <span className={cn(
+                'text-xs font-medium hidden sm:block',
+                i === step ? 'text-foreground' : 'text-muted-foreground'
+              )}>
+                {stepLabel}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div className={cn(
+                'flex-1 h-0.5 mx-2 rounded-full',
+                i < step ? 'bg-primary' : 'bg-border'
+              )} />
             )}
-          >
-            {t('editor.matching.step_1_label', { defaultValue: 'Content' })}
-          </StepLabel>
-        </Step>
-        <Step onClick={() => handleStepClick(1)} sx={{ cursor: 'pointer' }}>
-          <StepLabel
-            StepIconComponent={() => (
-              <LinkIcon color={step === 1 ? 'primary' : 'disabled'} />
-            )}
-          >
-            {t('editor.matching.step_2_label', { defaultValue: 'Matching' })}
-          </StepLabel>
-        </Step>
-      </Stepper>
+          </React.Fragment>
+        ))}
+      </div>
 
       {/* ── STEP 1 ──────────────────────────────────────────────────────── */}
       {step === 0 && (
-        <Box className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5">
           {step1Errors.length > 0 && (
-            <Alert severity="error">
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
               <ul className="m-0 ps-4">
                 {step1Errors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
               </ul>
-            </Alert>
+            </div>
           )}
 
           {/* Name + Mark row */}
-          <Box className="flex gap-4 flex-wrap">
-            <TextField
-              label={t('question_name')}
+          <div className="flex gap-4 flex-wrap">
+            <Input
+              placeholder={t('question_name')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              size="small"
               className="flex-1 min-w-[200px]"
             />
-            <TextField
-              label={t('mark')}
+            <Input
               type="number"
+              placeholder={t('mark')}
               value={mark}
               onChange={(e) => setMark(Number(e.target.value))}
-              size="small"
-              inputProps={{ min: 1, step: 1 }}
-              style={{ width: 120 }}
+              min={1}
+              step={1}
+              className="w-[120px]"
             />
-          </Box>
+          </div>
 
           {/* Question instructions */}
-          <Box>
-            <Typography
-              variant="caption"
-              className="block mb-1"
-              sx={{ color: 'text.secondary' }}
-            >
-              {t('question_text')} <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-            </Typography>
-            <Box
-              className="overflow-hidden"
-              sx={{
-                borderRadius: 3,
-                border: isDark
-                  ? `1.5px solid ${alpha(theme.palette.primary.main, 0.6)}`
-                  : `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                backgroundColor: theme.palette.background.paper,
-              }}
-            >
+          <div>
+            <span className="block mb-1 text-xs font-medium text-muted-foreground">
+              {t('question_text')} <span className="text-destructive">*</span>
+            </span>
+            <div className={cn(
+              'overflow-hidden rounded-xl border',
+              isDark ? 'border-primary/60' : 'border-border'
+            )}>
               <Editor
                 tinymceScriptSrc="/tinymce/tinymce.min.js"
                 licenseKey="gpl"
@@ -604,198 +551,201 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                 onEditorChange={(val) => setInstructions(val)}
                 init={editorInit}
               />
-            </Box>
+            </div>
             {step1Errors.length > 0 && !stripHtml(instructions) && (
-              <Typography variant="caption" color="error.main" sx={{ mt: 0.5, display: 'block' }}>
+              <span className="mt-0.5 block text-xs text-destructive">
                 {t('editor.matching.error_instructions_required', { defaultValue: 'Question instructions are required.' })}
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
 
           {/* Justification */}
-          <Box className="flex items-center gap-3 flex-wrap">
-            <Box className="flex items-center gap-1">
-              <Typography variant="body2" fontWeight={500}>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1">
+              <p className="text-sm font-medium text-foreground">
                 {t('editor.text_classification.justification_label', { defaultValue: 'Justification' })}
-              </Typography>
+              </p>
               <Select
-                size="small"
                 value={justification}
-                onChange={(e) => setJustification(e.target.value as 'disabled' | 'optional' | 'required')}
-                sx={{ minWidth: 140 }}
+                onValueChange={(val) => setJustification(val as 'disabled' | 'optional' | 'required')}
               >
-                <MenuItem value="disabled">{t('editor.text_classification.justification_disabled', { defaultValue: 'Disabled' })}</MenuItem>
-                <MenuItem value="optional">{t('editor.text_classification.justification_optional', { defaultValue: 'Optional' })}</MenuItem>
-                <MenuItem value="required">{t('editor.text_classification.justification_required', { defaultValue: 'Required' })}</MenuItem>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="disabled">{t('editor.text_classification.justification_disabled', { defaultValue: 'Disabled' })}</SelectItem>
+                  <SelectItem value="optional">{t('editor.text_classification.justification_optional', { defaultValue: 'Optional' })}</SelectItem>
+                  <SelectItem value="required">{t('editor.text_classification.justification_required', { defaultValue: 'Required' })}</SelectItem>
+                </SelectContent>
               </Select>
-            </Box>
+            </div>
             {justification !== 'disabled' && (
-              <Box className="flex items-center gap-1">
-                <Typography variant="body2" fontWeight={500}>
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-medium text-foreground">
                   {t('editor.text_classification.justification_fraction_label', { defaultValue: 'Fraction' })}
-                </Typography>
+                </p>
                 <Select
-                  size="small"
-                  value={justificationFraction}
-                  onChange={(e) => setJustificationFraction(Number(e.target.value))}
-                  sx={{ minWidth: 100 }}
+                  value={String(justificationFraction)}
+                  onValueChange={(val) => setJustificationFraction(Number(val))}
                 >
-                  {JUSTIFICATION_FRACTION_OPTIONS.map((opt) => (
-                    <MenuItem key={opt} value={opt}>
-                      {opt} %
-                    </MenuItem>
-                  ))}
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JUSTIFICATION_FRACTION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt} value={String(opt)}>
+                        {opt} %
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
 
-          {/* Feedback Settings */}
-          <Accordion
-            expanded={feedbackOpen}
-            onChange={() => setFeedbackOpen((prev) => !prev)}
-            disableGutters
-            sx={{
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 2,
-              '&::before': { display: 'none' },
-            }}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="body2" fontWeight={500}>
-                {t('editor.feedback_settings', { defaultValue: 'Feedback Settings' })}
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Correct feedback */}
-              <Box>
-                <Typography variant="caption" sx={{ mb: 0.5, display: 'block', color: 'text.secondary' }}>
-                  {t('editor.correct_feedback', { defaultValue: 'Correct feedback' })}
-                </Typography>
-                <Box
-                  className="overflow-hidden"
-                  sx={{
-                    borderRadius: 2,
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  }}
-                >
-                  <Editor
-                    tinymceScriptSrc="/tinymce/tinymce.min.js"
-                    licenseKey="gpl"
-                    value={correctFeedback}
-                    onEditorChange={(val) => setCorrectFeedback(val)}
-                    init={feedbackEditorInit}
-                  />
-                </Box>
-              </Box>
-              {/* Partial feedback */}
-              <Box>
-                <Typography variant="caption" sx={{ mb: 0.5, display: 'block', color: 'text.secondary' }}>
-                  {t('editor.partial_feedback', { defaultValue: 'Partially correct feedback' })}
-                </Typography>
-                <Box
-                  className="overflow-hidden"
-                  sx={{
-                    borderRadius: 2,
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  }}
-                >
-                  <Editor
-                    tinymceScriptSrc="/tinymce/tinymce.min.js"
-                    licenseKey="gpl"
-                    value={partialFeedback}
-                    onEditorChange={(val) => setPartialFeedback(val)}
-                    init={feedbackEditorInit}
-                  />
-                </Box>
-              </Box>
-              {/* Incorrect feedback */}
-              <Box>
-                <Typography variant="caption" sx={{ mb: 0.5, display: 'block', color: 'text.secondary' }}>
-                  {t('editor.incorrect_feedback', { defaultValue: 'Incorrect feedback' })}
-                </Typography>
-                <Box
-                  className="overflow-hidden"
-                  sx={{
-                    borderRadius: 2,
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  }}
-                >
-                  <Editor
-                    tinymceScriptSrc="/tinymce/tinymce.min.js"
-                    licenseKey="gpl"
-                    value={incorrectFeedback}
-                    onEditorChange={(val) => setIncorrectFeedback(val)}
-                    init={feedbackEditorInit}
-                  />
-                </Box>
-              </Box>
-            </AccordionDetails>
-          </Accordion>
+          {/* Feedback Settings accordion */}
+          <div className="rounded-xl border border-border">
+            <button
+              type="button"
+              onClick={() => setFeedbackOpen((prev) => !prev)}
+              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors rounded-xl"
+            >
+              {t('editor.feedback_settings', { defaultValue: 'Feedback Settings' })}
+              <ChevronDown
+                size={16}
+                className={cn('transition-transform text-muted-foreground', feedbackOpen && 'rotate-180')}
+              />
+            </button>
+            {feedbackOpen && (
+              <div className="flex flex-col gap-4 px-4 pb-4 border-t border-border pt-4">
+                {/* Correct feedback */}
+                <div>
+                  <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                    {t('editor.correct_feedback', { defaultValue: 'Correct feedback' })}
+                  </span>
+                  <div className="overflow-hidden rounded-lg border border-border">
+                    <Editor
+                      tinymceScriptSrc="/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
+                      value={correctFeedback}
+                      onEditorChange={(val) => setCorrectFeedback(val)}
+                      init={feedbackEditorInit}
+                    />
+                  </div>
+                </div>
+                {/* Partial feedback */}
+                <div>
+                  <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                    {t('editor.partial_feedback', { defaultValue: 'Partially correct feedback' })}
+                  </span>
+                  <div className="overflow-hidden rounded-lg border border-border">
+                    <Editor
+                      tinymceScriptSrc="/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
+                      value={partialFeedback}
+                      onEditorChange={(val) => setPartialFeedback(val)}
+                      init={feedbackEditorInit}
+                    />
+                  </div>
+                </div>
+                {/* Incorrect feedback */}
+                <div>
+                  <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                    {t('editor.incorrect_feedback', { defaultValue: 'Incorrect feedback' })}
+                  </span>
+                  <div className="overflow-hidden rounded-lg border border-border">
+                    <Editor
+                      tinymceScriptSrc="/tinymce/tinymce.min.js"
+                      licenseKey="gpl"
+                      value={incorrectFeedback}
+                      onEditorChange={(val) => setIncorrectFeedback(val)}
+                      init={feedbackEditorInit}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Side-by-side panels */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+          <div className="grid grid-cols-2 gap-6">
             {/* ── Left choices panel ────────────────────────────────────── */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box className="flex items-center justify-between">
-                <Typography variant="subtitle2">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold text-foreground">
                   {t('editor.matching.left_choices', { defaultValue: 'Left choices' })}
-                </Typography>
-                <ToggleButtonGroup
-                  value={leftMode}
-                  exclusive
-                  onChange={handleLeftModeChange}
-                  size="small"
-                >
-                  <ToggleButton value="text">
+                </h3>
+                {/* Mode toggle */}
+                <div className="flex rounded-lg border border-border overflow-hidden text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleLeftModeChange('text')}
+                    className={cn(
+                      'px-3 py-1.5 font-medium transition-colors',
+                      leftMode === 'text'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-transparent text-muted-foreground hover:bg-muted'
+                    )}
+                  >
                     {t('editor.matching.mode_text', { defaultValue: 'Text' })}
-                  </ToggleButton>
-                  <ToggleButton value="image">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLeftModeChange('image')}
+                    className={cn(
+                      'px-3 py-1.5 font-medium transition-colors',
+                      leftMode === 'image'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-transparent text-muted-foreground hover:bg-muted'
+                    )}
+                  >
                     {t('editor.matching.mode_media', { defaultValue: 'Media' })}
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
+                  </button>
+                </div>
+              </div>
 
               {leftModeSwitchWarning && (
-                <Alert
-                  severity="warning"
-                  action={
-                    <Box className="flex gap-1">
-                      <Button size="small" color="inherit" onClick={cancelLeftModeSwitch}>
-                        {t('no', { defaultValue: 'No' })}
-                      </Button>
-                      <Button size="small" color="warning" onClick={confirmLeftModeSwitch}>
-                        {t('yes', { defaultValue: 'Yes' })}
-                      </Button>
-                    </Box>
-                  }
-                >
-                  {t('editor.matching.mode_switch_warning', { defaultValue: 'Switching mode will clear all items on this side. Continue?' })}
-                </Alert>
+                <div className="rounded-lg border border-warning/50 bg-warning/10 p-3 text-sm">
+                  <p className="text-foreground mb-2">
+                    {t('editor.matching.mode_switch_warning', { defaultValue: 'Switching mode will clear all items on this side. Continue?' })}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={cancelLeftModeSwitch}
+                      className="px-3 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors"
+                    >
+                      {t('no', { defaultValue: 'No' })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmLeftModeSwitch}
+                      className="px-3 py-1 text-xs font-medium rounded-lg bg-warning text-warning-foreground hover:bg-warning/90 transition-colors"
+                    >
+                      {t('yes', { defaultValue: 'Yes' })}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {leftItems.map((item, idx) => (
-                <Box
-                  key={item.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    '& .delete-btn': { opacity: 0, transition: 'opacity 0.2s' },
-                    '&:hover .delete-btn': { opacity: 1 },
-                  }}
-                >
+                <div key={item.id} className="group flex items-center gap-2">
                   {leftMode === 'text' ? (
-                    <TextField
-                      size="small"
-                      fullWidth
+                    <Input
                       placeholder={t('editor.matching.left_item_placeholder', { defaultValue: `Left item ${idx + 1}`, index: idx + 1 })}
                       value={item.text}
                       onChange={(e) => handleUpdateLeftItemText(idx, e.target.value)}
+                      className="flex-1"
                     />
                   ) : (
-                    <DropZone
-                      hasImage={!!item.imageUrl}
+                    /* Drop zone for image mode */
+                    <div
+                      className={cn(
+                        'relative flex-1 h-[140px] rounded-lg cursor-pointer flex flex-col items-center justify-center gap-1 transition-colors',
+                        item.imageUrl
+                          ? 'border-none'
+                          : 'border-2 border-dashed border-border hover:border-primary/40 bg-muted/50'
+                      )}
                       onClick={() => leftFileRefs.current[item.id]?.click()}
                       onDragOver={(e: React.DragEvent) => e.preventDefault()}
                       onDrop={(e: React.DragEvent) => {
@@ -803,113 +753,133 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                         const file = e.dataTransfer.files[0];
                         if (file) handleLeftImageUpload(idx, file);
                       }}
-                      sx={{ flex: 1 }}
                     >
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={`Left ${idx + 1}`} />
+                        <img
+                          src={item.imageUrl}
+                          alt={`Left ${idx + 1}`}
+                          className="w-full h-full object-contain rounded-lg"
+                        />
                       ) : (
                         <>
-                          <ImageOutlinedIcon sx={{ color: 'text.secondary', fontSize: 32 }} />
-                          <Typography variant="caption" color="text.secondary">
+                          <ImageIcon size={32} className="text-muted-foreground" />
+                          <span className="text-xs font-medium text-muted-foreground">
                             {t('editor.image_classification.upload_placeholder', { defaultValue: 'Drop image or click to browse' })}
-                          </Typography>
+                          </span>
                         </>
                       )}
                       <input
                         ref={(el) => { leftFileRefs.current[item.id] = el; }}
                         type="file"
                         accept="image/*"
-                        style={{ display: 'none' }}
+                        className="hidden"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handleLeftImageUpload(idx, file);
                           e.target.value = '';
                         }}
                       />
-                    </DropZone>
+                    </div>
                   )}
-                  <IconButton
-                    className="delete-btn"
-                    size="small"
+                  <button
+                    type="button"
                     disabled={leftItems.length <= 2}
                     onClick={() => handleDeleteLeftItem(idx)}
+                    aria-label={t('delete')}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-muted transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
-                    <DeleteOutlineIcon fontSize="small" />
-                  </IconButton>
-                </Box>
+                    <Trash2 size={15} className="text-muted-foreground" />
+                  </button>
+                </div>
               ))}
 
-              <Button
-                startIcon={<AddIcon />}
-                size="small"
-                variant="text"
+              <button
+                type="button"
                 onClick={handleAddLeftItem}
+                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
               >
+                <Plus size={15} />
                 {t('editor.matching.add_left_item', { defaultValue: '+ Add left item' })}
-              </Button>
-            </Box>
+              </button>
+            </div>
 
             {/* ── Right choices panel ───────────────────────────────────── */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box className="flex items-center justify-between">
-                <Typography variant="subtitle2">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold text-foreground">
                   {t('editor.matching.right_choices', { defaultValue: 'Right choices' })}
-                </Typography>
-                <ToggleButtonGroup
-                  value={rightMode}
-                  exclusive
-                  onChange={handleRightModeChange}
-                  size="small"
-                >
-                  <ToggleButton value="text">
+                </h3>
+                {/* Mode toggle */}
+                <div className="flex rounded-lg border border-border overflow-hidden text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleRightModeChange('text')}
+                    className={cn(
+                      'px-3 py-1.5 font-medium transition-colors',
+                      rightMode === 'text'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-transparent text-muted-foreground hover:bg-muted'
+                    )}
+                  >
                     {t('editor.matching.mode_text', { defaultValue: 'Text' })}
-                  </ToggleButton>
-                  <ToggleButton value="image">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRightModeChange('image')}
+                    className={cn(
+                      'px-3 py-1.5 font-medium transition-colors',
+                      rightMode === 'image'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-transparent text-muted-foreground hover:bg-muted'
+                    )}
+                  >
                     {t('editor.matching.mode_media', { defaultValue: 'Media' })}
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
+                  </button>
+                </div>
+              </div>
 
               {rightModeSwitchWarning && (
-                <Alert
-                  severity="warning"
-                  action={
-                    <Box className="flex gap-1">
-                      <Button size="small" color="inherit" onClick={cancelRightModeSwitch}>
-                        {t('no', { defaultValue: 'No' })}
-                      </Button>
-                      <Button size="small" color="warning" onClick={confirmRightModeSwitch}>
-                        {t('yes', { defaultValue: 'Yes' })}
-                      </Button>
-                    </Box>
-                  }
-                >
-                  {t('editor.matching.mode_switch_warning', { defaultValue: 'Switching mode will clear all items on this side. Continue?' })}
-                </Alert>
+                <div className="rounded-lg border border-warning/50 bg-warning/10 p-3 text-sm">
+                  <p className="text-foreground mb-2">
+                    {t('editor.matching.mode_switch_warning', { defaultValue: 'Switching mode will clear all items on this side. Continue?' })}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={cancelRightModeSwitch}
+                      className="px-3 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors"
+                    >
+                      {t('no', { defaultValue: 'No' })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmRightModeSwitch}
+                      className="px-3 py-1 text-xs font-medium rounded-lg bg-warning text-warning-foreground hover:bg-warning/90 transition-colors"
+                    >
+                      {t('yes', { defaultValue: 'Yes' })}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {rightItems.map((item, idx) => (
-                <Box
-                  key={item.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    '& .delete-btn': { opacity: 0, transition: 'opacity 0.2s' },
-                    '&:hover .delete-btn': { opacity: 1 },
-                  }}
-                >
+                <div key={item.id} className="group flex items-center gap-2">
                   {rightMode === 'text' ? (
-                    <TextField
-                      size="small"
-                      fullWidth
+                    <Input
                       placeholder={t('editor.matching.right_item_placeholder', { defaultValue: `Right item ${idx + 1}`, index: idx + 1 })}
                       value={item.text}
                       onChange={(e) => handleUpdateRightItemText(idx, e.target.value)}
+                      className="flex-1"
                     />
                   ) : (
-                    <DropZone
-                      hasImage={!!item.imageUrl}
+                    /* Drop zone for image mode */
+                    <div
+                      className={cn(
+                        'relative flex-1 h-[140px] rounded-lg cursor-pointer flex flex-col items-center justify-center gap-1 transition-colors',
+                        item.imageUrl
+                          ? 'border-none'
+                          : 'border-2 border-dashed border-border hover:border-primary/40 bg-muted/50'
+                      )}
                       onClick={() => rightFileRefs.current[item.id]?.click()}
                       onDragOver={(e: React.DragEvent) => e.preventDefault()}
                       onDrop={(e: React.DragEvent) => {
@@ -917,297 +887,308 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                         const file = e.dataTransfer.files[0];
                         if (file) handleRightImageUpload(idx, file);
                       }}
-                      sx={{ flex: 1 }}
                     >
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={`Right ${idx + 1}`} />
+                        <img
+                          src={item.imageUrl}
+                          alt={`Right ${idx + 1}`}
+                          className="w-full h-full object-contain rounded-lg"
+                        />
                       ) : (
                         <>
-                          <ImageOutlinedIcon sx={{ color: 'text.secondary', fontSize: 32 }} />
-                          <Typography variant="caption" color="text.secondary">
+                          <ImageIcon size={32} className="text-muted-foreground" />
+                          <span className="text-xs font-medium text-muted-foreground">
                             {t('editor.image_classification.upload_placeholder', { defaultValue: 'Drop image or click to browse' })}
-                          </Typography>
+                          </span>
                         </>
                       )}
                       <input
                         ref={(el) => { rightFileRefs.current[item.id] = el; }}
                         type="file"
                         accept="image/*"
-                        style={{ display: 'none' }}
+                        className="hidden"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handleRightImageUpload(idx, file);
                           e.target.value = '';
                         }}
                       />
-                    </DropZone>
+                    </div>
                   )}
-                  <IconButton
-                    className="delete-btn"
-                    size="small"
+                  <button
+                    type="button"
                     disabled={rightItems.length <= 2}
                     onClick={() => handleDeleteRightItem(idx)}
+                    aria-label={t('delete')}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-muted transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
-                    <DeleteOutlineIcon fontSize="small" />
-                  </IconButton>
-                </Box>
+                    <Trash2 size={15} className="text-muted-foreground" />
+                  </button>
+                </div>
               ))}
 
-              <Button
-                startIcon={<AddIcon />}
-                size="small"
-                variant="text"
+              <button
+                type="button"
                 onClick={handleAddRightItem}
+                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
               >
+                <Plus size={15} />
                 {t('editor.matching.add_right_item', { defaultValue: '+ Add right item' })}
-              </Button>
-            </Box>
-          </Box>
+              </button>
+            </div>
+          </div>
 
-          {/* Nav */}
-          <Box className="flex justify-end gap-3 pt-2">
-            <Button variant="outlined" color="inherit" onClick={onCancel}>
+          {/* Step 1 nav */}
+          <div className="flex justify-between mt-6 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
               {t('cancel')}
-            </Button>
-            <Button variant="contained" onClick={handleNext}>
-              {t('editor.matching.step_2_label', { defaultValue: 'Matching' })} →
-            </Button>
-          </Box>
-        </Box>
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              {t('editor.matching.step_2_label', { defaultValue: 'Matching' })}
+              <ChevronRight size={15} className="rtl:rotate-180" />
+            </button>
+          </div>
+        </div>
       )}
 
       {/* ── STEP 2 ──────────────────────────────────────────────────────── */}
       {step === 1 && (
-        <Box className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {step2Errors.length > 0 && (
-            <Alert severity="error">
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
               <ul className="m-0 ps-4">
                 {step2Errors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
               </ul>
-            </Alert>
+            </div>
           )}
 
           {/* Global options row */}
-          <Box className="flex items-center gap-4 flex-wrap">
-            <TextField
-              label={t('editor.matching.penalty_label', { defaultValue: 'Penalty per wrong pair (%)' })}
-              type="number"
-              size="small"
-              value={penalty}
-              onChange={(e) => setPenalty(Number(e.target.value))}
-              inputProps={{ min: 0, step: 1 }}
-              sx={{ width: 220 }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={allowRightReuse}
-                  onChange={(e) => setAllowRightReuse(e.target.checked)}
-                  size="small"
-                />
-              }
-              label={t('editor.matching.allow_right_reuse', { defaultValue: 'Allow right items to be reused' })}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={autoDistribute}
-                  onChange={(e) => setAutoDistribute(e.target.checked)}
-                  size="small"
-                />
-              }
-              label={t('editor.matching.auto_distribute', { defaultValue: 'Auto-distribute marks equally' })}
-            />
-          </Box>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t('editor.matching.penalty_label', { defaultValue: 'Penalty per wrong pair (%)' })}
+              </label>
+              <Input
+                type="number"
+                value={penalty}
+                onChange={(e) => setPenalty(Number(e.target.value))}
+                min={0}
+                step={1}
+                className="w-[220px]"
+              />
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={allowRightReuse}
+                onChange={(e) => setAllowRightReuse(e.target.checked)}
+              />
+              <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative shrink-0">
+                <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
+              </div>
+              <span className="text-sm text-foreground">
+                {t('editor.matching.allow_right_reuse', { defaultValue: 'Allow right items to be reused' })}
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={autoDistribute}
+                onChange={(e) => setAutoDistribute(e.target.checked)}
+              />
+              <div className="w-4 h-4 rounded border border-border peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center shrink-0">
+                {autoDistribute && <Check size={10} className="text-primary-foreground" />}
+              </div>
+              <span className="text-sm text-foreground">
+                {t('editor.matching.auto_distribute', { defaultValue: 'Auto-distribute marks equally' })}
+              </span>
+            </label>
+          </div>
 
           {/* Per-left-item rows */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div className="flex flex-col gap-3">
             {leftItems.map((leftItem, leftIdx) => {
               const linkedRights = rightItems.filter((r) => leftItem.linkedRightIds.includes(r.id));
               const hasLinks = linkedRights.length > 0;
 
               return (
-                <Box
+                <div
                   key={leftItem.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 2,
-                    p: 2,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.5),
-                  }}
+                  className="flex items-start gap-3 p-3 border border-border rounded-xl bg-muted/20"
                 >
                   {/* Left item preview */}
-                  <Box
-                    sx={{
-                      minWidth: 100,
-                      maxWidth: 140,
-                      p: 1,
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderRadius: 1,
-                      backgroundColor: theme.palette.background.paper,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
+                  <div className="min-w-[100px] max-w-[140px] p-2 border border-border rounded-lg bg-card flex items-center justify-center">
                     {leftMode === 'text' ? (
-                      <Typography variant="body2" noWrap>
+                      <p className="text-sm text-foreground truncate">
                         {leftItem.text || `Item ${leftIdx + 1}`}
-                      </Typography>
+                      </p>
                     ) : (
                       leftItem.imageUrl ? (
                         <img
                           src={leftItem.imageUrl}
                           alt={`Left ${leftIdx + 1}`}
-                          style={{ width: 60, height: 50, objectFit: 'contain' }}
+                          className="w-[60px] h-[50px] object-contain"
                         />
                       ) : (
-                        <Typography variant="caption" color="text.secondary">
+                        <span className="text-xs text-muted-foreground">
                           {t('editor.matching.no_image', { defaultValue: 'No image' })}
-                        </Typography>
+                        </span>
                       )
                     )}
-                  </Box>
+                  </div>
 
-                  {/* Link / Edit button */}
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
-                    <Button
-                      variant={hasLinks ? 'outlined' : 'contained'}
-                      size="small"
+                  {/* Link / Edit button + multiple answers toggle */}
+                  <div className="flex flex-col gap-2 items-start">
+                    <button
+                      type="button"
                       onClick={() => openChooser(leftIdx)}
+                      className={cn(
+                        'px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors',
+                        hasLinks
+                          ? 'border-primary text-primary hover:bg-primary/10'
+                          : 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
+                      )}
                     >
                       {hasLinks
                         ? t('editor.matching.edit_links', { defaultValue: 'Edit links' })
                         : t('editor.matching.link_items', { defaultValue: 'Link items' })}
-                    </Button>
+                    </button>
 
                     {/* Multiple answers toggle */}
-                    <Tooltip title={t('editor.matching.multiple_answers_toggle_tooltip', { defaultValue: 'Toggle multiple answers' })}>
-                      <IconButton
-                        size="small"
-                        color={leftItem.multipleAnswers ? 'primary' : 'default'}
-                        onClick={() => toggleMultipleAnswers(leftIdx)}
-                      >
-                        <AccountTreeIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
+                    <button
+                      type="button"
+                      title={t('editor.matching.multiple_answers_toggle_tooltip', { defaultValue: 'Toggle multiple answers' })}
+                      aria-label={t('editor.matching.multiple_answers_toggle_tooltip', { defaultValue: 'Toggle multiple answers' })}
+                      onClick={() => toggleMultipleAnswers(leftIdx)}
+                      className={cn(
+                        'p-1.5 rounded-lg transition-colors',
+                        leftItem.multipleAnswers
+                          ? 'text-primary bg-primary/10'
+                          : 'text-muted-foreground hover:bg-muted'
+                      )}
+                    >
+                      <GitBranch size={15} />
+                    </button>
+                  </div>
 
                   {/* Connection visualization */}
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <div className="flex-1 flex flex-col gap-2">
                     {!hasLinks ? (
-                      <Box
-                        sx={{
-                          border: `1px dashed ${theme.palette.grey[400]}`,
-                          borderRadius: 1,
-                          p: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Typography variant="caption" color="text.secondary">
+                      <div className="border border-dashed border-border rounded-lg p-4 flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground">
                           {t('editor.matching.no_links_hint', { defaultValue: 'No right items linked yet' })}
-                        </Typography>
-                      </Box>
+                        </span>
+                      </div>
                     ) : (
                       linkedRights.map((rightItem) => (
-                        <Box
+                        <div
                           key={rightItem.id}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            p: 1,
-                            border: `1px solid ${theme.palette.divider}`,
-                            borderRadius: 1,
-                            backgroundColor: theme.palette.background.paper,
-                          }}
+                          className="flex items-center gap-2 p-2 border border-border rounded-lg bg-card"
                         >
                           {rightMode === 'text' ? (
-                            <Typography variant="body2" sx={{ flex: 1 }} noWrap>
+                            <p className="text-sm text-foreground flex-1 truncate">
                               {rightItem.text}
-                            </Typography>
+                            </p>
                           ) : (
                             rightItem.imageUrl ? (
                               <img
                                 src={rightItem.imageUrl}
                                 alt={rightItem.text || 'Right item'}
-                                style={{ width: 60, height: 50, objectFit: 'contain', flex: '0 0 auto' }}
+                                className="w-[60px] h-[50px] object-contain shrink-0"
                               />
                             ) : (
-                              <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                              <span className="text-xs text-muted-foreground flex-1">
                                 {t('editor.matching.no_image', { defaultValue: 'No image' })}
-                              </Typography>
+                              </span>
                             )
                           )}
-                          <IconButton
-                            size="small"
+                          <button
+                            type="button"
                             onClick={() => removeLinkFromLeft(leftIdx, rightItem.id)}
+                            aria-label={t('delete')}
+                            className="p-1.5 rounded-lg hover:bg-muted transition-colors shrink-0"
                           >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
+                            <Trash2 size={13} className="text-muted-foreground" />
+                          </button>
+                        </div>
                       ))
                     )}
-                  </Box>
+                  </div>
 
                   {/* Mark % field (only when autoDistribute OFF) */}
                   {!autoDistribute && (
-                    <TextField
-                      size="small"
-                      type="number"
-                      label={t('mark', { defaultValue: 'Mark' }) + ' %'}
-                      value={leftItem.markPercent}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value) || 0;
-                        setLeftItems((prev) =>
-                          prev.map((item, i) => i === leftIdx ? { ...item, markPercent: val } : item),
-                        );
-                      }}
-                      inputProps={{ min: 0, max: 100, step: 0.01 }}
-                      sx={{ width: 100 }}
-                    />
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        {t('mark', { defaultValue: 'Mark' })} %
+                      </label>
+                      <Input
+                        type="number"
+                        value={leftItem.markPercent}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setLeftItems((prev) =>
+                            prev.map((item, i) => i === leftIdx ? { ...item, markPercent: val } : item),
+                          );
+                        }}
+                        min={0}
+                        max={100}
+                        step={0.01}
+                        className="w-[100px]"
+                      />
+                    </div>
                   )}
-                </Box>
+                </div>
               );
             })}
-          </Box>
+          </div>
 
-          {/* Nav */}
-          <Box className="flex justify-between pt-2">
-            <Button variant="outlined" color="inherit" onClick={() => setStep(0)}>
-              ← {t('editor.matching.step_1_label')}
-            </Button>
-            <Button variant="contained" onClick={handleSave}>
-              {t('editor.matching.step_2_label')} ✓
-            </Button>
-          </Box>
-        </Box>
+          {/* Step 2 nav */}
+          <div className="flex justify-between mt-6 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setStep(0)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
+              <ChevronLeft size={15} className="rtl:rotate-180" />
+              {t('editor.matching.step_1_label', { defaultValue: 'Content' })}
+            </button>
+            <button
+              type="submit"
+              onClick={handleSave}
+              className="px-6 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              {t('common:save')}
+            </button>
+          </div>
+        </div>
       )}
 
       {/* ── Choose matching items dialog ────────────────────────────────── */}
-      <Dialog
-        open={chooserOpen}
-        onClose={handleChooserCancel}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{ sx: { maxWidth: 400 } }}
-      >
-        <DialogTitle>
-          {t('editor.matching.choose_matching_title', { defaultValue: 'Choose matching items' })}
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {t('editor.matching.choose_matching_hint', { defaultValue: 'Select the right item(s) that match this left item.' })}
-          </Typography>
+      <Dialog open={chooserOpen} onOpenChange={(open) => { if (!open) handleChooserCancel(); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {t('editor.matching.choose_matching_title', { defaultValue: 'Choose matching items' })}
+            </DialogTitle>
+          </DialogHeader>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <p className="text-sm text-muted-foreground mb-2">
+            {t('editor.matching.choose_matching_hint', { defaultValue: 'Select the right item(s) that match this left item.' })}
+          </p>
+
+          <div className="flex flex-col gap-2">
             {rightItems.map((rightItem) => {
               const currentLeft = chooserLeftIdx !== null ? leftItems[chooserLeftIdx] : null;
               const isMultiple = currentLeft?.multipleAnswers ?? false;
@@ -1216,21 +1197,13 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
               const isDisabled = !allowRightReuse && isLinkedElsewhere && !isSelected;
 
               return (
-                <Box
+                <div
                   key={rightItem.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    p: 1,
-                    border: `1px solid ${isSelected ? theme.palette.primary.main : theme.palette.divider}`,
-                    borderRadius: 1,
-                    opacity: isDisabled ? 0.5 : 1,
-                    cursor: isDisabled ? 'not-allowed' : 'pointer',
-                    backgroundColor: isSelected
-                      ? alpha(theme.palette.primary.main, 0.06)
-                      : 'transparent',
-                  }}
+                  className={cn(
+                    'flex items-center gap-2 p-2 rounded-lg border transition-colors',
+                    isSelected ? 'border-primary bg-primary/6' : 'border-border',
+                    isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  )}
                   onClick={() => {
                     if (isDisabled) return;
                     if (isMultiple) {
@@ -1244,57 +1217,64 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                     }
                   }}
                 >
+                  {/* Radio/checkbox indicator */}
                   {isMultiple ? (
-                    <Checkbox
-                      checked={isSelected}
-                      disabled={isDisabled}
-                      size="small"
-                      sx={{ p: 0.5 }}
-                    />
+                    <div className={cn(
+                      'w-4 h-4 rounded border shrink-0 flex items-center justify-center',
+                      isSelected ? 'bg-primary border-primary' : 'border-border'
+                    )}>
+                      {isSelected && <Check size={10} className="text-primary-foreground" />}
+                    </div>
                   ) : (
-                    <Radio
-                      checked={isSelected}
-                      disabled={isDisabled}
-                      size="small"
-                      sx={{ p: 0.5 }}
-                    />
+                    <div className={cn(
+                      'w-4 h-4 rounded-full border shrink-0 flex items-center justify-center',
+                      isSelected ? 'border-primary' : 'border-border'
+                    )}>
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
+                    </div>
                   )}
                   {rightMode === 'text' ? (
-                    <Typography variant="body2" sx={{ flex: 1 }}>
+                    <p className="text-sm text-foreground flex-1">
                       {rightItem.text}
-                    </Typography>
+                    </p>
                   ) : (
                     rightItem.imageUrl ? (
                       <img
                         src={rightItem.imageUrl}
                         alt={rightItem.text || 'Right item'}
-                        style={{ width: 60, height: 50, objectFit: 'contain' }}
+                        className="w-[60px] h-[50px] object-contain"
                       />
                     ) : (
-                      <Typography variant="caption" color="text.secondary">
+                      <span className="text-xs text-muted-foreground">
                         {t('editor.matching.no_image', { defaultValue: 'No image' })}
-                      </Typography>
+                      </span>
                     )
                   )}
-                </Box>
+                </div>
               );
             })}
-          </Box>
+          </div>
+
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={handleChooserCancel}
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+            >
+              {t('cancel', { defaultValue: 'Cancel' })}
+            </button>
+            <button
+              type="button"
+              onClick={handleChooserDone}
+              disabled={chooserSelection.length === 0}
+              className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {t('done', { defaultValue: 'Done' })}
+            </button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleChooserCancel} color="inherit">
-            {t('cancel', { defaultValue: 'Cancel' })}
-          </Button>
-          <Button
-            onClick={handleChooserDone}
-            variant="contained"
-            disabled={chooserSelection.length === 0}
-          >
-            {t('done', { defaultValue: 'Done' })}
-          </Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 }
 
