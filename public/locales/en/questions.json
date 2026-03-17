@@ -207,7 +207,8 @@
             "error_empty_rows": "All text rows must have content before saving.",
             "error_total_not_100": "Mark percentages must total 100% (currently {{total}}%).",
             "feedback_correct": "Correct",
-            "feedback_wrong": "Wrong"
+            "feedback_wrong": "Wrong",
+            "delete_row": "Delete row"
         },
         "image_sequencing": {
             "rows_label": "Image items",

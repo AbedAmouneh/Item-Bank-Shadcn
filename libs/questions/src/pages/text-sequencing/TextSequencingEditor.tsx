@@ -285,8 +285,9 @@ function TextSequencingEditor() {
       </div>
 
       {/* Draggable row list */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
       <div
-        className="flex flex-col gap-3 touch-none"
+        className="flex flex-col gap-3 touch-none p-3"
         ref={rowListRef}
         role="list"
         onPointerDown={handleContainerPointerDown}
@@ -367,13 +368,14 @@ function TextSequencingEditor() {
                 onClick={() => handleDeleteRow(item.id)}
                 disabled={items.length <= 2}
                 className="shrink-0 p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                aria-label={t('editor.text_sequencing.drag_handle_label', { index: index + 1 })}
+                aria-label={t('editor.text_sequencing.delete_row')}
               >
                 <Trash2 size={15} />
               </button>
             </div>
           );
         })}
+      </div>
       </div>
 
       <button

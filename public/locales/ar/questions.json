@@ -207,7 +207,8 @@
             "error_empty_rows": "يجب أن تحتوي جميع صفوف النص على محتوى قبل الحفظ.",
             "error_total_not_100": "يجب أن تكون مجموع النسب المئوية للدرجات 100% (حالياً {{total}}%).",
             "feedback_correct": "صحيح",
-            "feedback_wrong": "خطأ"
+            "feedback_wrong": "خطأ",
+            "delete_row": "حذف الصف"
         },
         "image_sequencing": {
             "rows_label": "عناصر الصور",
