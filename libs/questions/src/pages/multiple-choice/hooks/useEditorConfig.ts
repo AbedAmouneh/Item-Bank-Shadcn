@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTheme, alpha } from '@mui/material';
+
 import { useTranslation } from 'react-i18next';
 
 type EditorVariant = 'choice' | 'feedback';
@@ -9,17 +9,19 @@ export function useEditorConfig(
   placeholder: string,
   variant: EditorVariant = 'choice'
 ) {
-  const theme = useTheme();
   const { i18n } = useTranslation();
-  const isDarkMode = theme.palette.mode === 'dark';
+  const isDarkMode = document.documentElement.classList.contains('dark');
 
   return useMemo(() => {
     const fontSize = variant === 'feedback' ? '13px' : '14px';
     const lineHeight = variant === 'feedback' ? '1.5' : '1.6';
     const padding = variant === 'feedback' ? '10px' : '12px';
 
+    const backgroundColor = isDarkMode ? '#1e1e2e' : '#ffffff';
+    const textColor = isDarkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
+
     const contentStyle = isDarkMode
-      ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: ${fontSize}; line-height: ${lineHeight}; padding: ${padding}; background-color: ${theme.palette.background.default}; color: ${alpha(theme.palette.text.primary, 0.9)}; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { color: rgba(255, 255, 255, 0.7) !important; }`
+      ? `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: ${fontSize}; line-height: ${lineHeight}; padding: ${padding}; background-color: ${backgroundColor}; color: ${textColor}; } .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before { color: rgba(255, 255, 255, 0.7) !important; }`
       : `body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: ${fontSize}; line-height: ${lineHeight}; padding: ${padding}; }`;
 
     return {
@@ -38,5 +40,5 @@ export function useEditorConfig(
       placeholder,
       content_style: contentStyle,
     };
-  }, [height, placeholder, isDarkMode, i18n.language, theme.palette, variant]);
+  }, [height, placeholder, isDarkMode, i18n.language, variant]);
 }
