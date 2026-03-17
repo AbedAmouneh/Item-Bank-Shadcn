@@ -1,11 +1,9 @@
-import { Box, Button, Chip, Typography, alpha, styled, useTheme } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ReplayIcon from '@mui/icons-material/Replay';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import { Stage, Layer, Rect, Circle, Image as KonvaImage } from 'react-konva';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Stage, Layer, Rect, Circle, Image as KonvaImage } from 'react-konva';
 import { useTranslation } from 'react-i18next';
+import { Check, RotateCcw, Lightbulb } from 'lucide-react';
 import type { KonvaEventObject } from 'konva/lib/Node';
+import { cn, Button } from '@item-bank/ui';
 import type { QuestionRow } from '../../components/QuestionsTable';
 
 type MultipleHotspotsQuestionViewProps = {
@@ -17,12 +15,14 @@ type HotspotShape = NonNullable<QuestionRow['hotspots']>[number];
 const MAX_CANVAS_WIDTH = 800;
 const MIN_SELECTION_RING_RADIUS = 16;
 
-const MarkBox = styled(Box)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
-  color: theme.palette.text.primary,
-}));
+// Hardcoded hex values matching CSS vars:
+// --primary #6366F1, --success #22c55e (green-500), --destructive #F43F5E
+const RING_PRIMARY = '#6366F1';
+const RING_PRIMARY_FILL = 'rgba(99,102,241,0.18)';
+const RING_SUCCESS = '#22c55e';
+const RING_SUCCESS_FILL = 'rgba(34,197,94,0.18)';
+const RING_ERROR = '#F43F5E';
+const RING_ERROR_FILL = 'rgba(244,63,94,0.18)';
 
 function isPointInPolygon(x: number, y: number, points: number[]): boolean {
   let inside = false;
@@ -62,7 +62,6 @@ function isPointInsideHotspot(shape: HotspotShape, x: number, y: number): boolea
 }
 
 const MultipleHotspotsQuestionView = ({ question }: MultipleHotspotsQuestionViewProps) => {
-  const theme = useTheme();
   const { t, i18n } = useTranslation('questions');
 
   const [backgroundImg, setBackgroundImg] = useState<HTMLImageElement | null>(null);
@@ -273,16 +272,17 @@ const MultipleHotspotsQuestionView = ({ question }: MultipleHotspotsQuestionView
           shape.type === 'circle'
             ? Math.max(shape.radius ?? MIN_SELECTION_RING_RADIUS, MIN_SELECTION_RING_RADIUS)
             : MIN_SELECTION_RING_RADIUS;
+
         const strokeColor = !checked
-          ? theme.palette.primary.main
+          ? RING_PRIMARY
           : isCorrect
-            ? theme.palette.success.main
-            : theme.palette.error.main;
+            ? RING_SUCCESS
+            : RING_ERROR;
         const fillColor = !checked
-          ? alpha(theme.palette.primary.main, 0.18)
+          ? RING_PRIMARY_FILL
           : isCorrect
-            ? alpha(theme.palette.success.main, 0.18)
-            : alpha(theme.palette.error.main, 0.18);
+            ? RING_SUCCESS_FILL
+            : RING_ERROR_FILL;
 
         return (
           <Circle
@@ -302,23 +302,20 @@ const MultipleHotspotsQuestionView = ({ question }: MultipleHotspotsQuestionView
       correctIndices,
       hotspots,
       selectedAnchors,
-      theme.palette.error.main,
-      theme.palette.primary.main,
-      theme.palette.success.main,
     ]
   );
 
   if (!question.background_image) {
     return (
-      <Typography variant="body2" color="text.secondary">
+      <p className="text-sm text-muted-foreground">
         {t('editor.background_image', { defaultValue: 'Background image' })}: {t('common:not_available', { defaultValue: 'Not available' })}
-      </Typography>
+      </p>
     );
   }
 
   return (
-    <Box className="flex flex-col gap-3">
-      <Box sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 1 }} className="overflow-hidden w-fit max-w-full">
+    <div className="flex flex-col gap-3">
+      <div className="overflow-hidden rounded border border-border w-fit max-w-full">
         <Stage
           width={canvasWidth}
           height={canvasHeight}
@@ -332,7 +329,7 @@ const MultipleHotspotsQuestionView = ({ question }: MultipleHotspotsQuestionView
               y={0}
               width={canvasWidth}
               height={canvasHeight}
-              fill={theme.palette.background.paper}
+              fill="#ffffff"
             />
             {backgroundImg && (
               <KonvaImage
@@ -346,48 +343,49 @@ const MultipleHotspotsQuestionView = ({ question }: MultipleHotspotsQuestionView
             {rings}
           </Layer>
         </Stage>
-      </Box>
+      </div>
 
-      <Box className="flex items-center justify-between flex-wrap gap-4">
-        <Box className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
-            variant="contained"
-            startIcon={checked ? <ReplayIcon /> : <CheckIcon />}
             disabled={!checked && selectedCount === 0}
             onClick={checked ? handleRetry : handleCheck}
-            className="normal-case font-semibold"
-            sx={(muiTheme) => ({ borderRadius: muiTheme.spacing(1.5) })}
+            className="gap-2 font-semibold"
           >
+            {checked ? <RotateCcw size={16} /> : <Check size={16} />}
             {checked ? t('retry') : t('check')}
           </Button>
 
           {checked && score && !score.isFullyCorrect && !showSolution && (
             <Button
-              variant="contained"
-              startIcon={<LightbulbIcon />}
               onClick={handleShowSolution}
-              className="normal-case font-semibold"
-              sx={(muiTheme) => ({ borderRadius: muiTheme.spacing(1.5) })}
+              className="gap-2 font-semibold"
             >
+              <Lightbulb size={16} />
               {t('show_solution')}
             </Button>
           )}
 
           {checked && score && (
-            <Chip
-              className="font-semibold text-sm rounded-xl"
-              label={`${formatNum(score.earned)} / ${formatNum(question.mark)}`}
-              color={score.isFullyCorrect ? 'success' : 'default'}
-              variant={score.isFullyCorrect ? 'filled' : 'outlined'}
-            />
+            <span
+              className={cn(
+                'inline-flex items-center px-3 py-1 rounded-xl text-sm font-semibold border',
+                score.isFullyCorrect
+                  ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700'
+                  : 'bg-transparent text-foreground border-border'
+              )}
+            >
+              {formatNum(score.earned)} / {formatNum(question.mark)}
+            </span>
           )}
-        </Box>
+        </div>
 
-        <MarkBox className="py-2 px-4 font-semibold text-[0.95rem]">
+        {/* Mark display box */}
+        <div className="py-2 px-4 font-semibold text-[0.95rem] rounded-2xl border border-border bg-card text-foreground">
           {formatNum(question.mark)}
-        </MarkBox>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 
