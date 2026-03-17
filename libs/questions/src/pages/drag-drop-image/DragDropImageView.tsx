@@ -469,7 +469,7 @@ export default function DragDropImageView({ question }: DragDropImageViewProps) 
                     </span>
                   )
                 ) : (
-                  <span className="not-italic font-semibold text-xs tracking-wide text-black/60">
+                  <span className="not-italic font-semibold text-xs tracking-wide text-foreground/60">
                     {t('drag_drop_text.slot_hint')}
                   </span>
                 )}
