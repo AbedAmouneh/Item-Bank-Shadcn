@@ -67,5 +67,14 @@
     "validation": {
         "required": "هذا الحقل مطلوب",
         "min": "يجب أن يكون على الأقل {{min}}"
+    },
+    "notifications": {
+        "title": "الإشعارات",
+        "empty_title": "أنت على اطلاع بكل شيء",
+        "empty_message": "لا توجد إشعارات جديدة",
+        "mark_all_as_read": "تحديد الكل كمقروء",
+        "just_now": "الآن",
+        "minutes_ago": "منذ {{count}} دقيقة",
+        "hours_ago": "منذ {{count}} ساعة"
     }
 }
