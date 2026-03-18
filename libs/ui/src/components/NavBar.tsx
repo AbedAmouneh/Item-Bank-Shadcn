@@ -102,7 +102,7 @@ function NavBar({
       <header className="w-full h-16 bg-white dark:bg-[hsl(var(--nav-background))] border-b border-border shadow-nav px-4 md:px-6 flex items-center justify-between gap-4">
         {/* Left — Logo + brand */}
         <div
-          className="flex items-center gap-3 shrink-0 cursor-pointer py-1.5 px-2 -ml-2 rounded-xl hover:bg-accent transition-colors"
+          className="flex items-center gap-3 shrink-0 cursor-pointer py-1.5 px-2 -ms-2 rounded-xl hover:bg-accent transition-colors"
           onClick={() => navigate('/home')}
         >
           <div className="flex items-center justify-center font-bold text-lg w-8 h-8 rounded-lg bg-primary text-white">
