@@ -626,9 +626,7 @@ const MatchingView = ({ question }: MatchingViewProps) => {
       {justification !== 'disabled' && (
         <div>
           <p className="text-sm font-medium text-foreground mb-1">
-            {t('matching.justification_label', {
-              defaultValue: 'Justify your answer',
-            })}
+            {t('matching.justification_label')}
             {justification === 'required' ? ' *' : ''}
           </p>
           <Input

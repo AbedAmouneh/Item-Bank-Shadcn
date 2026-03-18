@@ -54,7 +54,7 @@ function HighlightCorrectWordEditor({ questionText }: { questionText?: string })
       {/* Penalty dropdown */}
       <div className="flex flex-col gap-1.5 max-w-[260px]">
         <label className="text-sm font-medium text-foreground">
-          {t('editor.highlight_correct_word.penalty_label', { defaultValue: 'Penalty per wrong word' })}
+          {t('editor.highlight_correct_word.penalty_label')}
         </label>
         <Select
           value={String(penaltyPercent)}
@@ -76,9 +76,9 @@ function HighlightCorrectWordEditor({ questionText }: { questionText?: string })
       {/* Highlighted phrases list */}
       <div>
         <p className="text-sm font-semibold text-foreground mb-3">
-          {t('editor.highlight_correct_word.phrases_label', { defaultValue: 'Highlighted phrases' })}{' '}
+          {t('editor.highlight_correct_word.phrases_label')}{' '}
           <span className="text-xs font-normal text-muted-foreground">
-            ({t('editor.highlight_correct_word.remove_hint', { defaultValue: 'hover a phrase in the editor to remove it' })})
+            ({t('editor.highlight_correct_word.remove_hint')})
           </span>
         </p>
 

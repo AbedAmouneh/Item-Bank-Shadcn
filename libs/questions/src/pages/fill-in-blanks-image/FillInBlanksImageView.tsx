@@ -124,7 +124,7 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
   if (!question.background_image) {
     return (
       <p className="text-sm text-muted-foreground">
-        {t('editor.background_image', { defaultValue: 'Background image' })}: {t('common:not_available', { defaultValue: 'Not available' })}
+        {t('editor.background_image')}: {t('common:not_available')}
       </p>
     );
   }
@@ -175,7 +175,7 @@ export default function FillInBlanksImageView({ question }: FillInBlanksImageVie
                   disabled={checked}
                   placeholder={`Zone ${index + 1}`}
                   className={cn(
-                    'w-full bg-transparent text-[0.75rem] leading-[1.1] text-center outline-none',
+                    'w-full bg-transparent text-[0.75rem] leading-[1.1] text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0',
                     'disabled:opacity-70 disabled:cursor-not-allowed'
                   )}
                 />

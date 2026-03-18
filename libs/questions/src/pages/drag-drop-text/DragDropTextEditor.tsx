@@ -695,7 +695,7 @@ function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }
 
               {/* Group selector — native select avoids introducing another shadcn dependency */}
               <select
-                className="h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-50"
+                className="h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
                 value={item.groupId}
                 onChange={(e) => handleGroupChange(item.id, e.target.value)}
                 aria-label={t('editor.drag_drop_text.col_group')}
@@ -781,7 +781,7 @@ function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }
 
       {/* Add item dialog */}
       <Dialog open={addItemDialogOpen} onOpenChange={(open) => { if (!open) handleAddItemDialogClose(); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_text.add_item_dialog_title')}</DialogTitle>
           </DialogHeader>
@@ -821,7 +821,7 @@ function DragDropTextEditor({ questionText, onAddKey, onRenameKey, onDeleteKey }
 
       {/* Add group dialog */}
       <Dialog open={addGroupDialogOpen} onOpenChange={(open) => { if (!open) handleAddGroupClose(); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_text.add_group_dialog_title')}</DialogTitle>
           </DialogHeader>

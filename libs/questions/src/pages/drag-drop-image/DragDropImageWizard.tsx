@@ -675,7 +675,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                 />
                 <button
                   type="button"
-                  className="mt-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
+                  className="mt-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-destructive text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   onClick={() => setBgImageDataUrl(null)}
                 >
                   {t('editor.remove_image')}
@@ -724,14 +724,14 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
             <button
               type="button"
               onClick={onCancel}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('cancel')}
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('common:next')}
               <ChevronRight size={15} className="rtl:rotate-180" />
@@ -872,7 +872,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                 </h4>
                 <button
                   type="button"
-                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   onClick={() => setGroupDialogOpen(true)}
                   disabled={groups.length >= GROUP_COLORS.length}
                 >
@@ -935,7 +935,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
               </h4>
               <button
                 type="button"
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 onClick={() => setAddItemDialogOpen(true)}
               >
                 <Plus size={13} />
@@ -992,7 +992,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                               />
                               <button
                                 type="button"
-                                className="px-2 py-1 text-xs font-medium rounded-lg text-destructive border border-destructive/40 hover:bg-destructive/10 transition-colors"
+                                className="px-2 py-1 text-xs font-medium rounded-lg text-destructive border border-destructive/40 hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   updateItem(item.id, 'image', undefined);
@@ -1036,7 +1036,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
 
                     {/* Group selector */}
                     <select
-                      className="h-8 rounded-lg border border-border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="h-8 rounded-lg border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       style={{ minWidth: 120 }}
                       value={item.groupId}
                       onChange={(e) => updateItem(item.id, 'groupId', e.target.value)}
@@ -1123,7 +1123,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                       </span>
                       <button
                         type="button"
-                        className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         onClick={(e) => {
                           e.stopPropagation();
                           addZoneToItem(item.id);
@@ -1196,7 +1196,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
             <button
               type="button"
               onClick={() => setStep(0)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <ChevronLeft size={15} className="rtl:rotate-180" />
               {t('common:back')}
@@ -1205,14 +1205,14 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-6 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="px-6 py-2 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('common:save')}
               </button>
@@ -1223,7 +1223,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
 
       {/* ── Add Group Dialog ─────────────────────────────────────────── */}
       <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
-        <DialogContent className="max-w-xs">
+        <DialogContent className="max-w-xs max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_image.add_group_dialog_title')}</DialogTitle>
           </DialogHeader>
@@ -1264,7 +1264,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
             <button
               type="button"
               onClick={() => setGroupDialogOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('cancel')}
             </button>
@@ -1280,7 +1280,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
 
       {/* ── Add Item Dialog ──────────────────────────────────────────── */}
       <Dialog open={addItemDialogOpen} onOpenChange={setAddItemDialogOpen}>
-        <DialogContent className="max-w-xs">
+        <DialogContent className="max-w-xs max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('editor.drag_drop_image.add_item')}</DialogTitle>
           </DialogHeader>
@@ -1296,7 +1296,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
             <button
               type="button"
               onClick={() => setAddItemDialogOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors"
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {t('cancel')}
             </button>

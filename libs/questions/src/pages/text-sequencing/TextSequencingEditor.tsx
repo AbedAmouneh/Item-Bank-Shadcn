@@ -258,7 +258,7 @@ function TextSequencingEditor() {
               checked={autoDistribute}
               onChange={(e) => handleAutoDistributeChange(e.target.checked)}
             />
-            <div className="w-9 h-5 rounded-full bg-muted peer-checked/auto:bg-primary relative transition-colors">
+            <div className="w-9 h-5 rounded-full bg-[hsl(var(--toggle-track))] peer-checked/auto:bg-primary relative transition-colors">
               <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/auto:translate-x-4 rtl:peer-checked/auto:-translate-x-4" />
             </div>
             <span className="text-sm text-foreground">
@@ -274,7 +274,7 @@ function TextSequencingEditor() {
               checked={allowPartialCredit}
               onChange={(e) => handlePartialCreditChange(e.target.checked)}
             />
-            <div className="w-9 h-5 rounded-full bg-muted peer-checked/partial:bg-primary relative transition-colors">
+            <div className="w-9 h-5 rounded-full bg-[hsl(var(--toggle-track))] peer-checked/partial:bg-primary relative transition-colors">
               <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked/partial:translate-x-4 rtl:peer-checked/partial:-translate-x-4" />
             </div>
             <span className="text-sm text-foreground">
@@ -325,6 +325,7 @@ function TextSequencingEditor() {
             >
               {/* Drag handle */}
               <div
+                role="button"
                 className="flex items-center p-1 rounded-lg shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/50 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 focus-visible:text-primary"
                 data-drag-handle="true"
                 tabIndex={0}

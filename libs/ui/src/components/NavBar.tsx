@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Bell,
   Maximize,
   Minimize,
   Moon,
@@ -13,8 +12,10 @@ import {
 } from 'lucide-react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { cn } from '../lib/utils';
+import { cn, navIconBtnClass } from '../lib/utils';
 import { useSwitchTheme, useThemeMode } from '../hooks/theme';
+import type { Notification } from '../types/Notification';
+import { NotificationPanel } from './NotificationPanel';
 
 const navItems = [
   { labelKey: 'nav.dashboard', path: '/dashboard' },
@@ -46,10 +47,17 @@ function IconTooltip({
   );
 }
 
-const iconBtnClass =
-  'h-9 w-9 rounded-full flex items-center justify-center transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent';
+export interface NavBarProps {
+  notifications?: Notification[];
+  onMarkNotificationAsRead?: (id: string) => void;
+  onMarkAllNotificationsAsRead?: () => void;
+}
 
-function NavBar() {
+function NavBar({
+  notifications = [],
+  onMarkNotificationAsRead = (_id: string) => {},
+  onMarkAllNotificationsAsRead = () => {},
+}: NavBarProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const navigate = useNavigate();
@@ -94,7 +102,7 @@ function NavBar() {
       <header className="w-full h-16 bg-white dark:bg-[hsl(var(--nav-background))] border-b border-border shadow-nav px-4 md:px-6 flex items-center justify-between gap-4">
         {/* Left — Logo + brand */}
         <div
-          className="flex items-center gap-3 shrink-0 cursor-pointer py-1.5 px-2 -ml-2 rounded-xl hover:bg-accent transition-colors"
+          className="flex items-center gap-3 shrink-0 cursor-pointer py-1.5 px-2 -ms-2 rounded-xl hover:bg-accent transition-colors"
           onClick={() => navigate('/home')}
         >
           <div className="flex items-center justify-center font-bold text-lg w-8 h-8 rounded-lg bg-primary text-white">
@@ -132,8 +140,8 @@ function NavBar() {
         >
           <DropdownMenuPrimitive.Trigger asChild>
             <button
-              className={cn(iconBtnClass, 'flex md:hidden')}
-              aria-label={t('actions.menu')}
+              className={cn(navIconBtnClass, 'flex md:hidden')}
+              aria-label={t('table_actions.menu')}
             >
               <MenuIcon size={22} />
             </button>
@@ -148,7 +156,7 @@ function NavBar() {
                 <DropdownMenuPrimitive.Item
                   key={item.path}
                   className={cn(
-                    'text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent transition-colors outline-none',
+                    'text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none',
                     isSelected(item.path) && 'text-primary font-medium'
                   )}
                   onSelect={() => handleNavItemClick(item.path)}
@@ -163,39 +171,36 @@ function NavBar() {
         {/* Right — Action icons */}
         <div className="flex items-center gap-2 shrink-0">
           {/* Notifications */}
-          <IconTooltip label={t('table_actions.notifications')}>
-            <button className={iconBtnClass}>
-              <span className="relative">
-                <Bell size={18} />
-                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-destructive" />
-              </span>
-            </button>
-          </IconTooltip>
+          <NotificationPanel
+            notifications={notifications}
+            onMarkAsRead={onMarkNotificationAsRead}
+            onMarkAllAsRead={onMarkAllNotificationsAsRead}
+          />
 
           {/* Fullscreen */}
           <IconTooltip label={t('table_actions.fullscreen')}>
-            <button className={iconBtnClass} onClick={toggleFullscreen}>
+            <button className={navIconBtnClass} aria-label={t('table_actions.fullscreen')} onClick={toggleFullscreen}>
               {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
             </button>
           </IconTooltip>
 
           {/* Theme toggle */}
           <IconTooltip label={t('table_actions.theme')}>
-            <button className={iconBtnClass} onClick={switchTheme}>
+            <button className={navIconBtnClass} aria-label={t('table_actions.theme')} onClick={switchTheme}>
               {mode === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
           </IconTooltip>
 
           {/* Language toggle */}
           <IconTooltip label={t('table_actions.language')}>
-            <button className={iconBtnClass} onClick={handleLanguageToggle}>
+            <button className={navIconBtnClass} aria-label={t('table_actions.language')} onClick={handleLanguageToggle}>
               <Languages size={18} />
             </button>
           </IconTooltip>
 
           {/* Logout */}
           <IconTooltip label={t('table_actions.logout')}>
-            <button className={iconBtnClass} onClick={logout}>
+            <button className={navIconBtnClass} aria-label={t('table_actions.logout')} onClick={logout}>
               <LogOut size={18} className="rtl:scale-x-[-1]" />
             </button>
           </IconTooltip>

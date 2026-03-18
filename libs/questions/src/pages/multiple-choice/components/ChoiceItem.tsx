@@ -66,7 +66,7 @@ function ChoiceItem({
               checked={choice.isCorrect}
               onChange={(e) => onCorrectToggle(choice.id, e.target.checked)}
             />
-            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+            <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
               <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
             </div>
             <span className="text-sm text-foreground">{t('editor.correct')}</span>
@@ -80,7 +80,7 @@ function ChoiceItem({
               checked={choice.feedbackEnabled}
               onChange={(e) => onFeedbackToggle(choice.id, e.target.checked)}
             />
-            <div className="w-9 h-5 rounded-full transition-colors bg-muted peer-checked:bg-primary relative">
+            <div className="w-9 h-5 rounded-full transition-colors bg-[hsl(var(--toggle-track))] peer-checked:bg-primary relative">
               <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
             </div>
             <span className="text-sm text-foreground">{t('editor.feedback')}</span>

@@ -558,9 +558,7 @@ function QuestionEditorShellForm({
 
         if (hotspotCount === 0) {
           errors.hotspots = {
-            message: t('editor.multiple_hotspots.error_no_hotspots', {
-              defaultValue: 'Add at least one hotspot.',
-            }),
+            message: t('editor.multiple_hotspots.error_no_hotspots'),
           };
         }
 
@@ -619,9 +617,7 @@ function QuestionEditorShellForm({
           );
           if (hasEmptyText) {
             errors.answers = {
-              message: t('editor.answer_text_required', {
-                defaultValue: 'Each answer must have text',
-              }),
+              message: t('editor.answer_text_required'),
             };
           }
         }
@@ -1429,7 +1425,7 @@ function QuestionEditorShellForm({
                       <button
                         type="button"
                         onClick={handleKeyDialogClose}
-                        className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-muted transition-colors text-foreground"
+                        className="px-3 py-1.5 text-sm rounded-lg border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         {questionType === 'highlight_correct_word'
                           ? t('editor.highlight_correct_word.dialog_cancel_btn')
@@ -1438,7 +1434,7 @@ function QuestionEditorShellForm({
                       <button
                         type="button"
                         onClick={handleKeyInsert}
-                        className="px-3 py-1.5 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                        className="px-3 py-1.5 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         {questionType === 'highlight_correct_word'
                           ? t('editor.highlight_correct_word.dialog_insert_btn')
@@ -1618,13 +1614,13 @@ function QuestionEditorShellForm({
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-6 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+                className="px-6 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('common:profile.cancel')}
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+                className="px-6 py-2.5 text-sm font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('common:profile.save')}
               </button>
@@ -1637,7 +1633,7 @@ function QuestionEditorShellForm({
       <DialogPrimitive.Root open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
-          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm max-h-[90vh] overflow-y-auto bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
             <DialogPrimitive.Title className="text-base font-semibold text-foreground mb-4">
               {t('rename_key')}
             </DialogPrimitive.Title>
@@ -1656,14 +1652,14 @@ function QuestionEditorShellForm({
               <button
                 type="button"
                 onClick={handleCloseRenameDialog}
-                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleConfirmRename}
-                className="px-4 py-2 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="px-4 py-2 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('rename_key')}
               </button>
@@ -1676,7 +1672,7 @@ function QuestionEditorShellForm({
       <DialogPrimitive.Root open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50" />
-          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
+          <DialogPrimitive.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm max-h-[90vh] overflow-y-auto bg-card border border-border rounded-2xl p-6 shadow-xl focus:outline-none">
             <DialogPrimitive.Title className="text-base font-semibold text-foreground mb-4">
               {t('delete_key_title')}
             </DialogPrimitive.Title>
@@ -1687,14 +1683,14 @@ function QuestionEditorShellForm({
               <button
                 type="button"
                 onClick={handleCloseDeleteDialog}
-                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+                className="px-4 py-2 text-sm rounded-xl border border-border hover:bg-muted transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="px-4 py-2 text-sm rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                className="px-4 py-2 text-sm rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {t('delete')}
               </button>

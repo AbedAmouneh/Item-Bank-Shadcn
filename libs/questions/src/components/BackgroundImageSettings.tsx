@@ -130,7 +130,7 @@ export default function BackgroundImageSettings() {
           checked={enableBackgroundImage}
           onChange={(e) => handleToggleBackgroundImage(e.target.checked)}
         />
-        <div className="w-9 h-5 bg-muted rounded-full transition-colors peer-checked:bg-primary" />
+        <div className="w-9 h-5 bg-[hsl(var(--toggle-track))] rounded-full transition-colors peer-checked:bg-primary" />
         <div className="absolute top-0.5 start-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4 rtl:peer-checked:-translate-x-4" />
       </div>
     </label>

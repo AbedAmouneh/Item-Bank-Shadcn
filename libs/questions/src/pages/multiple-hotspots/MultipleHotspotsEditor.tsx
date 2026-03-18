@@ -541,7 +541,7 @@ export default function MultipleHotspotsEditor() {
   /** Shared icon button class builder for toolbar buttons */
   const toolbarBtnClass = (selected?: boolean) =>
     cn(
-      'p-1.5 rounded-lg transition-colors',
+      'p-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       selected
         ? 'bg-primary/10 text-primary dark:bg-primary/20'
         : 'text-muted-foreground hover:bg-muted'
@@ -1113,7 +1113,7 @@ export default function MultipleHotspotsEditor() {
 
       {/* Edit hotspot dialog */}
       <Dialog open={editDialogOpen} onOpenChange={(open) => { if (!open) handleEditClose(); }}>
-        <DialogContent className="max-w-xs">
+        <DialogContent className="max-w-xs max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Hotspot</DialogTitle>
           </DialogHeader>
