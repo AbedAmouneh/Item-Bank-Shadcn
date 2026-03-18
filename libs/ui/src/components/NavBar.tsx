@@ -141,7 +141,7 @@ function NavBar({
           <DropdownMenuPrimitive.Trigger asChild>
             <button
               className={cn(navIconBtnClass, 'flex md:hidden')}
-              aria-label={t('actions.menu')}
+              aria-label={t('table_actions.menu')}
             >
               <MenuIcon size={22} />
             </button>
