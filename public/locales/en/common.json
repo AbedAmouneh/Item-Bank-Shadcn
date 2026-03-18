@@ -67,5 +67,14 @@
     "validation": {
         "required": "This field is required",
         "min": "Must be at least {{min}}"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "empty_title": "You're all caught up",
+        "empty_message": "No new notifications",
+        "mark_all_as_read": "Mark all as read",
+        "just_now": "Just now",
+        "minutes_ago": "{{count}} min ago",
+        "hours_ago": "{{count}} hr ago"
     }
 }
