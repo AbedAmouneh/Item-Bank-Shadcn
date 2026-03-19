@@ -4,3 +4,11 @@ export type { QuestionDraft } from './draft';
 export type { QuestionDTO } from './dto';
 export { toQuestionDto, fromQuestionDto } from './mappers';
 export { createDefaultQuestion, createEmptyAnswer } from './factory';
+export {
+  useQuestions,
+  useQuestion,
+  useCreateQuestion,
+  useUpdateQuestion,
+  useDeleteQuestion,
+  useSubmitForReview,
+} from './hooks';
