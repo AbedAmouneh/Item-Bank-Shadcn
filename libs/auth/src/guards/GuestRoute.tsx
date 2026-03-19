@@ -1,9 +1,16 @@
-import { Navigate, Outlet } from "react-router-dom"
+import { Navigate, Outlet } from 'react-router-dom';
+
+import { useAuth } from '../hooks/useAuth';
 
 const GuestRoute = () => {
-  const token = localStorage.getItem("token");
-  if(token) return <Navigate replace to={'/home'} />
-  return <Outlet />
-}
+  const { isLoading, isAuthenticated } = useAuth();
 
-export default GuestRoute
+  // Suppress any flash of a redirect while the initial getMe() call is in flight.
+  if (isLoading) return null;
+
+  if (isAuthenticated) return <Navigate replace to="/home" />;
+
+  return <Outlet />;
+};
+
+export default GuestRoute;
