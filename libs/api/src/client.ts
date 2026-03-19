@@ -121,7 +121,10 @@ export async function apiRequest<T>(
   let response = await fetchRaw(path, options);
 
   // Silent refresh on 401: try once to obtain a new access token.
-  if (response.status === 401) {
+  // Skip the retry for auth endpoints that return 401 as a business response
+  // (e.g. wrong password on /account/login) — those should surface the real error.
+  const isAuthEndpoint = path === '/account/login' || path === '/account/refresh';
+  if (response.status === 401 && !isAuthEndpoint) {
     const newCsrfToken = await attemptRefresh();
 
     if (newCsrfToken !== null) {
@@ -140,6 +143,9 @@ export async function apiRequest<T>(
   if (!response.ok) {
     throw await parseErrorResponse(response);
   }
+
+  // For auth endpoints that returned 401 (wrong credentials etc.),
+  // fall through to parseErrorResponse via the !response.ok branch above.
 
   return response.json() as Promise<T>;
 }
