@@ -117,22 +117,13 @@ const Login = () => {
           </div>
 
           {/* Footer links */}
-          <div className="flex justify-between items-center w-full rtl:flex-row-reverse">
+          <div className="flex items-center w-full">
             <RouterLink
               to="/forgot-password"
               className="text-sm text-muted-foreground hover:text-foreground hover:underline whitespace-nowrap no-underline transition-colors"
             >
               {t('auth:forgot_password')}
             </RouterLink>
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
-              {t('auth:no_account')}{' '}
-              <RouterLink
-                to="/signup"
-                className="font-semibold text-foreground hover:underline no-underline transition-colors"
-              >
-                {t('auth:sign_up')}
-              </RouterLink>
-            </span>
           </div>
 
         </form>

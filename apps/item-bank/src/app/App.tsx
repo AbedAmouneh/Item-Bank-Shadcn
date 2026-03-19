@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import {
   Login,
-  SignUp,
   ForgotPassword,
   ProtectedRoute,
   GuestRoute,
@@ -45,7 +44,6 @@ export default function App() {
 
             <Route element={<GuestRoute />}>
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
 
