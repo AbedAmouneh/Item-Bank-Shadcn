@@ -51,12 +51,16 @@ export interface NavBarProps {
   notifications?: Notification[];
   onMarkNotificationAsRead?: (id: string) => void;
   onMarkAllNotificationsAsRead?: () => void;
+  /** Called when the user clicks the logout button. Owned by the caller so
+   *  NavBar stays decoupled from the auth layer. */
+  onLogout?: () => void | Promise<void>;
 }
 
 function NavBar({
   notifications = [],
   onMarkNotificationAsRead = (_id: string) => {},
   onMarkAllNotificationsAsRead = () => {},
+  onLogout = () => {},
 }: NavBarProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -82,10 +86,6 @@ function NavBar({
     localStorage.setItem('lang', newLang);
   }, [i18n]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    navigate('/login', { replace: true });
-  }, [navigate]);
 
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
@@ -200,7 +200,7 @@ function NavBar({
 
           {/* Logout */}
           <IconTooltip label={t('table_actions.logout')}>
-            <button className={navIconBtnClass} aria-label={t('table_actions.logout')} onClick={logout}>
+            <button className={navIconBtnClass} aria-label={t('table_actions.logout')} onClick={onLogout}>
               <LogOut size={18} className="rtl:scale-x-[-1]" />
             </button>
           </IconTooltip>
