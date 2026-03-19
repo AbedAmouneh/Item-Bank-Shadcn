@@ -79,6 +79,12 @@ async function fetchRaw(path: string, options: RequestInit): Promise<Response> {
   const method = (options.method ?? 'GET').toUpperCase();
   const headers = buildHeaders(method, options.headers);
 
+  // For FormData bodies the browser must set Content-Type itself so it can
+  // append the multipart boundary parameter.  Remove the default JSON header.
+  if (options.body instanceof FormData) {
+    headers.delete('Content-Type');
+  }
+
   return fetch(`${BASE_URL}${path}`, {
     ...options,
     method,
