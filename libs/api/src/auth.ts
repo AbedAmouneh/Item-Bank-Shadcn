@@ -23,6 +23,15 @@ export interface LoginResponse {
 }
 
 /**
+ * The server wraps every success response in { success: true, data: <payload> }.
+ * This interface represents that outer envelope so we can unwrap it.
+ */
+interface Envelope<T> {
+  success: boolean;
+  data: T;
+}
+
+/**
  * Authenticate with email + password credentials.
  *
  * The server sets the httpOnly JWT cookie in the response. This function
@@ -37,14 +46,14 @@ export async function login(
   email: string,
   password: string,
 ): Promise<LoginResponse> {
-  const data = await apiRequest<LoginResponse>('/account/login', {
+  const envelope = await apiRequest<Envelope<LoginResponse>>('/account/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 
-  setCsrfToken(data.csrf_token);
+  setCsrfToken(envelope.data.csrf_token);
 
-  return data;
+  return envelope.data;
 }
 
 /**
@@ -55,7 +64,8 @@ export async function login(
  * @returns The authenticated user's profile.
  */
 export async function getMe(): Promise<ApiUser> {
-  return apiRequest<ApiUser>('/account/me');
+  const envelope = await apiRequest<Envelope<ApiUser>>('/account/me');
+  return envelope.data;
 }
 
 /**
