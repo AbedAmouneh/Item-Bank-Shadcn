@@ -111,7 +111,11 @@
             "password_required": "Password is required",
             "password_min": "Password must be at least 8 characters",
             "role_required": "Role is required",
-            "select_role": "Select a role"
+            "select_role": "Select a role",
+            "edit": "Edit",
+            "edit_dialog_title": "Edit User",
+            "save_changes": "Save Changes",
+            "edit_error": "Failed to update user."
         }
     },
     "migration": {
