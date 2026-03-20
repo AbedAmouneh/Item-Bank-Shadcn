@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
@@ -28,8 +28,8 @@ import {
   TableHeader,
   TableRow,
 } from '@item-bank/ui';
-import { getUsers, createUser, activateUser, deactivateUser } from '@item-bank/api';
-import type { CreateUserData, AdminUser } from '@item-bank/api';
+import { getUsers, createUser, activateUser, deactivateUser, updateUser } from '@item-bank/api';
+import type { CreateUserData, UpdateUserData, AdminUser } from '@item-bank/api';
 import { useAuth } from '@item-bank/auth';
 
 // ---------------------------------------------------------------------------
@@ -195,6 +195,134 @@ function CreateUserDialog({ open, onClose, onSuccess }: CreateUserDialogProps) {
 }
 
 // ---------------------------------------------------------------------------
+// Edit User Dialog
+// ---------------------------------------------------------------------------
+
+const editUserSchema = z.object({
+  email: z.string().email(),
+  role: z.enum(['admin', 'user']),
+});
+
+type EditUserFormValues = {
+  email: string;
+  role: 'admin' | 'user';
+};
+
+interface EditUserDialogProps {
+  open: boolean;
+  onClose: () => void;
+  user: AdminUser | null;
+  onSuccess: () => void;
+}
+
+function EditUserDialog({ open, onClose, user, onSuccess }: EditUserDialogProps) {
+  const { t } = useTranslation('common');
+  const [apiError, setApiError] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<EditUserFormValues>({
+    resolver: zodResolver(editUserSchema),
+    defaultValues: { email: '', role: 'user' },
+  });
+
+  // Re-populate form whenever the target user changes.
+  useEffect(() => {
+    if (user) {
+      reset({ email: user.email, role: user.role });
+    }
+  }, [user, reset]);
+
+  const { mutate: submitEdit, isPending } = useMutation({
+    mutationFn: (data: UpdateUserData) => updateUser(user!.id, data),
+    onSuccess: () => {
+      setApiError('');
+      onSuccess();
+    },
+    onError: (err) => {
+      setApiError(err instanceof Error ? err.message : t('admin.users.edit_error'));
+    },
+  });
+
+  const handleClose = () => {
+    setApiError('');
+    onClose();
+  };
+
+  const onSubmit = handleSubmit((data) => {
+    setApiError('');
+    submitEdit(data);
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose(); }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t('admin.users.edit_dialog_title')}</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={onSubmit} className="flex flex-col gap-4 pt-2">
+          {/* Email */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="eu-email">{t('admin.users.email')}</Label>
+            <Input
+              id="eu-email"
+              type="email"
+              className="bg-input"
+              aria-invalid={!!errors.email}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+
+          {/* Role */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="eu-role">{t('admin.users.role')}</Label>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger id="eu-role" aria-invalid={!!errors.role}>
+                    <SelectValue placeholder={t('admin.users.select_role')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">{t('admin.users.role_user')}</SelectItem>
+                    <SelectItem value="admin">{t('admin.users.role_admin')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.role && (
+              <p className="text-sm text-destructive">{errors.role.message}</p>
+            )}
+          </div>
+
+          {apiError && (
+            <p className="text-sm text-destructive">{apiError}</p>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={handleClose}>
+              {t('profile.cancel')}
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? t('profile.saving') : t('admin.users.save_changes')}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Status badge helper
 // ---------------------------------------------------------------------------
 
@@ -241,6 +369,7 @@ function UsersContent() {
   const { t } = useTranslation('common');
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<AdminUser | null>(null);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -267,6 +396,11 @@ function UsersContent() {
     },
     onSettled: () => setPendingUserId(null),
   });
+
+  const handleEditSuccess = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    setEditTarget(null);
+  }, [queryClient]);
 
   const handleToggle = useCallback(
     (user: AdminUser) => {
@@ -344,16 +478,25 @@ function UsersContent() {
                     {formatLastLogin(u.last_login, t('admin.users.never'))}
                   </TableCell>
                   <TableCell className="text-end">
-                    <Button
-                      size="sm"
-                      variant={u.is_active ? 'outline' : 'default'}
-                      disabled={pendingUserId === u.id}
-                      onClick={() => handleToggle(u)}
-                    >
-                      {u.is_active
-                        ? t('admin.users.deactivate')
-                        : t('admin.users.activate')}
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditTarget(u)}
+                      >
+                        {t('admin.users.edit')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={u.is_active ? 'outline' : 'default'}
+                        disabled={pendingUserId === u.id}
+                        onClick={() => handleToggle(u)}
+                      >
+                        {u.is_active
+                          ? t('admin.users.deactivate')
+                          : t('admin.users.activate')}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -366,6 +509,13 @@ function UsersContent() {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSuccess={handleCreateSuccess}
+      />
+
+      <EditUserDialog
+        open={editTarget !== null}
+        onClose={() => setEditTarget(null)}
+        user={editTarget}
+        onSuccess={handleEditSuccess}
       />
     </div>
   );
