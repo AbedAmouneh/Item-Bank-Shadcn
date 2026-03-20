@@ -9,10 +9,17 @@
       "vite/client"
     ],
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@item-bank/auth": ["libs/auth/src/index.ts"],
+      "@item-bank/questions": ["libs/questions/src/index.ts"],
+      "@item-bank/i18n": ["libs/i18n/src/index.ts"],
+      "@item-bank/ui": ["libs/ui/src/index.ts"],
+      "@item-bank/profile": ["libs/profile/src/index.ts"],
+      "@item-bank/api": ["libs/api/src/index.ts"]
     }
   },
   "exclude": [
+    "src/components/**",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.tsx",

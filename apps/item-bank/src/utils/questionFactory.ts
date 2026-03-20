@@ -265,7 +265,7 @@ function createTextSequencingQuestion(
 
   // Defensive guard: enforce data integrity even if the UI validation is bypassed
   if (rawItems.length < 2) return null;
-  if (rawItems.some((item) => !item.text.trim())) return null;
+  if (rawItems.some((item) => !item.text?.trim())) return null;
   if (!(questionData.autoDistributeMarks ?? true)) {
     const total = Math.round(rawItems.reduce((s, it) => s + it.markPercent, 0) * 100) / 100;
     if (total !== 100) return null;
@@ -273,7 +273,7 @@ function createTextSequencingQuestion(
 
   const items = rawItems.map((item, index) => ({
     id: item.id,
-    text: item.text.trim(),
+    text: item.text?.trim() ?? '',
     markPercent: item.markPercent,
     canonicalOrder: index,
   }));
@@ -301,7 +301,7 @@ function createImageSequencingQuestion(
 
   const items = rawItems.map((item, index) => ({
     id: item.id,
-    image: item.image.trim(),
+    image: item.image?.trim() ?? '',
     markPercent: item.markPercent,
     canonicalOrder: index,
   }));

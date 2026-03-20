@@ -44,6 +44,11 @@ export default [
       'libs/questions/src/pages/free-hand-drawing/**',
       'libs/questions/src/pages/record-audio/**',
     ],
+    plugins: {
+      'item-bank': {
+        rules: { 'no-sx-layout-props': noSxLayoutPropsRule },
+      },
+    },
     rules: {
       'item-bank/no-sx-layout-props': 'error',
     },

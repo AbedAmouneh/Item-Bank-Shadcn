@@ -135,6 +135,7 @@ function convertFillInBlanksImageToForm(stored: StoredFillInBlanksImageQuestion)
       y: area.y,
       width: area.width,
       height: area.height,
+      manualMarking: false,
       answers: area.answers.map((answer) => ({
         id: answer.id,
         text: answer.text,

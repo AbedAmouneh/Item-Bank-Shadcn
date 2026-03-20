@@ -31,7 +31,7 @@ const BASE_KEYS = new Set([
  */
 async function uploadBase64Images(value: unknown): Promise<unknown> {
   if (typeof value === 'string' && value.startsWith('data:image/')) {
-    const match = value.match(/^data:([^;]+);base64,(.+)$/s);
+    const match = value.match(/^data:([^;]+);base64,(.+)$/);
     if (match) {
       const [, mimeType, data] = match;
       const { url } = await uploadImageBase64(data, mimeType);

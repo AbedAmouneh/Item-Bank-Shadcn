@@ -47,7 +47,7 @@ const createUserSchema = (t: (k: string) => string) =>
       .min(1, t('admin.users.password_required'))
       .min(8, t('admin.users.password_min')),
     role: z.enum(['admin', 'user'], {
-      required_error: t('admin.users.role_required'),
+      error: t('admin.users.role_required'),
     }),
   });
 
@@ -105,7 +105,7 @@ function CreateUserDialog({ open, onClose, onSuccess }: CreateUserDialogProps) {
   });
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
+    <Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose(); }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>{t('admin.users.dialog_title')}</DialogTitle>

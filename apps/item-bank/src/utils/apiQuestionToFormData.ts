@@ -174,7 +174,7 @@ function textClassificationFromApi(q: Question): QuestionFormData {
     textClassificationCategories: a<Content>(q.content, 'categories').map((cat) => ({
       id: s(cat, 'id', crypto.randomUUID()),
       name: s(cat, 'name'),
-      color: s(cat, 'color') as QuestionFormData['textClassificationCategories'] extends Array<infer C> ? C['color'] : string,
+      color: s(cat, 'color'),
       answers: a<Content>(cat, 'answers').map((ans) => ({
         id: s(ans, 'id', crypto.randomUUID()),
         text: s(ans, 'text'),
@@ -362,6 +362,7 @@ function fillInBlanksImageFromApi(q: Question): QuestionFormData {
       y: n(area, 'y'),
       width: n(area, 'width', 140),
       height: n(area, 'height', 36),
+      manualMarking: false,
       answers: a<Content>(area, 'answers').map((ans) => ({
         id: s(ans, 'id', crypto.randomUUID()),
         text: s(ans, 'text'),
