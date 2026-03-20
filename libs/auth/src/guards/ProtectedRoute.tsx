@@ -8,7 +8,7 @@ import { NavBar } from '@item-bank/ui';
 import { useAuth } from '../hooks/useAuth';
 
 const ProtectedRoute = () => {
-  const { isLoading, isAuthenticated, clearSession } = useAuth();
+  const { isLoading, isAuthenticated, clearSession, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = useCallback(async () => {
@@ -34,6 +34,7 @@ const ProtectedRoute = () => {
         onMarkNotificationAsRead={(_id) => {}}
         onMarkAllNotificationsAsRead={() => {}}
         onLogout={handleLogout}
+        userRole={user?.role}
       />
       <Outlet />
     </div>

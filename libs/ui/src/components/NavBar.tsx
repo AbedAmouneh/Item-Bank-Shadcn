@@ -17,13 +17,15 @@ import { useSwitchTheme, useThemeMode } from '../hooks/theme';
 import type { Notification } from '../types/Notification';
 import { NotificationPanel } from './NotificationPanel';
 
-const navItems = [
+const baseNavItems = [
   { labelKey: 'nav.dashboard', path: '/dashboard' },
   { labelKey: 'nav.projects', path: '/projects' },
   { labelKey: 'nav.itemBank', path: '/home' },
   { labelKey: 'nav.analytics', path: '/analytics' },
   { labelKey: 'nav.settings', path: '/settings' },
 ];
+
+const adminNavItem = { labelKey: 'nav.adminUsers', path: '/admin/users' };
 
 function IconTooltip({
   label,
@@ -54,6 +56,8 @@ export interface NavBarProps {
   /** Called when the user clicks the logout button. Owned by the caller so
    *  NavBar stays decoupled from the auth layer. */
   onLogout?: () => void | Promise<void>;
+  /** The current user's role. When 'admin', the Admin nav item is shown. */
+  userRole?: 'admin' | 'user';
 }
 
 function NavBar({
@@ -61,6 +65,7 @@ function NavBar({
   onMarkNotificationAsRead = (_id: string) => {},
   onMarkAllNotificationsAsRead = () => {},
   onLogout = () => {},
+  userRole,
 }: NavBarProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -69,6 +74,11 @@ function NavBar({
   const { t, i18n } = useTranslation('common');
   const { switchTheme } = useSwitchTheme();
   const { mode } = useThemeMode();
+
+  const navItems = [
+    ...baseNavItems,
+    ...(userRole === 'admin' ? [adminNavItem] : []),
+  ];
 
   const handleNavItemClick = (path: string) => {
     navigate(path);
