@@ -100,7 +100,7 @@ export default function MigrateToApi() {
         // Recursively upload any inline base64 images inside the content.
         const content = (await uploadBase64Images(rawContent)) as Record<string, unknown>;
 
-        await createQuestion({ name: q.name, type: q.type, text: q.text, mark: q.mark, content });
+        await createQuestion({ name: q.name, type: q.type, text: q.text, mark: Number(q.mark), content });
 
         // Delete from IndexedDB immediately so a mid-migration retry is safe.
         await deleteQuestion(q.id);

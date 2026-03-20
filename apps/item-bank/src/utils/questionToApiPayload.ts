@@ -44,7 +44,7 @@ export function formDataToApiPayload(formData: QuestionFormData): CreateQuestion
     name: formData.name,
     type: formData.type,
     text: formData.text,
-    mark: formData.mark,
+    mark: Number(formData.mark),
     content,
   };
 }
