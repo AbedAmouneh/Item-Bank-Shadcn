@@ -76,5 +76,11 @@
         "just_now": "الآن",
         "minutes_ago": "منذ {{count}} دقيقة",
         "hours_ago": "منذ {{count}} ساعة"
+    },
+    "migration": {
+        "description": "جارٍ ترحيل بياناتك المحلية إلى الخادم، يرجى الانتظار...",
+        "progress": "جارٍ ترحيل السؤال {{current}} من {{total}}",
+        "error_title": "فشل الترحيل",
+        "retry": "إعادة المحاولة"
     }
 }

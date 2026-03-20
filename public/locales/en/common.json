@@ -76,5 +76,11 @@
         "just_now": "Just now",
         "minutes_ago": "{{count}} min ago",
         "hours_ago": "{{count}} hr ago"
+    },
+    "migration": {
+        "description": "Migrating your local data to the server, please wait...",
+        "progress": "Migrating question {{current}} of {{total}}",
+        "error_title": "Migration failed",
+        "retry": "Retry"
     }
 }

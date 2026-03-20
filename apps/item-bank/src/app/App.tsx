@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Outlet, Routes, Route } from 'react-router-dom';
 import {
   Login,
   ForgotPassword,
@@ -13,6 +13,7 @@ import i18n from '@item-bank/i18n';
 import Home from './pages/Home';
 import ProfileGeneral from './pages/profile/General';
 import ChangePassword from './pages/profile/ChangePassword';
+import MigrateToApi from '../db/MigrateToApi';
 
 const STORAGE_KEY_THEME = 'theme-mode';
 
@@ -34,11 +35,13 @@ export default function App() {
       <AppShell>
         <BrowserRouter>
           <Routes>
-            <Route element={<ProtectedRoute />} >
-              <Route path="/home" element={<Home />} />
-              <Route path='/profile' element={<ProfileSidebar />}>
-                <Route path='edit' element={<ProfileGeneral />} />
-                <Route path='change-password' element={<ChangePassword />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AuthenticatedLayout />}>
+                <Route path="/home" element={<Home />} />
+                <Route path='/profile' element={<ProfileSidebar />}>
+                  <Route path='edit' element={<ProfileGeneral />} />
+                  <Route path='change-password' element={<ChangePassword />} />
+                </Route>
               </Route>
             </Route>
 
@@ -52,6 +55,16 @@ export default function App() {
         </BrowserRouter>
       </AppShell>
     </ThemeModeProvider>
+  );
+}
+
+/** Sits inside ProtectedRoute's Outlet and runs the one-time migration. */
+function AuthenticatedLayout() {
+  return (
+    <>
+      <MigrateToApi />
+      <Outlet />
+    </>
   );
 }
 
