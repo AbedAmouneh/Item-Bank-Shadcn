@@ -31,3 +31,5 @@ export { getTags, createTag } from './tags';
 export type { Tag } from './tags';
 export { getProfile, updateProfile, changePassword } from './profile';
 export type { UserProfile, UpdateProfileData, ChangePasswordData } from './profile';
+export { getUsers, createUser, activateUser, deactivateUser } from './admin';
+export type { AdminUser, AdminUsersPage, GetUsersParams, CreateUserData } from './admin';

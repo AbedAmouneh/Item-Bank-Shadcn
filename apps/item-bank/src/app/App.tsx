@@ -13,6 +13,7 @@ import i18n from '@item-bank/i18n';
 import Home from './pages/Home';
 import ProfileGeneral from './pages/profile/General';
 import ChangePassword from './pages/profile/ChangePassword';
+import AdminUsers from './pages/admin/Users';
 import MigrateToApi from '../db/MigrateToApi';
 
 const STORAGE_KEY_THEME = 'theme-mode';
@@ -42,6 +43,7 @@ export default function App() {
                   <Route path='edit' element={<ProfileGeneral />} />
                   <Route path='change-password' element={<ChangePassword />} />
                 </Route>
+                <Route path='/admin/users' element={<AdminUsers />} />
               </Route>
             </Route>
 

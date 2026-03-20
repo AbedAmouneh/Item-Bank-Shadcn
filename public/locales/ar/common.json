@@ -12,7 +12,8 @@
         "projects": "المشاريع",
         "itemBank": "بنك العناصر",
         "analytics": "التحليلات",
-        "settings": "الإعدادات"
+        "settings": "الإعدادات",
+        "adminUsers": "الإدارة"
     },
     "table_actions": {
         "notifications": "الإشعارات",
@@ -83,6 +84,35 @@
         "just_now": "الآن",
         "minutes_ago": "منذ {{count}} دقيقة",
         "hours_ago": "منذ {{count}} ساعة"
+    },
+    "admin": {
+        "users": {
+            "title": "المستخدمون",
+            "create_user": "إنشاء مستخدم",
+            "email": "البريد الإلكتروني",
+            "password": "كلمة المرور",
+            "role": "الدور",
+            "status": "الحالة",
+            "last_login": "آخر تسجيل دخول",
+            "actions": "الإجراءات",
+            "activate": "تفعيل",
+            "deactivate": "تعطيل",
+            "active": "نشط",
+            "inactive": "غير نشط",
+            "role_admin": "مدير",
+            "role_user": "مستخدم",
+            "never": "لم يسجّل دخولاً",
+            "dialog_title": "إنشاء مستخدم",
+            "create_success": "تم إنشاء المستخدم بنجاح.",
+            "create_error": "فشل إنشاء المستخدم.",
+            "toggle_error": "فشل تحديث حالة المستخدم.",
+            "email_required": "البريد الإلكتروني مطلوب",
+            "email_invalid": "عنوان البريد الإلكتروني غير صحيح",
+            "password_required": "كلمة المرور مطلوبة",
+            "password_min": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+            "role_required": "الدور مطلوب",
+            "select_role": "اختر دوراً"
+        }
     },
     "migration": {
         "description": "جارٍ ترحيل بياناتك المحلية إلى الخادم، يرجى الانتظار...",

@@ -12,7 +12,8 @@
         "projects": "Projects",
         "itemBank": "Item Bank",
         "analytics": "Analytics",
-        "settings": "Settings"
+        "settings": "Settings",
+        "adminUsers": "Admin"
     },
     "table_actions": {
         "notifications": "Notifications",
@@ -83,6 +84,35 @@
         "just_now": "Just now",
         "minutes_ago": "{{count}} min ago",
         "hours_ago": "{{count}} hr ago"
+    },
+    "admin": {
+        "users": {
+            "title": "Users",
+            "create_user": "Create User",
+            "email": "Email",
+            "password": "Password",
+            "role": "Role",
+            "status": "Status",
+            "last_login": "Last Login",
+            "actions": "Actions",
+            "activate": "Activate",
+            "deactivate": "Deactivate",
+            "active": "Active",
+            "inactive": "Inactive",
+            "role_admin": "Admin",
+            "role_user": "User",
+            "never": "Never",
+            "dialog_title": "Create User",
+            "create_success": "User created successfully.",
+            "create_error": "Failed to create user.",
+            "toggle_error": "Failed to update user status.",
+            "email_required": "Email is required",
+            "email_invalid": "Invalid email address",
+            "password_required": "Password is required",
+            "password_min": "Password must be at least 8 characters",
+            "role_required": "Role is required",
+            "select_role": "Select a role"
+        }
     },
     "migration": {
         "description": "Migrating your local data to the server, please wait...",
