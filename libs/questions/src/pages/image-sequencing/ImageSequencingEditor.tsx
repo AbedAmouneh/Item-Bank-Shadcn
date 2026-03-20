@@ -3,6 +3,7 @@ import { GripVertical, Plus, Trash2, ImagePlus, AlertCircle, AlertTriangle } fro
 import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
 import { cn } from '@item-bank/ui';
+import { useImageUpload } from '../../domain/hooks/useImageUpload';
 
 type SequencingItem = {
   id: string;
@@ -26,18 +27,11 @@ function moveItem<T>(list: T[], from: number, to: number): T[] {
   return next;
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 function ImageSequencingEditor() {
   const { watch, setValue, register, unregister, getValues } = useFormContext();
   const { t, i18n } = useTranslation('questions');
+  const { uploadFile, isUploading } = useImageUpload();
+  const [itemUploadErrors, setItemUploadErrors] = useState<Record<string, string>>({});
 
   const watchedItems = watch('sequencingItems');
   const items: SequencingItem[] = useMemo(() => watchedItems ?? [], [watchedItems]);
@@ -137,13 +131,23 @@ function ImageSequencingEditor() {
   const handleImageChange = useCallback(
     async (id: string, file: File | null) => {
       if (!file?.type.startsWith('image/')) return;
-      const dataUrl = await fileToDataUrl(file);
-      setValue(
-        'sequencingItems',
-        items.map((it) => (it.id === id ? { ...it, image: dataUrl } : it))
-      );
+      setItemUploadErrors((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      try {
+        const url = await uploadFile(file);
+        setValue(
+          'sequencingItems',
+          items.map((it) => (it.id === id ? { ...it, image: url } : it))
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Image upload failed';
+        setItemUploadErrors((prev) => ({ ...prev, [id]: message }));
+      }
     },
-    [setValue, items]
+    [setValue, items, uploadFile]
   );
 
   const handleMarkChange = useCallback(
@@ -346,7 +350,8 @@ function ImageSequencingEditor() {
                       type="file"
                       accept="image/*"
                       aria-label={t('editor.browse')}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={isUploading}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                       onChange={(e) => {
                         const file = e.target.files?.[0] ?? null;
                         handleImageChange(item.id, file);
@@ -403,6 +408,10 @@ function ImageSequencingEditor() {
                       </span>
                     </div>
                   </div>
+
+                  {itemUploadErrors[item.id] && (
+                    <p className="text-xs text-destructive">{itemUploadErrors[item.id]}</p>
+                  )}
                 </div>
               </div>
             );

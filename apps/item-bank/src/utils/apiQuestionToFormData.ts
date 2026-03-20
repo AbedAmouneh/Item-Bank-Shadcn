@@ -240,6 +240,22 @@ function recordAudioFromApi(q: Question): QuestionFormData {
   };
 }
 
+function imageSequencingFromApi(q: Question): QuestionFormData {
+  return {
+    ...baseFields(q),
+    type: 'image_sequencing',
+    sequencingItems: a<Content>(q.content, 'items')
+      .slice()
+      .sort((x, y) => n(x, 'canonicalOrder') - n(y, 'canonicalOrder'))
+      .map((item) => ({
+        id: s(item, 'id', crypto.randomUUID()),
+        image: s(item, 'image'),
+        markPercent: n(item, 'markPercent'),
+      })),
+    autoDistributeMarks: b(q.content, 'autoDistributeMarks', true),
+  };
+}
+
 function fillInBlanksImageFromApi(q: Question): QuestionFormData {
   return {
     ...baseFields(q),
@@ -317,6 +333,8 @@ export function apiQuestionToFormData(q: Question): QuestionFormData | null {
       return dragDropTextFromApi(q);
     case 'fill_in_blanks_image':
       return fillInBlanksImageFromApi(q);
+    case 'image_sequencing':
+      return imageSequencingFromApi(q);
     default:
       return null;
   }
