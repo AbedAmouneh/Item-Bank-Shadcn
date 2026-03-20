@@ -52,7 +52,14 @@
         "confirm_password_required": "يرجى تأكيد كلمة المرور",
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
         "show_password": "إظهار كلمة المرور",
-        "hide_password": "إخفاء كلمة المرور"
+        "hide_password": "إخفاء كلمة المرور",
+        "loading": "جارٍ تحميل الملف الشخصي...",
+        "load_error": "فشل تحميل الملف الشخصي",
+        "save_success": "تم حفظ الملف الشخصي بنجاح.",
+        "save_error": "فشل حفظ الملف الشخصي.",
+        "saving": "جارٍ الحفظ...",
+        "password_change_success": "تم تغيير كلمة المرور بنجاح.",
+        "password_change_error": "فشل تغيير كلمة المرور."
     },
     "datagrid": {
         "columns": "الأعمدة",

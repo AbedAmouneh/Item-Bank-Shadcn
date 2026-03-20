@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as z from 'zod';
 import { User, ImagePlus, X, ChevronDown } from 'lucide-react';
 import {
@@ -13,6 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@item-bank/ui';
+import { getProfile, updateProfile } from '@item-bank/api';
 
 const createProfileSchema = (t: (key: string) => string) =>
   z.object({
@@ -31,29 +33,58 @@ type ProfileFormValues = {
   email: string;
 };
 
-const defaultValues: ProfileFormValues = {
-  firstName: '',
-  lastName: '',
-  username: 'john.smith',
-  phoneNumber: '',
-  email: 'johm.smith@sayeghonline.com',
-};
-
 const General = () => {
   const { t } = useTranslation('common');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [saveMenuOpen, setSaveMenuOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
+  const queryClient = useQueryClient();
   const profileSchema = createProfileSchema(t);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues,
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      username: '',
+      phoneNumber: '',
+      email: '',
+    },
+  });
+
+  const { data: profile, isLoading, isError } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+  });
+
+  // Populate form fields once the server data arrives.
+  useEffect(() => {
+    if (profile) {
+      reset({
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        username: profile.username,
+        phoneNumber: profile.phone_number,
+        email: profile.email,
+      });
+    }
+  }, [profile, reset]);
+
+  const { mutate: saveProfile, isPending, error: mutationError } = useMutation({
+    mutationFn: updateProfile,
+    onSuccess: (updated) => {
+      // Update cached profile so the form reflects the latest server state.
+      queryClient.setQueryData(['profile'], updated);
+      setSuccessMessage(t('profile.save_success'));
+      setSaveMenuOpen(false);
+    },
   });
 
   const handleAvatarClick = () => fileInputRef.current?.click();
@@ -83,8 +114,13 @@ const General = () => {
 
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
-  const onSave = handleSubmit((_data) => {
-    setSaveMenuOpen(false);
+  const onSave = handleSubmit((data) => {
+    setSuccessMessage('');
+    saveProfile({
+      first_name: data.firstName,
+      last_name: data.lastName,
+      phone_number: data.phoneNumber,
+    });
   });
 
   return (
@@ -99,184 +135,209 @@ const General = () => {
 
         <Separator className="mx-0" />
 
-        <div className="flex gap-8 mt-6 flex-wrap">
-          {/* Avatar upload zone */}
-          <div
-            className="cursor-pointer flex items-center justify-center relative w-[200px] h-[200px] shrink-0 rounded-full overflow-hidden transition-colors duration-200 bg-input border-2 border-dashed border-border hover:border-primary hover:bg-primary/[0.04] group"
-            onClick={handleAvatarClick}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            role="button"
-            aria-label={t('profile.upload_profile_picture')}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              aria-hidden
-            />
+        {isLoading && (
+          <p className="mt-6 text-sm text-muted-foreground">{t('profile.loading')}</p>
+        )}
 
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="absolute inset-0 w-full h-full object-cover"
+        {isError && (
+          <p className="mt-6 text-sm text-destructive">{t('profile.load_error')}</p>
+        )}
+
+        {!isLoading && (
+          <div className="flex gap-8 mt-6 flex-wrap">
+            {/* Avatar upload zone */}
+            <div
+              className="cursor-pointer flex items-center justify-center relative w-[200px] h-[200px] shrink-0 rounded-full overflow-hidden transition-colors duration-200 bg-input border-2 border-dashed border-border hover:border-primary hover:bg-primary/[0.04] group"
+              onClick={handleAvatarClick}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              role="button"
+              aria-label={t('profile.upload_profile_picture')}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                aria-hidden
               />
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-3 p-4">
-                <ImagePlus size={56} className="text-muted-foreground" />
-              </div>
-            )}
 
-            {profileImage && (
-              <button
-                type="button"
-                className="absolute top-2 end-2 z-10 w-8 h-8 p-1.5 rounded-lg bg-destructive text-white hover:bg-destructive/90 transition-colors flex items-center justify-center"
-                onClick={handleAvatarRemove}
-                aria-label={t('profile.remove_photo')}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <X size={16} />
-              </button>
-            )}
-
-            {/* Hover overlay — shown when hovering the zone */}
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 bg-background/85">
-              <ImagePlus size={48} className="text-muted-foreground" />
-              <p className="text-sm text-muted-foreground text-center px-2">
-                {t('profile.drag_and_drop')}
-              </p>
-              <Button
-                size="sm"
-                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  e.stopPropagation();
-                  handleAvatarClick();
-                }}
-              >
-                {t('profile.browse')}
-              </Button>
-            </div>
-          </div>
-
-          {/* Profile form */}
-          <form
-            className="flex-1 min-w-[280px] flex flex-col gap-5"
-            onSubmit={onSave}
-          >
-            {/* First name + last name row */}
-            <div className="flex gap-4 [&>*]:flex-1">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="firstName">{t('profile.first_name')}</Label>
-                <Input
-                  id="firstName"
-                  className="bg-input"
-                  aria-invalid={!!errors.firstName}
-                  {...register('firstName')}
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-                {errors.firstName && (
-                  <p className="text-sm text-destructive">
-                    {errors.firstName.message}
-                  </p>
-                )}
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 p-4">
+                  <ImagePlus size={56} className="text-muted-foreground" />
+                </div>
+              )}
 
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="lastName">{t('profile.last_name')}</Label>
-                <Input
-                  id="lastName"
-                  className="bg-input"
-                  aria-invalid={!!errors.lastName}
-                  {...register('lastName')}
-                />
-                {errors.lastName && (
-                  <p className="text-sm text-destructive">
-                    {errors.lastName.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="username">{t('profile.username')}</Label>
-              <Input
-                id="username"
-                className="bg-muted/50 disabled:opacity-50"
-                disabled
-                {...register('username')}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="phoneNumber">{t('profile.phone_number')}</Label>
-              <Input
-                id="phoneNumber"
-                className="bg-input"
-                {...register('phoneNumber')}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">{t('profile.email')}</Label>
-              <Input
-                id="email"
-                className="bg-muted/50 disabled:opacity-50"
-                disabled
-                {...register('email')}
-              />
-            </div>
-
-            <Separator className="mx-0" />
-
-            {/* Action row */}
-            <div className="flex items-center flex-wrap gap-3">
-              <Button type="button" variant="outline">
-                {t('profile.cancel')}
-              </Button>
-
-              {/* Split save button */}
-              <div className="flex">
-                <Button
-                  type="submit"
-                  className="rounded-e-none"
-                  onClick={onSave}
+              {profileImage && (
+                <button
+                  type="button"
+                  className="absolute top-2 end-2 z-10 w-8 h-8 p-1.5 rounded-lg bg-destructive text-white hover:bg-destructive/90 transition-colors flex items-center justify-center"
+                  onClick={handleAvatarRemove}
+                  aria-label={t('profile.remove_photo')}
+                  onMouseDown={(e) => e.stopPropagation()}
                 >
-                  {t('profile.save')}
+                  <X size={16} />
+                </button>
+              )}
+
+              {/* Hover overlay — shown when hovering the zone */}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 bg-background/85">
+                <ImagePlus size={48} className="text-muted-foreground" />
+                <p className="text-sm text-muted-foreground text-center px-2">
+                  {t('profile.drag_and_drop')}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.stopPropagation();
+                    handleAvatarClick();
+                  }}
+                >
+                  {t('profile.browse')}
                 </Button>
-                <Popover open={saveMenuOpen} onOpenChange={setSaveMenuOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      className="rounded-s-none border-s border-s-primary-foreground/30 px-2"
-                      aria-haspopup="true"
-                      aria-expanded={saveMenuOpen}
-                      aria-label={t('profile.save_options')}
-                    >
-                      <ChevronDown size={16} />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-48 p-1">
-                    <button
-                      type="button"
-                      className="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      onClick={() => setSaveMenuOpen(false)}
-                    >
-                      {t('profile.save_and_continue')}
-                    </button>
-                    <button
-                      type="button"
-                      className="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      onClick={() => setSaveMenuOpen(false)}
-                    >
-                      {t('profile.save_and_close')}
-                    </button>
-                  </PopoverContent>
-                </Popover>
               </div>
             </div>
-          </form>
-        </div>
+
+            {/* Profile form */}
+            <form
+              className="flex-1 min-w-[280px] flex flex-col gap-5"
+              onSubmit={onSave}
+            >
+              {/* First name + last name row */}
+              <div className="flex gap-4 [&>*]:flex-1">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="firstName">{t('profile.first_name')}</Label>
+                  <Input
+                    id="firstName"
+                    className="bg-input"
+                    aria-invalid={!!errors.firstName}
+                    {...register('firstName')}
+                  />
+                  {errors.firstName && (
+                    <p className="text-sm text-destructive">
+                      {errors.firstName.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="lastName">{t('profile.last_name')}</Label>
+                  <Input
+                    id="lastName"
+                    className="bg-input"
+                    aria-invalid={!!errors.lastName}
+                    {...register('lastName')}
+                  />
+                  {errors.lastName && (
+                    <p className="text-sm text-destructive">
+                      {errors.lastName.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="username">{t('profile.username')}</Label>
+                <Input
+                  id="username"
+                  className="bg-muted/50 disabled:opacity-50"
+                  disabled
+                  {...register('username')}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="phoneNumber">{t('profile.phone_number')}</Label>
+                <Input
+                  id="phoneNumber"
+                  className="bg-input"
+                  {...register('phoneNumber')}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="email">{t('profile.email')}</Label>
+                <Input
+                  id="email"
+                  className="bg-muted/50 disabled:opacity-50"
+                  disabled
+                  {...register('email')}
+                />
+              </div>
+
+              {mutationError && (
+                <p className="text-sm text-destructive">
+                  {mutationError instanceof Error
+                    ? mutationError.message
+                    : t('profile.save_error')}
+                </p>
+              )}
+
+              {successMessage && (
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  {successMessage}
+                </p>
+              )}
+
+              <Separator className="mx-0" />
+
+              {/* Action row */}
+              <div className="flex items-center flex-wrap gap-3">
+                <Button type="button" variant="outline" onClick={() => reset()}>
+                  {t('profile.cancel')}
+                </Button>
+
+                {/* Split save button */}
+                <div className="flex">
+                  <Button
+                    type="submit"
+                    className="rounded-e-none"
+                    disabled={isPending}
+                  >
+                    {isPending ? t('profile.saving') : t('profile.save')}
+                  </Button>
+                  <Popover open={saveMenuOpen} onOpenChange={setSaveMenuOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        className="rounded-s-none border-s border-s-primary-foreground/30 px-2"
+                        disabled={isPending}
+                        aria-haspopup="true"
+                        aria-expanded={saveMenuOpen}
+                        aria-label={t('profile.save_options')}
+                      >
+                        <ChevronDown size={16} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-48 p-1">
+                      <button
+                        type="button"
+                        className="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        onClick={onSave}
+                      >
+                        {t('profile.save_and_continue')}
+                      </button>
+                      <button
+                        type="button"
+                        className="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        onClick={onSave}
+                      >
+                        {t('profile.save_and_close')}
+                      </button>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

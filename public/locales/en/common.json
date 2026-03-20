@@ -52,7 +52,14 @@
         "confirm_password_required": "Please confirm your password",
         "passwords_do_not_match": "Passwords don't match",
         "show_password": "Show password",
-        "hide_password": "Hide password"
+        "hide_password": "Hide password",
+        "loading": "Loading profile...",
+        "load_error": "Failed to load profile",
+        "save_success": "Profile saved successfully.",
+        "save_error": "Failed to save profile.",
+        "saving": "Saving...",
+        "password_change_success": "Password changed successfully.",
+        "password_change_error": "Failed to change password."
     },
     "datagrid": {
         "columns": "Columns",
