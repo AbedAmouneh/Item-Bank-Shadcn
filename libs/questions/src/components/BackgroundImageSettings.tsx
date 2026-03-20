@@ -4,18 +4,10 @@ import { useFormContext } from 'react-hook-form';
 import { Input } from '@item-bank/ui';
 import { ImagePlus, Trash2 } from 'lucide-react';
 import { cn } from '@item-bank/ui';
+import { useImageUpload } from '../domain/hooks/useImageUpload';
 
 const IMAGE_PREVIEW_WIDTH = 480;
 const IMAGE_PREVIEW_HEIGHT = 360;
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
 
 export default function BackgroundImageSettings() {
   const { t } = useTranslation('questions');
@@ -25,6 +17,7 @@ export default function BackgroundImageSettings() {
     formState: { errors },
   } = useFormContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading, error: uploadError } = useImageUpload();
 
   const enableBackgroundImage = watch('enableBackgroundImage') ?? true;
   const canvasWidth = watch('canvasWidth');
@@ -48,13 +41,13 @@ export default function BackgroundImageSettings() {
     async (file: File | null) => {
       if (!file?.type.startsWith('image/')) return;
       try {
-        const dataUrl = await fileToDataUrl(file);
-        setValue('background_image', dataUrl);
-      } catch (err) {
-        console.error('Failed to read image', err);
+        const url = await uploadFile(file);
+        setValue('background_image', url);
+      } catch {
+        // uploadError state is set by the hook for reactive UI
       }
     },
-    [setValue]
+    [setValue, uploadFile]
   );
 
   const handleFileChange = useCallback(
@@ -172,37 +165,46 @@ export default function BackgroundImageSettings() {
           <div
             className={cn(
               'border-2 border-dashed rounded-2xl p-8 flex flex-col items-center gap-3 cursor-pointer transition-colors duration-200',
-              dragOver
-                ? 'border-primary bg-primary/[0.05]'
-                : 'border-border bg-muted/30 hover:border-primary/50'
+              isUploading
+                ? 'pointer-events-none opacity-60 border-border bg-muted/30'
+                : dragOver
+                  ? 'border-primary bg-primary/[0.05]'
+                  : 'border-border bg-muted/30 hover:border-primary/50'
             )}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => !isUploading && fileInputRef.current?.click()}
           >
             <input
               ref={fileInputRef}
               className="hidden"
               type="file"
               accept="image/*"
+              disabled={isUploading}
               onChange={handleFileChange}
             />
             <ImagePlus size={32} className="text-muted-foreground" />
-            <p className="text-sm text-muted-foreground text-center">{t('editor.drag_and_drop')}</p>
+            <p className="text-sm text-muted-foreground text-center">
+              {isUploading ? t('editor.uploading') : t('editor.drag_and_drop')}
+            </p>
 
             <button
               type="button"
+              disabled={isUploading}
               onClick={(e) => {
                 e.stopPropagation();
                 fileInputRef.current?.click();
               }}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ImagePlus size={15} />
               {t('editor.browse')}
             </button>
           </div>
+          {uploadError && (
+            <p className="text-sm text-destructive">{uploadError}</p>
+          )}
         </>
       ) : (
         <div className="flex flex-wrap gap-4">

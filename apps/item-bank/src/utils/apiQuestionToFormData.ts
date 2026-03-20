@@ -240,6 +240,18 @@ function recordAudioFromApi(q: Question): QuestionFormData {
   };
 }
 
+function freeHandDrawingFromApi(q: Question): QuestionFormData {
+  const backgroundImage = s(q.content, 'background_image') || null;
+  return {
+    ...baseFields(q),
+    type: 'free_hand_drawing',
+    enableBackgroundImage: backgroundImage !== null,
+    canvasWidth: n(q.content, 'canvas_width', 800),
+    canvasHeight: n(q.content, 'canvas_height', 600),
+    background_image: backgroundImage,
+  };
+}
+
 function imageSequencingFromApi(q: Question): QuestionFormData {
   return {
     ...baseFields(q),
@@ -335,6 +347,8 @@ export function apiQuestionToFormData(q: Question): QuestionFormData | null {
       return fillInBlanksImageFromApi(q);
     case 'image_sequencing':
       return imageSequencingFromApi(q);
+    case 'free_hand_drawing':
+      return freeHandDrawingFromApi(q);
     default:
       return null;
   }
