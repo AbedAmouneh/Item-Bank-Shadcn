@@ -240,6 +240,32 @@ function recordAudioFromApi(q: Question): QuestionFormData {
   };
 }
 
+function imageClassificationFromApi(q: Question): QuestionFormData {
+  return {
+    ...baseFields(q),
+    type: 'image_classification',
+    imageClassificationCategories: a<Content>(q.content, 'categories').map((cat) => ({
+      id: s(cat, 'id', crypto.randomUUID()),
+      name: s(cat, 'name'),
+      color: s(cat, 'color', 'blue'),
+      answers: a<Content>(cat, 'answers').map((ans) => ({
+        id: s(ans, 'id', crypto.randomUUID()),
+        imageUrl: s(ans, 'imageUrl'),
+        feedback: s(ans, 'feedback'),
+        markPercent: n(ans, 'markPercent'),
+      })),
+    })),
+    textClassificationLayout: s(q.content, 'layout', 'columns') as QuestionFormData['textClassificationLayout'],
+    textClassificationAutoDistribute: b(q.content, 'autoDistribute', true),
+    textClassificationJustification: s(
+      q.content,
+      'justification',
+      'disabled'
+    ) as QuestionFormData['textClassificationJustification'],
+    textClassificationJustificationFraction: n(q.content, 'justificationFraction', 30),
+  };
+}
+
 function dragDropImageFromApi(q: Question): QuestionFormData {
   return {
     ...baseFields(q),
@@ -410,6 +436,8 @@ export function apiQuestionToFormData(q: Question): QuestionFormData | null {
       return multipleHotspotsFromApi(q);
     case 'drag_drop_image':
       return dragDropImageFromApi(q);
+    case 'image_classification':
+      return imageClassificationFromApi(q);
     default:
       return null;
   }

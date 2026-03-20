@@ -13,6 +13,7 @@ import {
   cn,
 } from '@item-bank/ui';
 import type { QuestionFormData } from '../../components/QuestionEditorShell';
+import { useImageUpload } from '../../domain/hooks/useImageUpload';
 
 type TextClassificationColor =
   | 'blue' | 'orange' | 'green' | 'red'
@@ -35,18 +36,10 @@ const JUSTIFICATION_FRACTION_OPTIONS = [
   100, 90, 80, 75, 70, 60, 50, 40, 33.3, 30, 25, 20, 15, 10, 5, 0,
 ];
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 function ImageClassificationEditor() {
   const { watch, setValue, formState: { isSubmitted } } = useFormContext<QuestionFormData>();
   const { t, i18n } = useTranslation(['questions', 'common']);
+  const { uploadFile, isUploading } = useImageUpload();
 
   // Determine dark mode from document class list
   const isDarkMode = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
@@ -173,7 +166,6 @@ function ImageClassificationEditor() {
 
   const handleFileDrop = useCallback(
     async (catIndex: number, ansIndex: number, file: File, answerId: string) => {
-      // Clear previous error
       setAnswerErrors(prev => ({ ...prev, [answerId]: '' }));
 
       if (!file.type.startsWith('image/')) {
@@ -191,17 +183,14 @@ function ImageClassificationEditor() {
         return;
       }
       try {
-        const dataUrl = await fileToDataUrl(file);
-        updateAnswer(catIndex, ansIndex, 'imageUrl', dataUrl);
+        const cdnUrl = await uploadFile(file);
+        updateAnswer(catIndex, ansIndex, 'imageUrl', cdnUrl);
       } catch (err) {
-        // File reading failed — surface error to user via state
-        setAnswerErrors(prev => ({
-          ...prev,
-          [answerId]: t('editor.image_classification.error_invalid_file_type'),
-        }));
+        const message = err instanceof Error ? err.message : 'Image upload failed';
+        setAnswerErrors(prev => ({ ...prev, [answerId]: message }));
       }
     },
-    [t, updateAnswer],
+    [t, updateAnswer, uploadFile],
   );
 
   const feedbackEditorInit = useMemo(
@@ -483,6 +472,7 @@ function ImageClassificationEditor() {
                       type="file"
                       accept="image/*"
                       className="hidden"
+                      disabled={isUploading}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) handleFileDrop(catIndex, ansIndex, file, answer.id);

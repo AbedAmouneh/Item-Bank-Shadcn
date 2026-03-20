@@ -82,6 +82,7 @@ const API_MIGRATED_TYPES = new Set<string>([
   'free_hand_drawing',
   'multiple_hotspots',
   'drag_drop_image',
+  'image_classification',
 ]);
 
 /** Convert an API Question to the QuestionRow shape expected by QuestionsTable. */
@@ -161,10 +162,7 @@ const Home = () => {
             console.error('Question not found in IndexedDB:', row.id);
             return;
           }
-          if (
-            storedQuestion.type === 'fill_in_blanks' ||
-            storedQuestion.type === 'image_classification'
-          ) {
+          if (storedQuestion.type === 'fill_in_blanks') {
             const formData = storedToFormData(storedQuestion);
             selectedQuestionType.current = formData.type;
             questionToEditId.current = row.id;
