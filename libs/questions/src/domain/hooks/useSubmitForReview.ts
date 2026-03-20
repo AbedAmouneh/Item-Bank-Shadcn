@@ -15,6 +15,7 @@ export function useSubmitForReview() {
     mutationFn: (id: number) => submitForReview(id),
     onSuccess: (_data, id) => {
       void queryClient.invalidateQueries({ queryKey: ['questions', id] });
+      void queryClient.invalidateQueries({ queryKey: ['questions'] });
     },
   });
 }
