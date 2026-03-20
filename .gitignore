@@ -50,3 +50,7 @@ coverage/
 # Misc
 *.pem
 .worktrees/
+*.md
+!CLAUDE.md
+*.txt
+vite.config.simple.mts
