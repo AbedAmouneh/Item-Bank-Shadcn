@@ -8,11 +8,13 @@ import {
   type QuestionChoice,
   QuestionViewShell,
   type QuestionRow,
+  useQuestions,
+  useDeleteQuestion,
 } from '@item-bank/questions';
-import { putQuestion, getQuestions, deleteQuestion, getQuestionById } from '../../db/db';
-import { storedToRow } from '../../utils/questionConverters';
+import { putQuestion, getQuestionById } from '../../db/db';
 import { createStoredQuestion } from '../../utils/questionFactory';
 import { storedToFormData } from '../../utils/questionToFormData';
+import { normalizeStatus, formatLastModified } from '../../utils/questionUtils';
 
 type SnackbarSeverity = 'success' | 'error' | 'info' | 'warning';
 
@@ -87,8 +89,28 @@ function rowToFormData(row: QuestionRow): QuestionFormData | null {
   return null;
 }
 
+/** Convert an API Question to the QuestionRow shape expected by QuestionsTable. */
+function apiToRow(q: {
+  id: number;
+  name: string;
+  type: string;
+  text?: string;
+  mark?: number;
+  status: string;
+  updated_at?: string;
+}): QuestionRow {
+  return {
+    id: q.id,
+    type: q.type as QuestionType,
+    questionName: q.name,
+    mark: q.mark ?? 0,
+    status: normalizeStatus(q.status),
+    lastModified: q.updated_at ? formatLastModified(q.updated_at) : '',
+    question_text: q.text ?? '',
+  };
+}
+
 const Home = () => {
-  const [questions, setQuestions] = useState<QuestionRow[]>([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [questionViewOpen, setQuestionViewOpen] = useState(false);
   const [questionToEdit, setQuestionToEdit] = useState<QuestionRow | null>(null);
@@ -101,20 +123,11 @@ const Home = () => {
   const selectedQuestion = useRef<QuestionRow | null>(null);
   const questionToEditId = useRef<string | number | null>(null);
 
-  const loadQuestions = useCallback(() => {
-    getQuestions()
-      .then((stored) => setQuestions(stored.map(storedToRow)))
-      .catch((err) => {
-        console.error('Failed to load questions from IndexedDB', err);
-        setSnackbarSeverity('error');
-        setSnackbarMessage('Failed to load questions.');
-        setSnackbarOpen(true);
-      });
-  }, []);
+  // Fetch the question list from the REST API.
+  const { data: questionsPage, isError } = useQuestions();
+  const questions: QuestionRow[] = (questionsPage?.items ?? []).map(apiToRow);
 
-  useEffect(() => {
-    loadQuestions();
-  }, [loadQuestions]);
+  const { mutate: deleteQuestionMutate } = useDeleteQuestion();
 
   const handleQuestionTypeChange = useCallback((questionType: QuestionType) => {
     setQuestionToEdit(null);
@@ -154,12 +167,10 @@ const Home = () => {
           storedQuestion.type === 'image_classification' ||
           storedQuestion.type === 'matching'
         ) {
-          // Use storedToFormData for new types, rowToFormData for legacy types
           let formData: QuestionFormData | null = null;
           if (storedQuestion.type === 'true_false' || storedQuestion.type === 'short_answer') {
             formData = rowToFormData(row);
           } else {
-            // text_sequencing, image_sequencing, multiple_choice, essay, fill_in_blanks, free_hand_drawing, record_audio use storedToFormData
             formData = storedToFormData(storedQuestion);
           }
 
@@ -190,7 +201,6 @@ const Home = () => {
 
         putQuestion(storedQuestion)
           .then(() => {
-            loadQuestions();
             setQuestionToEdit(null);
             setEditorMode('create');
             questionToEditId.current = null;
@@ -207,14 +217,8 @@ const Home = () => {
             setSnackbarOpen(true);
           });
       } else if (questionData.type === 'text_sequencing') {
-        // Factory validation failed — RHF should have blocked submission,
-        // but as a safety net we stay in the editor rather than silently
-        // discarding the user's data.
         console.error('Text sequencing factory validation failed — keeping editor open');
       } else if (questionData.type === 'image_sequencing') {
-        // Factory validation failed — RHF should have blocked submission,
-        // but as a safety net we stay in the editor rather than silently
-        // discarding the user's data.
         console.error('Image sequencing factory validation failed — keeping editor open');
       } else if (questionData.type === 'highlight_correct_word') {
         console.error('Highlight correct word factory validation failed — keeping editor open');
@@ -235,7 +239,7 @@ const Home = () => {
         setIsEditorOpen(false);
       }
     },
-    [loadQuestions, editorMode]
+    [editorMode]
   );
 
   const closeEditor = useCallback(() => {
@@ -253,25 +257,27 @@ const Home = () => {
 
   const handleDeleteQuestion = useCallback(
     (row: QuestionRow) => {
-      deleteQuestion(String(row.id))
-        .then(() => {
-          loadQuestions();
+      deleteQuestionMutate(row.id as number, {
+        onSuccess: () => {
           setSnackbarSeverity('success');
           setSnackbarMessage('Question deleted successfully.');
           setSnackbarOpen(true);
-        })
-        .catch((err) => {
-          console.error('Failed to delete question from IndexedDB', err);
+        },
+        onError: () => {
           setSnackbarSeverity('error');
           setSnackbarMessage('Failed to delete question.');
           setSnackbarOpen(true);
-        });
+        },
+      });
     },
-    [loadQuestions]
+    [deleteQuestionMutate]
   );
 
   return (
     <div className="w-full">
+      {isError && (
+        <p className="text-destructive">Failed to load questions</p>
+      )}
       <QuestionsTable
         questions={questions}
         onQuestionTypeChange={handleQuestionTypeChange}
