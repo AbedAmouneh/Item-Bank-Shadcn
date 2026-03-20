@@ -10,6 +10,7 @@ import {
 import { memo, useCallback, useMemo, useRef, useState } from 'react'
 import type { GetQuestionsParams } from '@item-bank/api'
 import { type QuestionType } from '../domain/types'
+import { useSubmitForReview } from '../domain'
 import AddQuestionModal from './AddQuestionModal'
 import {
   useReactTable,
@@ -189,6 +190,7 @@ type QuestionsTableProps = {
   handleQuestionViewOpen?: (row: QuestionRow) => void
   onEditQuestion?: (row: QuestionRow) => void
   onDeleteQuestion?: (row: QuestionRow) => void
+  onSubmitForReview?: (id: number) => void
   /** Active filter params forwarded to the export URL so the download respects the current view. */
   exportParams?: GetQuestionsParams
 }
@@ -255,8 +257,9 @@ const STATUS_COLORS: Record<QuestionStatus, string> = {
   'In Review': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
 }
 
-const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionViewOpen, onEditQuestion, onDeleteQuestion, exportParams }: QuestionsTableProps) => {
+const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionViewOpen, onEditQuestion, onDeleteQuestion, onSubmitForReview, exportParams }: QuestionsTableProps) => {
   const { t } = useTranslation('questions')
+  const submitForReview = useSubmitForReview()
 
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [rowMenuOpen, setRowMenuOpen] = useState<string | null>(null)
@@ -300,6 +303,14 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
     setDeleteDialogOpen(false)
     setQuestionToDelete(null)
   }, [questionToDelete, onDeleteQuestion])
+
+  const submitForReviewAction = useCallback(() => {
+    if (!selectedRow.current) return
+    const id = Number(selectedRow.current.id)
+    submitForReview.mutate(id)
+    onSubmitForReview?.(id)
+    closeRowMenu()
+  }, [submitForReview, onSubmitForReview, closeRowMenu])
 
   const columns = useMemo<ColumnDef<QuestionRow>[]>(
     () => [
@@ -402,6 +413,14 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
                   >
                     {t('edit')}
                   </DropdownMenuPrimitive.Item>
+                  {row.original.status === 'Draft' && (
+                    <DropdownMenuPrimitive.Item
+                      className="px-3 py-2 rounded-lg cursor-pointer text-foreground hover:bg-muted outline-none"
+                      onSelect={submitForReviewAction}
+                    >
+                      {t('submit_for_review')}
+                    </DropdownMenuPrimitive.Item>
+                  )}
                   <DropdownMenuPrimitive.Item
                     className="px-3 py-2 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 outline-none"
                     onSelect={openDeleteDialog}
@@ -415,7 +434,7 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
         ),
       },
     ],
-    [t, rowMenuOpen, openRowMenu, closeRowMenu, viewQuestion, openEdit, openDeleteDialog]
+    [t, rowMenuOpen, openRowMenu, closeRowMenu, viewQuestion, openEdit, openDeleteDialog, submitForReviewAction]
   )
 
   const table = useReactTable({
