@@ -21,6 +21,7 @@ import {
 } from '@item-bank/ui';
 import { createEmptyAnswer } from '../../domain/factory';
 import type { AnswerEntry } from '../../domain/types';
+import { useImageUpload } from '../../domain/hooks/useImageUpload';
 
 type TextInputArea = {
   id: string;
@@ -38,18 +39,10 @@ const ACTION_BUTTON_OFFSET_Y = 10;
 const DEFAULT_ZONE_WIDTH = 140;
 const DEFAULT_ZONE_HEIGHT = 36;
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function FillInBlanksImageEditor() {
   const { t } = useTranslation('questions');
   const { watch, setValue } = useFormContext();
+  const { uploadFile, isUploading, error: uploadError } = useImageUpload();
 
   const background_image: string | null = watch('background_image') ?? null;
   const savedInputAreas: TextInputArea[] | undefined = watch('inputAreas');
@@ -221,14 +214,14 @@ export default function FillInBlanksImageEditor() {
     async (file: File | null) => {
       if (!file?.type.startsWith('image/')) return;
       try {
-        const dataUrl = await fileToDataUrl(file);
-        setValue('background_image', dataUrl);
+        const url = await uploadFile(file);
+        setValue('background_image', url);
         setInputAreas([]);
       } catch {
-        // silent failure — the image simply won't be set
+        // uploadError state is set by the hook for reactive UI
       }
     },
-    [setValue]
+    [setValue, uploadFile]
   );
 
   const handleFileChange = useCallback(
@@ -264,14 +257,13 @@ export default function FillInBlanksImageEditor() {
         <div
           className={cn(
             'cursor-pointer min-h-[160px] flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors',
-            dragOver
-              ? 'border-primary bg-accent'
-              : 'border-border bg-muted/40'
+            isUploading ? 'pointer-events-none opacity-60 border-border bg-muted/40' :
+            dragOver ? 'border-primary bg-accent' : 'border-border bg-muted/40'
           )}
           onDrop={handleDrop}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !isUploading && fileInputRef.current?.click()}
         >
           <input
             ref={fileInputRef}
@@ -279,19 +271,24 @@ export default function FillInBlanksImageEditor() {
             type="file"
             accept="image/*"
             onChange={handleFileChange}
+            disabled={isUploading}
           />
           <ImagePlus className="w-12 h-12 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            {t('editor.drag_and_drop')}
+            {isUploading ? t('editor.uploading') : t('editor.drag_and_drop')}
           </p>
           <Button
             type="button"
             size="sm"
+            disabled={isUploading}
             onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
           >
             {t('editor.browse')}
           </Button>
         </div>
+        {uploadError && (
+          <p className="text-sm text-destructive">{uploadError}</p>
+        )}
       </div>
     );
   }

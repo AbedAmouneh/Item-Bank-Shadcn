@@ -77,6 +77,7 @@ const API_MIGRATED_TYPES = new Set<string>([
   'matching',
   'record_audio',
   'drag_drop_text',
+  'fill_in_blanks_image',
 ]);
 
 /** Convert an API Question to the QuestionRow shape expected by QuestionsTable. */
@@ -158,7 +159,6 @@ const Home = () => {
           }
           if (
             storedQuestion.type === 'fill_in_blanks' ||
-            storedQuestion.type === 'fill_in_blanks_image' ||
             storedQuestion.type === 'image_sequencing' ||
             storedQuestion.type === 'free_hand_drawing' ||
             storedQuestion.type === 'multiple_hotspots' ||
