@@ -68,6 +68,27 @@ export async function getMe(): Promise<ApiUser> {
   return envelope.data;
 }
 
+/** Shape of the data payload returned by POST /account/refresh. */
+interface RefreshTokenData {
+  csrf_token: string;
+}
+
+/**
+ * Obtain a fresh CSRF token for the current session.
+ *
+ * The httpOnly JWT cookie is long-lived, but the CSRF token only exists in
+ * JavaScript memory and is lost whenever the page is refreshed. Call this
+ * after restoring a session from the cookie (e.g. on app boot) so that
+ * subsequent mutating requests carry a valid CSRF header.
+ */
+export async function refreshToken(): Promise<void> {
+  const envelope = await apiRequest<Envelope<RefreshTokenData>>(
+    '/account/refresh',
+    { method: 'POST' },
+  );
+  setCsrfToken(envelope.data.csrf_token);
+}
+
 /**
  * Sign the current user out.
  *
