@@ -194,10 +194,7 @@ type QuestionsTableProps = {
 }
 
 /**
- * Constructs a download URL for the questions export endpoint.
- *
- * Appends the chosen format plus any active filter params so the server
- * exports exactly what the user is currently looking at.
+ * Constructs the export URL with active filter params.
  */
 function buildExportUrl(format: 'xlsx' | 'pdf', params?: GetQuestionsParams): string {
   const base = import.meta.env.VITE_API_BASE_URL as string;
@@ -207,6 +204,27 @@ function buildExportUrl(format: 'xlsx' | 'pdf', params?: GetQuestionsParams): st
   if (params?.item_bank_id !== undefined) query.set('item_bank_id', String(params.item_bank_id));
   if (params?.search) query.set('search', params.search);
   return `${base}/questions/export?${query.toString()}`;
+}
+
+/**
+ * Downloads the export file using fetch + Blob so that the auth cookie is
+ * sent correctly on cross-origin requests (frontend port 4200 → API port 3000).
+ * window.location.href navigation does not reliably forward httpOnly cookies
+ * across different ports, causing 503 auth failures.
+ */
+async function downloadExport(format: 'xlsx' | 'pdf', params?: GetQuestionsParams): Promise<void> {
+  const url = buildExportUrl(format, params);
+  const res = await fetch(url, { credentials: 'include' });
+  if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = format === 'xlsx' ? 'questions.xlsx' : 'questions.pdf';
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(objectUrl);
 }
 
 const TYPE_COLORS: Record<QuestionType, string> = {
@@ -433,12 +451,12 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onSelect={() => { window.location.href = buildExportUrl('xlsx', exportParams); }}
+                onSelect={() => { void downloadExport('xlsx', exportParams); }}
               >
                 {t('export_excel')}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onSelect={() => { window.location.href = buildExportUrl('pdf', exportParams); }}
+                onSelect={() => { void downloadExport('pdf', exportParams); }}
               >
                 {t('export_pdf')}
               </DropdownMenuItem>
