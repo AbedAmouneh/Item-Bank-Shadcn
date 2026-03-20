@@ -4,6 +4,39 @@ worktree-dir: .worktrees/
 
 ---
 
+## Who is reading this code
+
+The developer working on this project is learning both frontend and backend
+development. They have basic JavaScript knowledge but rely on Claude for
+most of the implementation.
+
+---
+
+## Teaching rule — ALWAYS follow this
+
+Before writing or editing any file, explain what you are about to do in
+plain English. Keep it short — 2 to 4 sentences maximum. Use a simple
+analogy if the concept is abstract. Then write the code.
+
+After finishing a file, add one sentence saying what role it plays in the
+bigger picture (e.g. "This hook is the bridge — the component asks it for
+data, and it handles all the API communication behind the scenes.").
+
+**Never use a technical term without explaining it the first time it appears.**
+
+Example of the format to follow:
+
+> "I'm about to create the AuthContext. Think of it as a backpack the whole
+> app carries around — once you log in, your user info goes into the backpack,
+> and any component can reach in and grab it without asking the server again."
+> [writes the code]
+> "This context sits at the top of the app so every component below it can
+> read the current user without any extra work."
+
+---
+
+---
+
 ## Stack
 
 - **Monorepo**: Nx v22
