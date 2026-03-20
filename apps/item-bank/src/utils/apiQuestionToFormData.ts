@@ -32,7 +32,7 @@ function baseFields(q: Question): Pick<QuestionFormData, 'id' | 'name' | 'mark' 
   return {
     id: String(q.id),
     name: q.name,
-    mark: q.mark ?? 0,
+    mark: Number(q.mark ?? 0),
     text: q.text ?? '',
   };
 }
