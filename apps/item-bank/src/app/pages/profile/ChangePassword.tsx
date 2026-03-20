@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import * as z from 'zod';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { Button, Input, Label, Separator } from '@item-bank/ui';
+import { changePassword } from '@item-bank/api';
 
 const createChangePasswordSchema = (t: (key: string) => string) =>
   z
@@ -39,20 +41,36 @@ const ChangePassword = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const changePasswordSchema = createChangePasswordSchema(t);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues,
   });
 
-  const onSave = handleSubmit((_data) => {
-    // Password change handled via API mutation
+  const { mutate: submitPasswordChange, isPending, error: mutationError } = useMutation({
+    mutationFn: (data: ChangePasswordFormValues) =>
+      changePassword({
+        current_password: data.currentPassword,
+        new_password: data.newPassword,
+        confirm_password: data.confirmPassword,
+      }),
+    onSuccess: () => {
+      reset();
+      setSuccessMessage(t('profile.password_change_success'));
+    },
+  });
+
+  const onSave = handleSubmit((data) => {
+    setSuccessMessage('');
+    submitPasswordChange(data);
   });
 
   return (
@@ -170,11 +188,27 @@ const ChangePassword = () => {
             )}
           </div>
 
+          {mutationError && (
+            <p className="text-sm text-destructive">
+              {mutationError instanceof Error
+                ? mutationError.message
+                : t('profile.password_change_error')}
+            </p>
+          )}
+
+          {successMessage && (
+            <p className="text-sm text-green-600 dark:text-green-400">
+              {successMessage}
+            </p>
+          )}
+
           <div className="flex items-center gap-3 flex-wrap justify-end">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={() => reset()}>
               {t('profile.cancel')}
             </Button>
-            <Button type="submit">{t('profile.save')}</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? t('profile.saving') : t('profile.save')}
+            </Button>
           </div>
         </form>
       </div>
