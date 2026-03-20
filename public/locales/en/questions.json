@@ -483,5 +483,6 @@
   "no_questions": "No questions found",
   "export": "Export",
   "export_excel": "Export to Excel",
-  "export_pdf": "Export to PDF"
+  "export_pdf": "Export to PDF",
+  "submit_for_review": "Submit for Review"
 }
