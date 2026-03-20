@@ -240,6 +240,38 @@ function recordAudioFromApi(q: Question): QuestionFormData {
   };
 }
 
+function dragDropImageFromApi(q: Question): QuestionFormData {
+  return {
+    ...baseFields(q),
+    type: 'drag_drop_image',
+    background_image: s(q.content, 'background_image'),
+    dragDropImageItems: a<Content>(q.content, 'dragDropImageItems').map((item) => ({
+      id: s(item, 'id', crypto.randomUUID()),
+      itemType: s(item, 'itemType', 'text') as 'text' | 'image',
+      answer: s(item, 'answer'),
+      image: s(item, 'image') || undefined,
+      groupId: s(item, 'groupId'),
+      markPercent: n(item, 'markPercent'),
+      unlimitedReuse: b(item, 'unlimitedReuse'),
+      zones: a<Content>(item, 'zones').map((z) => ({
+        id: s(z, 'id', crypto.randomUUID()),
+        left: n(z, 'left'),
+        top: n(z, 'top'),
+        width: n(z, 'width', 80),
+        height: n(z, 'height', 36),
+      })),
+    })),
+    dragDropImageGroups: a<Content>(q.content, 'dragDropImageGroups').map((g) => ({
+      id: s(g, 'id', crypto.randomUUID()),
+      name: s(g, 'name'),
+      color: s(g, 'color'),
+    })),
+    autoDistributeMarks: b(q.content, 'autoDistributeMarks', true),
+    justificationMode: s(q.content, 'justificationMode', 'disabled') as QuestionFormData['justificationMode'],
+    justificationFraction: n(q.content, 'justificationFraction', 20),
+  };
+}
+
 function multipleHotspotsFromApi(q: Question): QuestionFormData {
   return {
     ...baseFields(q),
@@ -376,6 +408,8 @@ export function apiQuestionToFormData(q: Question): QuestionFormData | null {
       return freeHandDrawingFromApi(q);
     case 'multiple_hotspots':
       return multipleHotspotsFromApi(q);
+    case 'drag_drop_image':
+      return dragDropImageFromApi(q);
     default:
       return null;
   }

@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { cn, Input, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@item-bank/ui';
 import JustificationInput from '../../components/JustificationInput';
 import type { QuestionFormData } from '../../components/QuestionEditorShell';
+import { useImageUpload } from '../../domain/hooks/useImageUpload';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -49,15 +50,6 @@ type WizardGroup = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
 
 function distributeMarks(items: WizardItem[]): WizardItem[] {
   if (items.length === 0) return items;
@@ -99,6 +91,7 @@ type DragDropImageWizardProps = {
 function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWizardProps) {
   const { t, i18n } = useTranslation('questions');
   const isDark = document.documentElement.classList.contains('dark');
+  const { uploadFile, isUploading } = useImageUpload();
 
   // ── Step 1 state ─────────────────────────────────────────────────────────
 
@@ -220,10 +213,15 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
         return;
       }
       setBgImageError('');
-      const url = await fileToDataUrl(file);
-      setBgImageDataUrl(url);
+      try {
+        const url = await uploadFile(file);
+        setBgImageDataUrl(url);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Image upload failed';
+        setBgImageError(message);
+      }
     },
-    [t]
+    [t, uploadFile]
   );
 
   // ── Step 1 next ──────────────────────────────────────────────────────────
@@ -415,11 +413,13 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
   // ── Item image upload ────────────────────────────────────────────────────
 
   const handleItemImageFile = useCallback(
-    async (itemId: string, file: File) => {
+    (itemId: string, file: File) => {
       if (!file.type.startsWith('image/')) return;
-      const url = await fileToDataUrl(file);
+      // Use a temporary object URL to validate dimensions before uploading.
+      const objectUrl = URL.createObjectURL(file);
       const img = new window.Image();
-      img.onload = () => {
+      img.onload = async () => {
+        URL.revokeObjectURL(objectUrl);
         if (
           img.naturalWidth < 24 || img.naturalHeight < 24 ||
           img.naturalWidth > 512 || img.naturalHeight > 512
@@ -434,12 +434,21 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
             delete next[itemId];
             return next;
           });
-          updateItem(itemId, 'image', url);
+          try {
+            const cdnUrl = await uploadFile(file);
+            updateItem(itemId, 'image', cdnUrl);
+          } catch (err) {
+            const message = err instanceof Error ? err.message : 'Image upload failed';
+            setItemImageErrors((prev) => ({ ...prev, [itemId]: message }));
+          }
         }
       };
-      img.src = url;
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+      };
+      img.src = objectUrl;
     },
-    [updateItem, t]
+    [updateItem, t, uploadFile]
   );
 
   // ── Save ─────────────────────────────────────────────────────────────────
@@ -685,11 +694,13 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
               <div
                 className={cn(
                   'flex flex-col items-center justify-center p-8 gap-2 rounded-xl cursor-pointer border-2 border-dashed transition-colors',
-                  bgDragOver
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border bg-muted/40 hover:border-primary/50 hover:bg-muted/60'
+                  isUploading
+                    ? 'pointer-events-none opacity-60 border-border bg-muted/40'
+                    : bgDragOver
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border bg-muted/40 hover:border-primary/50 hover:bg-muted/60'
                 )}
-                onClick={() => bgFileRef.current?.click()}
+                onClick={() => !isUploading && bgFileRef.current?.click()}
                 onDragOver={(e: React.DragEvent) => {
                   e.preventDefault();
                   setBgDragOver(true);
@@ -699,11 +710,13 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                   e.preventDefault();
                   setBgDragOver(false);
                   const file = e.dataTransfer.files[0];
-                  if (file) handleBgFile(file);
+                  if (file && !isUploading) handleBgFile(file);
                 }}
               >
                 <ImagePlus size={40} className="text-muted-foreground/60" />
-                <p className="text-sm text-muted-foreground">{t('editor.drag_and_drop')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {isUploading ? t('editor.uploading') : t('editor.drag_and_drop')}
+                </p>
               </div>
             )}
             <input
@@ -711,6 +724,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
               type="file"
               accept="image/*"
               className="hidden"
+              disabled={isUploading}
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) handleBgFile(file);
@@ -1017,6 +1031,7 @@ function DragDropImageWizard({ onSave, onCancel, initialData }: DragDropImageWiz
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
+                                disabled={isUploading}
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) handleItemImageFile(item.id, file);
