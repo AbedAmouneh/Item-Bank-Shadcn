@@ -36,6 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@item-bank/ui';
+import { useImageUpload } from '../../domain/hooks/useImageUpload';
 
 type HotspotTool = 'rectangle' | 'circle' | 'polygon' | 'pan';
 
@@ -71,15 +72,6 @@ function normalizeHotspotMark(mark: number | undefined): number {
   return raw > 1 ? raw / 100 : raw;
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function MultipleHotspotsEditor() {
   const { t } = useTranslation('questions');
   const {
@@ -87,6 +79,7 @@ export default function MultipleHotspotsEditor() {
     setValue,
     formState: { errors },
   } = useFormContext();
+  const { uploadFile, isUploading, error: uploadError } = useImageUpload();
 
   const background_image: string | null = watch('background_image') ?? null;
   const savedHotspots: HotspotShape[] | undefined = watch('hotspots');
@@ -500,16 +493,16 @@ export default function MultipleHotspotsEditor() {
     async (file: File | null) => {
       if (!file?.type.startsWith('image/')) return;
       try {
-        const dataUrl = await fileToDataUrl(file);
-        setValue('background_image', dataUrl);
+        const url = await uploadFile(file);
+        setValue('background_image', url);
         setShapes([]);
         history.current = [];
         historyIndex.current = -1;
-      } catch (err) {
-        console.error('Failed to read image', err);
+      } catch {
+        // uploadError state is set by the hook for reactive UI
       }
     },
-    [setValue]
+    [setValue, uploadFile]
   );
 
   const handleFileChange = useCallback(
@@ -561,31 +554,40 @@ export default function MultipleHotspotsEditor() {
         <div
           className={cn(
             'cursor-pointer min-h-[160px] flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors',
-            dragOver
-              ? 'border-primary bg-primary/5'
-              : 'border-border bg-muted/30 hover:border-primary/50'
+            isUploading
+              ? 'pointer-events-none opacity-60 border-border bg-muted/30'
+              : dragOver
+                ? 'border-primary bg-primary/5'
+                : 'border-border bg-muted/30 hover:border-primary/50'
           )}
           onDrop={handleDrop}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !isUploading && fileInputRef.current?.click()}
         >
           <input
             ref={fileInputRef}
             className="hidden"
             type="file"
             accept="image/*"
+            disabled={isUploading}
             onChange={handleFileChange}
           />
           <ImagePlus className="text-muted-foreground" size={48} />
-          <p className="text-sm text-muted-foreground">{t('editor.drag_and_drop')}</p>
+          <p className="text-sm text-muted-foreground">
+            {isUploading ? t('editor.uploading') : t('editor.drag_and_drop')}
+          </p>
           <Button
             size="sm"
+            disabled={isUploading}
             onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
           >
             {t('editor.browse')}
           </Button>
         </div>
+        {uploadError && (
+          <p className="text-sm text-destructive">{uploadError}</p>
+        )}
       </div>
     );
   }

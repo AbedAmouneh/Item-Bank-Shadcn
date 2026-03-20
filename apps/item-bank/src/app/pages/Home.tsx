@@ -80,6 +80,7 @@ const API_MIGRATED_TYPES = new Set<string>([
   'fill_in_blanks_image',
   'image_sequencing',
   'free_hand_drawing',
+  'multiple_hotspots',
 ]);
 
 /** Convert an API Question to the QuestionRow shape expected by QuestionsTable. */
@@ -161,7 +162,6 @@ const Home = () => {
           }
           if (
             storedQuestion.type === 'fill_in_blanks' ||
-            storedQuestion.type === 'multiple_hotspots' ||
             storedQuestion.type === 'drag_drop_image' ||
             storedQuestion.type === 'image_classification'
           ) {

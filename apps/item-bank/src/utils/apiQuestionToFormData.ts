@@ -240,6 +240,31 @@ function recordAudioFromApi(q: Question): QuestionFormData {
   };
 }
 
+function multipleHotspotsFromApi(q: Question): QuestionFormData {
+  return {
+    ...baseFields(q),
+    type: 'multiple_hotspots',
+    background_image: s(q.content, 'background_image') || null,
+    hotspots: a<Content>(q.content, 'hotspots').map((h) => ({
+      type: s(h, 'type') as 'rectangle' | 'circle' | 'polygon',
+      x: n(h, 'x'),
+      y: n(h, 'y'),
+      width: n(h, 'width') || undefined,
+      height: n(h, 'height') || undefined,
+      radius: n(h, 'radius') || undefined,
+      points: a<number>(h, 'points'),
+      color: s(h, 'color', '#6366F1'),
+      strokeWidth: n(h, 'strokeWidth', 2),
+      opacity: n(h, 'opacity') || undefined,
+      isCorrect: b(h, 'isCorrect'),
+      mark: n(h, 'mark') || undefined,
+    })),
+    allowPartialCredit: b(q.content, 'allowPartialCredit'),
+    minSelections: n(q.content, 'minSelections', 1),
+    maxSelections: n(q.content, 'maxSelections', 1),
+  };
+}
+
 function freeHandDrawingFromApi(q: Question): QuestionFormData {
   const backgroundImage = s(q.content, 'background_image') || null;
   return {
@@ -349,6 +374,8 @@ export function apiQuestionToFormData(q: Question): QuestionFormData | null {
       return imageSequencingFromApi(q);
     case 'free_hand_drawing':
       return freeHandDrawingFromApi(q);
+    case 'multiple_hotspots':
+      return multipleHotspotsFromApi(q);
     default:
       return null;
   }
