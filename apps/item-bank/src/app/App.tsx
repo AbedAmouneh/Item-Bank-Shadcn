@@ -15,6 +15,7 @@ import ProfileGeneral from './pages/profile/General';
 import ChangePassword from './pages/profile/ChangePassword';
 import AdminUsers from './pages/admin/Users';
 import MigrateToApi from '../db/MigrateToApi';
+import ErrorBoundary from './ErrorBoundary';
 
 const STORAGE_KEY_THEME = 'theme-mode';
 
@@ -36,7 +37,7 @@ export default function App() {
       <AppShell>
         <BrowserRouter>
           <Routes>
-            <Route element={<ProtectedRoute />}>
+            <Route element={<ErrorBoundary><ProtectedRoute /></ErrorBoundary>}>
               <Route element={<AuthenticatedLayout />}>
                 <Route path="/home" element={<Home />} />
                 <Route path='/profile' element={<ProfileSidebar />}>
@@ -47,7 +48,7 @@ export default function App() {
               </Route>
             </Route>
 
-            <Route element={<GuestRoute />}>
+            <Route element={<ErrorBoundary><GuestRoute /></ErrorBoundary>}>
               <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
