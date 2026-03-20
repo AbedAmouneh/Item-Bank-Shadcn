@@ -97,3 +97,27 @@ export async function deactivateUser(id: string): Promise<AdminUser> {
   });
   return envelope.data;
 }
+
+/** Fields that can be changed when editing an existing user. */
+export interface UpdateUserData {
+  email?: string;
+  role?: 'admin' | 'user';
+}
+
+/**
+ * Update an existing user's email or role.
+ *
+ * @param id   - The user's ID.
+ * @param data - Fields to update.
+ * @returns    The updated user record.
+ */
+export async function updateUser(id: string, data: UpdateUserData): Promise<AdminUser> {
+  const envelope = await apiRequest<{ success: boolean; data: AdminUser }>(
+    `/admin/users/${id}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }
+  );
+  return envelope.data;
+}
