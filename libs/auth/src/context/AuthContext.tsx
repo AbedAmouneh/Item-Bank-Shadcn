@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import {
   clearCsrfToken,
   getMe,
+  refreshToken,
   setCsrfToken,
 } from '@item-bank/api';
 
@@ -80,8 +81,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let cancelled = false;
 
-    getMe()
-      .then((apiUser) => {
+    async function hydrate() {
+      try {
+        const apiUser = await getMe();
         if (cancelled) return;
         // The server's role field is a string; we cast to the known union
         // type because the API contract guarantees these two values.
@@ -91,14 +93,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
           role: apiUser.role as 'admin' | 'user',
           is_active: apiUser.is_active,
         });
+        try {
+          await refreshToken();
+        } catch (err) {
+          // CSRF refresh failed, but the user is still authenticated via the
+          // cookie. Log the failure; mutating requests may fail until the user
+          // logs in again, but we don't force a logout here.
+          console.error('Failed to refresh CSRF token after session restore:', err);
+        }
+        if (cancelled) return;
         setIsLoading(false);
-      })
-      .catch(() => {
+      } catch {
         // 401 or network failure — user is not authenticated.
         if (cancelled) return;
         setUser(null);
         setIsLoading(false);
-      });
+      }
+    }
+
+    hydrate();
 
     return () => {
       cancelled = true;
