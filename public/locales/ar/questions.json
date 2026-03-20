@@ -480,5 +480,8 @@
   "matching": {
     "justification_label": "برر إجابتك"
   },
-  "no_questions": "لا توجد أسئلة"
+  "no_questions": "لا توجد أسئلة",
+  "export": "تصدير",
+  "export_excel": "تصدير إلى Excel",
+  "export_pdf": "تصدير إلى PDF"
 }

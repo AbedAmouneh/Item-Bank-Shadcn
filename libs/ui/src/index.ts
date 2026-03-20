@@ -95,3 +95,12 @@ export {
   TableHeader,
   TableRow,
 } from './components/ui/table';
+export {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuGroup,
+} from './components/ui/dropdown-menu';

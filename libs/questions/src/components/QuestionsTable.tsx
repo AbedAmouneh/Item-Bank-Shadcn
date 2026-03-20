@@ -1,6 +1,14 @@
 import { useTranslation } from 'react-i18next'
-import { ActionButton, cn } from '@item-bank/ui'
+import {
+  ActionButton,
+  cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@item-bank/ui'
 import { memo, useCallback, useMemo, useRef, useState } from 'react'
+import type { GetQuestionsParams } from '@item-bank/api'
 import { type QuestionType } from '../domain/types'
 import AddQuestionModal from './AddQuestionModal'
 import {
@@ -12,7 +20,7 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table'
-import { MoreVertical, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react'
+import { MoreVertical, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Download } from 'lucide-react'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 
@@ -181,6 +189,24 @@ type QuestionsTableProps = {
   handleQuestionViewOpen?: (row: QuestionRow) => void
   onEditQuestion?: (row: QuestionRow) => void
   onDeleteQuestion?: (row: QuestionRow) => void
+  /** Active filter params forwarded to the export URL so the download respects the current view. */
+  exportParams?: GetQuestionsParams
+}
+
+/**
+ * Constructs a download URL for the questions export endpoint.
+ *
+ * Appends the chosen format plus any active filter params so the server
+ * exports exactly what the user is currently looking at.
+ */
+function buildExportUrl(format: 'xlsx' | 'pdf', params?: GetQuestionsParams): string {
+  const base = import.meta.env.VITE_API_BASE_URL as string;
+  const query = new URLSearchParams({ format });
+  if (params?.type) query.set('type', params.type);
+  if (params?.status) query.set('status', params.status);
+  if (params?.item_bank_id !== undefined) query.set('item_bank_id', String(params.item_bank_id));
+  if (params?.search) query.set('search', params.search);
+  return `${base}/questions/export?${query.toString()}`;
 }
 
 const TYPE_COLORS: Record<QuestionType, string> = {
@@ -211,7 +237,7 @@ const STATUS_COLORS: Record<QuestionStatus, string> = {
   'In Review': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
 }
 
-const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionViewOpen, onEditQuestion, onDeleteQuestion }: QuestionsTableProps) => {
+const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionViewOpen, onEditQuestion, onDeleteQuestion, exportParams }: QuestionsTableProps) => {
   const { t } = useTranslation('questions')
 
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -393,6 +419,32 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
       <div className="pt-6 px-6 pb-4 flex justify-between items-center">
         <h2 className="font-semibold text-xl text-foreground">{t('questions')}</h2>
         <div className="flex gap-2 items-center">
+          {/* Export dropdown — triggers a server-side file download */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <Download size={14} />
+                {t('export')}
+                <ChevronDown size={14} className="opacity-60" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onSelect={() => { window.location.href = buildExportUrl('xlsx', exportParams); }}
+              >
+                {t('export_excel')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => { window.location.href = buildExportUrl('pdf', exportParams); }}
+              >
+                {t('export_pdf')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <ActionButton
             btnLabel={t('add_question')}
             onClick={() => setAddModalOpen(true)}
