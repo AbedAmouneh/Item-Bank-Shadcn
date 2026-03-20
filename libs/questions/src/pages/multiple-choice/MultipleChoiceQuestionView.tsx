@@ -18,9 +18,10 @@ function parseFraction(value: string): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function formatMark(value: number): string {
-  if (Number.isInteger(value)) return String(value);
-  return value.toFixed(2).replace(/\.?0+$/, '');
+function formatMark(value: number | string): string {
+  const num = Number(value);
+  if (Number.isInteger(num)) return String(num);
+  return num.toFixed(2).replace(/\.?0+$/, '');
 }
 
 /** Derive inline style values for a choice pill based on selection and feedback state. */
