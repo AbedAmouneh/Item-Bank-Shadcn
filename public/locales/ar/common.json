@@ -111,7 +111,11 @@
             "password_required": "كلمة المرور مطلوبة",
             "password_min": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
             "role_required": "الدور مطلوب",
-            "select_role": "اختر دوراً"
+            "select_role": "اختر دوراً",
+            "edit": "تعديل",
+            "edit_dialog_title": "تعديل المستخدم",
+            "save_changes": "حفظ التغييرات",
+            "edit_error": "فشل تحديث المستخدم."
         }
     },
     "migration": {
