@@ -193,6 +193,14 @@ function QuestionCardList({
     [submitForReview],
   );
 
+  const handleStatusChange = useCallback(
+    (id: number, status: 'Draft' | 'In Review' | 'Published') => {
+      const apiStatus = status === 'Draft' ? 'draft' : status === 'In Review' ? 'in_review' : 'published';
+      updateQuestion({ id, data: { status: apiStatus } });
+    },
+    [updateQuestion],
+  );
+
   // ── Sidebar reorder ───────────────────────────────────────────────────────
   const handleReorder = useCallback((reordered: QuestionRow[]) => {
     setOrderedIds(reordered.map((q) => q.id));
@@ -272,6 +280,7 @@ function QuestionCardList({
                 onPreview={handlePreview}
                 onMarkChange={handleMarkChange}
                 onSubmitForReview={handleSubmitForReview}
+                onStatusChange={handleStatusChange}
                 isSelected={selectedIds.has(Number(q.id))}
                 onSelect={handleSelect}
               />
