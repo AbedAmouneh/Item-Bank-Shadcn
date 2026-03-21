@@ -11,8 +11,8 @@ import {
 import { ThemeModeProvider, useThemeMode, type ThemeMode } from '@item-bank/ui';
 import { ProfileSidebar } from '@item-bank/profile';
 import i18n from '@item-bank/i18n';
-import GamesLobby, { QuizArcade, MemoryMatch, AnswerRunner } from '@item-bank/games';
 import Home from './pages/Home';
+import QuestionPreview from './pages/QuestionPreview';
 import ProfileGeneral from './pages/profile/General';
 import ChangePassword from './pages/profile/ChangePassword';
 import AdminUsers from './pages/admin/Users';
@@ -43,15 +43,12 @@ export default function App() {
             <Route element={<ErrorBoundary><ProtectedRoute /></ErrorBoundary>}>
               <Route element={<AuthenticatedLayout />}>
                 <Route path="/home" element={<Home />} />
+                <Route path="/questions/:id/preview" element={<QuestionPreview />} />
                 <Route path='/profile' element={<ProfileSidebar />}>
                   <Route path='edit' element={<ProfileGeneral />} />
                   <Route path='change-password' element={<ChangePassword />} />
                 </Route>
                 <Route path='/admin/users' element={<AdminUsers />} />
-                <Route path='/games' element={<GamesLobby />} />
-                <Route path='/games/quiz-arcade' element={<QuizArcade />} />
-                <Route path='/games/memory-match' element={<MemoryMatch />} />
-                <Route path='/games/answer-runner' element={<AnswerRunner />} />
               </Route>
             </Route>
 
