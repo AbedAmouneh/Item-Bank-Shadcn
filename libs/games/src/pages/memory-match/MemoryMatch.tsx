@@ -1,28 +1,40 @@
 /**
  * MemoryMatch — card-flip matching game.
  *
- * Players flip two cards at a time. If both cards share a `pairId`
- * (question ↔ correct answer), they stay revealed. Built from `matching`
- * question types where the left item pairs with a linked right item.
+ * Screen flow: idle → playing → results.
  *
- * Cards are plain HTML divs with a CSS 3-D flip. A Cubeforge canvas
- * runs in the background emitting star particles on each match.
+ * Pair building rules:
+ *   - 'matching' question:        each leftItem/rightItem pair → one card pair
+ *   - 'multiple_choice' question: question text + correct answer → one card pair
+ *
+ * No type filter is passed to useGameQuestions because Memory Match supports
+ * two question types (matching + multiple_choice). The pair builders handle
+ * filtering internally — other types are simply ignored.
+ *
+ * A Cubeforge canvas sits behind the card grid (opacity 40%) and fires a green
+ * particle burst on each successful match.
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Game,
-  World,
-  Entity,
-  Transform,
-  ParticleEmitter,
-  Camera2D,
-} from 'cubeforge';
-import { Button, cn } from '@item-bank/ui';
+import { Button } from '@item-bank/ui';
 import { useGameQuestions } from '../../domain/hooks';
 import type { MemoryCard } from '../../domain/types';
 import type { Question } from '@item-bank/api';
+import MemoryCanvas from './MemoryCanvas';
+import MemoryCardTile from './MemoryCardTile';
+import MemoryResults from './MemoryResults';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CANVAS_W = 672;
+const CANVAS_H = 460;
+/** Maximum card pairs (16 cards) per session. */
+const MAX_PAIRS = 8;
+/** Minimum pairs needed to start a game. */
+const MIN_PAIRS = 4;
+/** Milliseconds to show mismatched cards before flipping them back. */
+const MISMATCH_DELAY_MS = 900;
 
 // ─── Content shapes ───────────────────────────────────────────────────────────
 
@@ -56,9 +68,9 @@ function buildMatchingPairs(q: Question): MemoryCard[] {
   });
 }
 
-function buildMCPairs(q: Question): MemoryCard[] {
+function buildMCPair(q: Question): MemoryCard[] {
   const choices = (q.content as MCChoiceContent).choices;
-  const correct = choices.find((c) => c.isCorrect);
+  const correct = choices?.find((c) => c.isCorrect);
   if (!correct) return [];
   return [
     { id: `Q-${q.id}`, pairId: String(q.id), content: q.text ?? q.name, isFlipped: false, isMatched: false },
@@ -66,136 +78,155 @@ function buildMCPairs(q: Question): MemoryCard[] {
   ];
 }
 
-function buildCards(questions: Question[]): MemoryCard[] {
-  const pairs = questions.flatMap((q) =>
-    q.type === 'matching' ? buildMatchingPairs(q) : buildMCPairs(q),
-  );
-  return pairs
-    .slice(0, 16) // 4×4 grid — 8 pairs max
-    .sort(() => Math.random() - 0.5);
+/**
+ * Build up to MAX_PAIRS card pairs from the loaded questions.
+ * Pairs are always added whole (never split mid-pair), so the grid is always even.
+ */
+function buildCardPairs(questions: Question[]): MemoryCard[] {
+  const result: MemoryCard[] = [];
+  for (const q of questions) {
+    if (result.length >= MAX_PAIRS * 2) break;
+    if (q.type !== 'matching' && q.type !== 'multiple_choice') continue;
+    const qCards = q.type === 'matching' ? buildMatchingPairs(q) : buildMCPair(q);
+    for (let i = 0; i + 1 < qCards.length; i += 2) {
+      if (result.length >= MAX_PAIRS * 2) break;
+      result.push(qCards[i], qCards[i + 1]);
+    }
+  }
+  return result;
 }
 
-// ─── Card component ───────────────────────────────────────────────────────────
-
-function MemoryCardTile({
-  card,
-  onClick,
-}: {
-  card: MemoryCard;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={card.isFlipped || card.isMatched}
-      aria-label={card.isFlipped || card.isMatched ? card.content : 'Hidden card'}
-      className={cn(
-        'relative h-24 rounded-xl border transition-all duration-300 cursor-pointer disabled:cursor-default',
-        'text-xs font-medium p-2 text-center',
-        card.isMatched
-          ? 'bg-green-600/20 border-green-500 text-green-300'
-          : card.isFlipped
-          ? 'bg-primary border-primary text-white'
-          : 'bg-card border-border text-transparent hover:border-primary/50',
-      )}
-    >
-      {(card.isFlipped || card.isMatched) && (
-        <span className="break-words">{card.content}</span>
-      )}
-    </button>
-  );
+function shuffleCards(cards: MemoryCard[]): MemoryCard[] {
+  return [...cards].sort(() => Math.random() - 0.5);
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Component ───────────────────────────────────────────────────────────────
+
+type GameScreen = 'idle' | 'playing' | 'results';
 
 export default function MemoryMatch() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const questionType = searchParams.get('type') ?? 'matching';
+
+  // Bug §3.1 and §3.2 — read tag_ids and item_bank_id from URL.
   const rawTag = searchParams.get('tag_ids');
   const tag_ids = rawTag ? [Number(rawTag)] : undefined;
   const rawBank = searchParams.get('item_bank_id');
   const item_bank_id = rawBank ? Number(rawBank) : undefined;
 
-  const { data, isLoading, isError } = useGameQuestions({ type: questionType, tag_ids, item_bank_id });
-  const questions = data?.items ?? [];
+  // No type filter passed — pair builders accept matching + multiple_choice only.
+  const { data, isLoading, isError } = useGameQuestions({ tag_ids, item_bank_id });
+  const questions = useMemo(() => data?.items ?? [], [data]);
 
+  // Stable (unshuffled) pool of pairs derived from the loaded questions.
+  const candidateCards = useMemo(() => buildCardPairs(questions), [questions]);
+  const hasSufficientPairs = candidateCards.length / 2 >= MIN_PAIRS;
+
+  // ── State ────────────────────────────────────────────────────────────────
+
+  const [screen, setScreen] = useState<GameScreen>('idle');
+  /** Shuffled card array for the active session. */
   const [cards, setCards] = useState<MemoryCard[]>([]);
+  /** IDs of the 1–2 cards currently face-up and being evaluated. */
   const [flipped, setFlipped] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
   const [matchCount, setMatchCount] = useState(0);
   const [showBurst, setShowBurst] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-
-  // Initialise cards when questions load.
-  useEffect(() => {
-    if (questions.length > 0 && cards.length === 0) {
-      setCards(buildCards(questions));
-    }
-  }, [questions, cards.length]);
 
   const totalPairs = cards.length / 2;
 
-  const handleCardClick = useCallback(
-    (id: string) => {
-      if (flipped.length === 2) return; // wait for mismatch reset
-      const next = [...flipped, id];
-      setFlipped(next);
+  // ── Completion detection ─────────────────────────────────────────────────
 
-      if (next.length === 2) {
-        setMoves((m) => m + 1);
-        const [a, b] = next.map((fid) => cards.find((c) => c.id === fid)!);
-        if (a.pairId === b.pairId) {
-          // Match!
-          setCards((prev) =>
-            prev.map((c) =>
-              c.pairId === a.pairId ? { ...c, isMatched: true, isFlipped: true } : c,
-            ),
-          );
-          setMatchCount((mc) => {
-            const next = mc + 1;
-            if (next >= totalPairs) setIsComplete(true);
-            return next;
-          });
-          setShowBurst(true);
-          setTimeout(() => setShowBurst(false), 1000);
-          setFlipped([]);
-        } else {
-          // Mismatch — flip back after a short pause.
-          setTimeout(() => {
-            setCards((prev) =>
-              prev.map((c) =>
-                next.includes(c.id) ? { ...c, isFlipped: false } : c,
-              ),
-            );
-            setFlipped([]);
-          }, 900);
-        }
-      } else {
-        setCards((prev) =>
-          prev.map((c) => (c.id === id ? { ...c, isFlipped: true } : c)),
-        );
-      }
-    },
-    [flipped, cards, totalPairs],
-  );
+  // Transition to results screen once all pairs are matched, giving the flip
+  // animation (400 ms) time to finish before switching screens.
+  useEffect(() => {
+    if (screen !== 'playing' || matchCount === 0 || matchCount < totalPairs) return;
+    const t = setTimeout(() => setScreen('results'), 600);
+    return () => clearTimeout(t);
+  }, [screen, matchCount, totalPairs]);
 
-  const restart = () => {
-    setCards(buildCards(questions));
+  // ── Game actions ──────────────────────────────────────────────────────────
+
+  const startGame = useCallback(() => {
+    setCards(shuffleCards(candidateCards));
     setFlipped([]);
     setMoves(0);
     setMatchCount(0);
-    setIsComplete(false);
-  };
+    setShowBurst(false);
+    setScreen('playing');
+  }, [candidateCards]);
+
+  const handleCardClick = useCallback(
+    (id: string) => {
+      // Block all clicks while two cards are pending evaluation.
+      if (flipped.length === 2) return;
+
+      // Flip this card face-up immediately so both cards are visible during evaluation.
+      setCards((prev) => prev.map((c) => (c.id === id ? { ...c, isFlipped: true } : c)));
+
+      const next = [...flipped, id];
+      setFlipped(next);
+
+      // First card — wait for the second.
+      if (next.length < 2) return;
+
+      setMoves((m) => m + 1);
+
+      // Look up both cards. pairId never changes, so reading from the
+      // pre-update snapshot is fine here.
+      const cardA = cards.find((c) => c.id === next[0]);
+      const cardB = cards.find((c) => c.id === id);
+      if (!cardA || !cardB) { setFlipped([]); return; }
+
+      if (cardA.pairId === cardB.pairId) {
+        // Match — permanently reveal with green styling.
+        setCards((prev) =>
+          prev.map((c) =>
+            c.pairId === cardA.pairId ? { ...c, isMatched: true, isFlipped: true } : c,
+          ),
+        );
+        setMatchCount((mc) => mc + 1);
+        setShowBurst(true);
+        setTimeout(() => setShowBurst(false), 1000);
+        setFlipped([]);
+      } else {
+        // Mismatch — both cards are face-up (player can see them), then flip back.
+        setTimeout(() => {
+          setCards((prev) =>
+            prev.map((c) => (next.includes(c.id) ? { ...c, isFlipped: false } : c)),
+          );
+          setFlipped([]);
+        }, MISMATCH_DELAY_MS);
+      }
+    },
+    [flipped, cards],
+  );
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   if (isLoading) {
-    return <div className="flex items-center justify-center p-20 text-muted-foreground">Loading…</div>;
+    return (
+      <div className="flex items-center justify-center p-20 text-muted-foreground">
+        Loading questions…
+      </div>
+    );
   }
 
-  if (isError || questions.length === 0) {
+  if (isError) {
     return (
       <div className="flex flex-col items-center gap-4 p-20 text-center">
-        <p className="text-muted-foreground">No matching questions found.</p>
+        <p className="text-muted-foreground">Could not load questions.</p>
+        <Button variant="outline" onClick={() => navigate('/games')}>← Back to Games</Button>
+      </div>
+    );
+  }
+
+  if (!hasSufficientPairs) {
+    return (
+      <div className="flex flex-col items-center gap-4 p-20 text-center">
+        <p className="text-muted-foreground">
+          Not enough compatible questions — need at least {MIN_PAIRS} pairs to play.
+        </p>
         <Button variant="outline" onClick={() => navigate('/games')}>← Back to Games</Button>
       </div>
     );
@@ -203,62 +234,71 @@ export default function MemoryMatch() {
 
   return (
     <div className="flex flex-col items-center gap-6 p-6">
-      <div className="flex items-center justify-between w-full max-w-2xl">
+      {/* Page header */}
+      <div className="flex items-center justify-between w-full max-w-[672px]">
         <h2 className="text-xl font-bold">🃏 Memory Match</h2>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">{matchCount}/{totalPairs} pairs • {moves} moves</span>
-          <Button variant="outline" size="sm" onClick={restart}>Restart</Button>
-          <Button variant="ghost" onClick={() => navigate('/games')}>← Back</Button>
-        </div>
+        <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
       </div>
 
-      {/* Background Cubeforge canvas */}
-      <div className="relative w-full max-w-2xl">
-        <div className="absolute inset-0 rounded-xl overflow-hidden opacity-40 pointer-events-none">
-          <Game width={672} height={400} gravity={0}>
-            <World background="#0a0a1a">
-              <Camera2D />
-              {showBurst && (
-                <Entity id={`match-burst-${Date.now()}`}>
-                  <Transform x={336} y={200} />
-                  <ParticleEmitter
-                    burstCount={30}
-                    color="#22c55e"
-                    speed={140}
-                    particleLife={0.8}
-                    spread={Math.PI * 2}
-                    particleSize={4}
-                    colorOverLife={['#22c55e', '#86efac', '#ffffff']}
+      {/* Game frame — fixed canvas behind, HTML overlay in front */}
+      <div
+        className="relative rounded-xl overflow-hidden border border-border"
+        style={{ width: CANVAS_W, height: CANVAS_H }}
+      >
+        {/* Cubeforge canvas — background effects at 40% opacity */}
+        <div className="absolute inset-0 opacity-40 pointer-events-none">
+          <MemoryCanvas width={CANVAS_W} height={CANVAS_H} showBurst={showBurst} />
+        </div>
+
+        {/* HTML overlay — interactive game layer */}
+        <div className="absolute inset-0 z-10 flex flex-col">
+
+          {screen === 'idle' && (
+            <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white p-6">
+              <p className="text-4xl">🃏</p>
+              <p className="text-xl font-bold">Memory Match</p>
+              <p className="text-sm text-white/60">
+                {candidateCards.length / 2} pairs · flip cards to find matches
+              </p>
+              <Button onClick={startGame} className="mt-2">Start Game</Button>
+            </div>
+          )}
+
+          {screen === 'playing' && (
+            <div className="flex flex-col gap-3 p-4">
+              {/* HUD */}
+              <div className="flex items-center justify-between text-white text-sm font-semibold px-1">
+                <span>Pairs: {matchCount} / {totalPairs}</span>
+                <span>Moves: {moves}</span>
+              </div>
+
+              {/* 4 × 4 card grid */}
+              <div className="grid grid-cols-4 gap-2">
+                {cards.map((card) => (
+                  <MemoryCardTile
+                    key={card.id}
+                    card={card}
+                    onClick={() => handleCardClick(card.id)}
                   />
-                </Entity>
-              )}
-            </World>
-          </Game>
-        </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-        {/* Card grid */}
-        <div className="relative z-10 grid grid-cols-4 gap-3 p-4">
-          {cards.map((card) => (
-            <MemoryCardTile
-              key={card.id}
-              card={card}
-              onClick={() => handleCardClick(card.id)}
-            />
-          ))}
+          {screen === 'results' && (
+            <div className="flex flex-col items-center justify-center flex-1">
+              <MemoryResults
+                matchCount={matchCount}
+                totalPairs={totalPairs}
+                moves={moves}
+                onPlayAgain={startGame}
+                onBack={() => navigate('/games')}
+              />
+            </div>
+          )}
+
         </div>
       </div>
-
-      {/* Completion banner */}
-      {isComplete && (
-        <div className="flex flex-col items-center gap-3 p-6 rounded-xl border border-green-500 bg-green-500/10 text-center">
-          <p className="text-2xl font-bold text-green-400">🏆 You matched them all!</p>
-          <p className="text-muted-foreground">Completed in {moves} moves</p>
-          <div className="flex gap-3 mt-1">
-            <Button variant="outline" onClick={() => navigate('/games')}>← Back to Games</Button>
-            <Button onClick={restart}>Play Again</Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
