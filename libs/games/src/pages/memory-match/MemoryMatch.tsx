@@ -296,6 +296,7 @@ export default function MemoryMatch() {
                 matchCount={matchCount}
                 totalPairs={totalPairs}
                 moves={moves}
+                item_bank_id={item_bank_id}
                 onPlayAgain={startGame}
                 onBack={() => navigate('/games')}
               />
