@@ -25,7 +25,7 @@ export default function QuizResults({
     : 0;
 
   const emoji =
-    accuracy >= 80 ? '🏆' : accuracy >= 60 ? '🌟' : accuracy >= 40 ? '👏' : '💪';
+    accuracy >= 90 ? '🏆' : accuracy >= 70 ? '⭐' : accuracy >= 50 ? '👍' : '💪';
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 p-10 text-white text-center">
