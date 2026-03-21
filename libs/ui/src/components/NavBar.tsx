@@ -58,6 +58,10 @@ export interface NavBarProps {
   onLogout?: () => void | Promise<void>;
   /** The current user's role. When 'admin', the Admin nav item is shown. */
   userRole?: 'admin' | 'user';
+  /** The current user's display name shown next to the avatar. */
+  userName?: string;
+  /** Two-letter initials shown inside the avatar circle. Falls back to '??' if not provided. */
+  userInitials?: string;
 }
 
 function NavBar({
@@ -66,6 +70,8 @@ function NavBar({
   onMarkAllNotificationsAsRead = () => {},
   onLogout = () => {},
   userRole,
+  userName,
+  userInitials,
 }: NavBarProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -221,10 +227,10 @@ function NavBar({
             onClick={() => navigate('/profile/edit')}
           >
             <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white text-xs font-semibold">
-              JS
+              {userInitials ?? '??'}
             </div>
             <span className="hidden sm:block text-sm font-medium text-foreground">
-              J. Smith
+              {userName ?? 'Unknown'}
             </span>
           </div>
         </div>
