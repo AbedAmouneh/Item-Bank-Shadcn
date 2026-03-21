@@ -27,6 +27,11 @@ const ProtectedRoute = () => {
 
   if (!isAuthenticated) return <Navigate replace to="/login" />;
 
+  // Derive display values from the email local-part (the only name field available).
+  const emailLocal = (user?.email ?? '').split('@')[0];
+  const userName = emailLocal;
+  const userInitials = emailLocal.slice(0, 2).toUpperCase();
+
   return (
     <div className="w-full min-w-0 overflow-hidden">
       <NavBar
@@ -35,6 +40,8 @@ const ProtectedRoute = () => {
         onMarkAllNotificationsAsRead={() => {}}
         onLogout={handleLogout}
         userRole={user?.role}
+        userName={userName}
+        userInitials={userInitials}
       />
       <Outlet />
     </div>
