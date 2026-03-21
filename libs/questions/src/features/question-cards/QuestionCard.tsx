@@ -26,6 +26,7 @@ type QuestionCardProps = {
   onPreview?: (id: number) => void;
   onMarkChange?: (id: number, mark: number) => void;
   onSubmitForReview?: (id: number) => void;
+  onStatusChange?: (id: number, status: 'Draft' | 'In Review' | 'Published') => void;
   isSelected?: boolean;
   onSelect?: (id: number) => void;
 };
@@ -110,6 +111,7 @@ function QuestionCard({
   onPreview,
   onMarkChange,
   onSubmitForReview,
+  onStatusChange,
   isSelected = false,
   onSelect,
 }: QuestionCardProps) {
@@ -271,6 +273,29 @@ function QuestionCard({
                   {t('submit_for_review')}
                 </DropdownMenuPrimitive.Item>
               )}
+              {/* Change Status submenu */}
+              <DropdownMenuPrimitive.Sub>
+                <DropdownMenuPrimitive.SubTrigger className="px-3 py-2 rounded-lg cursor-pointer text-foreground hover:bg-muted outline-none flex items-center justify-between">
+                  {t('card.change_status')}
+                  <span className="ms-2 opacity-50">›</span>
+                </DropdownMenuPrimitive.SubTrigger>
+                <DropdownMenuPrimitive.Portal>
+                  <DropdownMenuPrimitive.SubContent
+                    sideOffset={4}
+                    className="z-50 min-w-[130px] rounded-xl border border-border bg-card shadow-lg p-1 text-sm"
+                  >
+                    {(['Draft', 'In Review', 'Published'] as const).map((s) => (
+                      <DropdownMenuPrimitive.Item
+                        key={s}
+                        className="px-3 py-2 rounded-lg cursor-pointer text-foreground hover:bg-muted outline-none"
+                        onSelect={() => onStatusChange?.(id, s)}
+                      >
+                        {t(`card.status_${s.toLowerCase().replace(' ', '_')}` as Parameters<typeof t>[0])}
+                      </DropdownMenuPrimitive.Item>
+                    ))}
+                  </DropdownMenuPrimitive.SubContent>
+                </DropdownMenuPrimitive.Portal>
+              </DropdownMenuPrimitive.Sub>
               {/* Calls onDelete without internal confirmation — parent shows the dialog. */}
               <DropdownMenuPrimitive.Item
                 className="px-3 py-2 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 outline-none"
