@@ -289,17 +289,9 @@ export default function AnswerRunner() {
 
   // ── Loading ───────────────────────────────────────────────────────────────
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-20 text-muted-foreground">
-        Loading questions…
-      </div>
-    );
-  }
-
   // ── Empty state ───────────────────────────────────────────────────────────
 
-  if (questions.length === 0) {
+  if (!isLoading && questions.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 p-20 text-center">
         <p className="text-muted-foreground">
@@ -320,18 +312,20 @@ export default function AnswerRunner() {
         <div className="flex items-center justify-between w-full max-w-[700px]">
           <h2 className="text-xl font-bold">🏃 Answer Runner</h2>
         </div>
-        <div
-          className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a]"
-          style={{ width: CANVAS_W, height: CANVAS_H }}
-        >
-          <AnswerRunnerResults
-            score={score}
-            correctCount={correctCount}
-            totalQuestions={questions.length}
-            survived={lives > 0}
-            onPlayAgain={handleStart}
-            onBack={() => navigate('/games')}
-          />
+        <div className="w-full overflow-x-auto">
+          <div
+            className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a] mx-auto"
+            style={{ width: CANVAS_W, height: CANVAS_H }}
+          >
+            <AnswerRunnerResults
+              score={score}
+              correctCount={correctCount}
+              totalQuestions={questions.length}
+              survived={lives > 0}
+              onPlayAgain={handleStart}
+              onBack={() => navigate('/games')}
+            />
+          </div>
         </div>
       </div>
     );
@@ -347,11 +341,23 @@ export default function AnswerRunner() {
         <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
       </div>
 
+      {/* Responsive wrapper — allows horizontal scroll on narrow viewports */}
+      <div className="w-full overflow-x-auto">
       {/* Game frame */}
       <div
-        className="relative rounded-xl overflow-hidden border border-border"
+        className="relative rounded-xl overflow-hidden border border-border mx-auto"
         style={{ width: CANVAS_W, height: CANVAS_H }}
       >
+        {isLoading && (
+          /* Loading spinner centred inside the dark game frame */
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0d0d2a]">
+            <div
+              className="w-10 h-10 rounded-full border-[3px] border-white/20 border-t-white animate-spin"
+              role="status"
+              aria-label="Loading questions"
+            />
+          </div>
+        )}
         {/* Cubeforge canvas — player sprite + dark background only */}
         <Game width={CANVAS_W} height={CANVAS_H} gravity={0}>
           <World background="#0d0d2a">
@@ -422,6 +428,7 @@ export default function AnswerRunner() {
             </div>
           )}
         </div>
+      </div>
       </div>
 
       <p className="text-xs text-muted-foreground">
