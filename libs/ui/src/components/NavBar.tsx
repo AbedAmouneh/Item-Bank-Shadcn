@@ -22,6 +22,7 @@ const baseNavItems = [
   { labelKey: 'nav.projects', path: '/projects' },
   { labelKey: 'nav.itemBank', path: '/home' },
   { labelKey: 'nav.analytics', path: '/analytics' },
+  { labelKey: 'nav.games', path: '/games' },
   { labelKey: 'nav.settings', path: '/settings' },
 ];
 
