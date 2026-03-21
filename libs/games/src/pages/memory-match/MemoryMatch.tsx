@@ -204,15 +204,7 @@ export default function MemoryMatch() {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-20 text-muted-foreground">
-        Loading questions…
-      </div>
-    );
-  }
-
-  if (isError) {
+  if (!isLoading && isError) {
     return (
       <div className="flex flex-col items-center gap-4 p-20 text-center">
         <p className="text-muted-foreground">Could not load questions.</p>
@@ -221,7 +213,7 @@ export default function MemoryMatch() {
     );
   }
 
-  if (!hasSufficientPairs) {
+  if (!isLoading && !hasSufficientPairs) {
     return (
       <div className="flex flex-col items-center gap-4 p-20 text-center">
         <p className="text-muted-foreground">
@@ -240,18 +232,31 @@ export default function MemoryMatch() {
         <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
       </div>
 
-      {/* Game frame — fixed canvas behind, HTML overlay in front */}
-      <div
-        className="relative rounded-xl overflow-hidden border border-border"
-        style={{ width: CANVAS_W, height: CANVAS_H }}
-      >
-        {/* Cubeforge canvas — background effects at 40% opacity */}
-        <div className="absolute inset-0 opacity-40 pointer-events-none">
-          <MemoryCanvas width={CANVAS_W} height={CANVAS_H} showBurst={showBurst} />
-        </div>
+      {/* Responsive wrapper — allows horizontal scroll on narrow viewports */}
+      <div className="w-full overflow-x-auto">
+        {/* Game frame — fixed canvas behind, HTML overlay in front */}
+        <div
+          className="relative rounded-xl overflow-hidden border border-border mx-auto"
+          style={{ width: CANVAS_W, height: CANVAS_H }}
+        >
+          {isLoading && (
+            /* Loading spinner centred inside the game frame */
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-background">
+              <div
+                className="w-10 h-10 rounded-full border-[3px] border-muted border-t-foreground animate-spin"
+                role="status"
+                aria-label="Loading questions"
+              />
+            </div>
+          )}
 
-        {/* HTML overlay — interactive game layer */}
-        <div className="absolute inset-0 z-10 flex flex-col">
+          {/* Cubeforge canvas — background effects at 40% opacity */}
+          <div className="absolute inset-0 opacity-40 pointer-events-none">
+            <MemoryCanvas width={CANVAS_W} height={CANVAS_H} showBurst={showBurst} />
+          </div>
+
+          {/* HTML overlay — interactive game layer */}
+          <div className="absolute inset-0 z-10 flex flex-col">
 
           {screen === 'idle' && (
             <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white p-6">
@@ -297,6 +302,7 @@ export default function MemoryMatch() {
             </div>
           )}
 
+          </div>
         </div>
       </div>
     </div>
