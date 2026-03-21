@@ -112,8 +112,12 @@ export default function MemoryMatch() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const questionType = searchParams.get('type') ?? 'matching';
+  const rawTag = searchParams.get('tag_ids');
+  const tag_ids = rawTag ? [Number(rawTag)] : undefined;
+  const rawBank = searchParams.get('item_bank_id');
+  const item_bank_id = rawBank ? Number(rawBank) : undefined;
 
-  const { data, isLoading, isError } = useGameQuestions({ type: questionType });
+  const { data, isLoading, isError } = useGameQuestions({ type: questionType, tag_ids, item_bank_id });
   const questions = data?.items ?? [];
 
   const [cards, setCards] = useState<MemoryCard[]>([]);
