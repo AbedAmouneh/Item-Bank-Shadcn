@@ -7,7 +7,7 @@
  * cycles through: idle → countdown → question → answer_reveal → results.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Question } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -75,6 +75,9 @@ export default function QuizArcade() {
   const [showBurst, setShowBurst] = useState(false);
   const [shouldShake, setShouldShake] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
+
+  // Ref forwarded to answer button A so we can focus it on every new question.
+  const firstAnswerRef = useRef<HTMLButtonElement>(null);
 
   const currentQuestion = gameQuestions[currentIndex];
   const answers: GameAnswer[] = useMemo(
@@ -163,17 +166,17 @@ export default function QuizArcade() {
     }
   }, [screen, score, gameQuestions.length, correct, streak, result]);
 
+  // Move keyboard focus to answer A whenever a new question becomes active.
+  // This lets players navigate the answers without reaching for the mouse.
+  useEffect(() => {
+    if (screen === 'question') {
+      firstAnswerRef.current?.focus();
+    }
+  }, [screen, currentIndex]);
+
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-20 text-muted-foreground">
-        Loading questions…
-      </div>
-    );
-  }
-
-  if (isError || allQuestions.length === 0) {
+  if (!isLoading && (isError || allQuestions.length === 0)) {
     return (
       <div className="flex flex-col items-center gap-4 p-20 text-center">
         <p className="text-muted-foreground">
@@ -192,79 +195,96 @@ export default function QuizArcade() {
         <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
       </div>
 
-      {/* Game frame */}
-      <div
-        className="relative rounded-xl overflow-hidden border border-border"
-        style={{ width: CANVAS_W, height: CANVAS_H }}
-      >
-        {/* Cubeforge canvas — visual effects layer */}
-        <div className="absolute inset-0">
-          <QuizCanvas
-            width={CANVAS_W}
-            height={CANVAS_H}
-            timerFraction={screen === 'question' ? timeLeft / QUESTION_TIME : 1}
-            showBurst={showBurst}
-            shouldShake={shouldShake}
-            onShakeDone={() => setShouldShake(false)}
-          />
-        </div>
-
-        {/* HTML overlay — interactive game layer */}
-        <div className="absolute inset-0 z-10 flex flex-col">
-          {screen === 'idle' && (
-            <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white">
-              <p className="text-4xl">🎯</p>
-              <p className="text-xl font-bold">Quiz Arcade</p>
-              <p className="text-sm text-white/60">
-                {allQuestions.length} questions • {QUESTION_TIME}s each
-              </p>
-              <Button onClick={startGame} className="mt-2">Start Game</Button>
-            </div>
-          )}
-
-          {screen === 'countdown' && (
-            <div className="flex items-center justify-center flex-1 text-white">
-              {/* key remounts the element each second, re-triggering the CSS animation */}
-              <p key={countdown} className="text-8xl font-black [animation:quiz-pop_0.35s_ease-out]">
-                {countdown > 0 ? countdown : 'GO!'}
-              </p>
-            </div>
-          )}
-
-          {(screen === 'question' || screen === 'answer_reveal') && currentQuestion && (
-            <>
-              <QuizHud
-                score={score}
-                questionIndex={currentIndex}
-                total={gameQuestions.length}
-                timeLeft={timeLeft}
-                streak={streak}
+      {/* Responsive wrapper — allows horizontal scroll on narrow viewports */}
+      <div className="w-full overflow-x-auto">
+        {/* Game frame */}
+        <div
+          className="relative rounded-xl overflow-hidden border border-border mx-auto"
+          style={{ width: CANVAS_W, height: CANVAS_H }}
+        >
+          {isLoading ? (
+            /* Loading spinner centred inside the dark game frame */
+            <div className="absolute inset-0 flex items-center justify-center bg-[#0d0d2a]">
+              <div
+                className="w-10 h-10 rounded-full border-[3px] border-white/20 border-t-white animate-spin"
+                role="status"
+                aria-label="Loading questions"
               />
-              <div className="flex flex-col justify-between flex-1">
-                <QuizQuestionDisplay
-                  question={{
-                    id: currentQuestion.id,
-                    text: currentQuestion.text ?? '',
-                    type: currentQuestion.type,
-                    answers,
-                  }}
-                />
-                <QuizAnswerGrid
-                  answers={answers}
-                  selected={selected}
-                  onSelect={handleAnswer}
-                  disabled={screen === 'answer_reveal'}
+            </div>
+          ) : (
+            <>
+              {/* Cubeforge canvas — visual effects layer */}
+              <div className="absolute inset-0">
+                <QuizCanvas
+                  width={CANVAS_W}
+                  height={CANVAS_H}
+                  timerFraction={screen === 'question' ? timeLeft / QUESTION_TIME : 1}
+                  showBurst={showBurst}
+                  shouldShake={shouldShake}
+                  onShakeDone={() => setShouldShake(false)}
                 />
               </div>
-            </>
-          )}
 
-          {screen === 'results' && result && (
-            <QuizResults
-              result={result}
-              onPlayAgain={startGame}
-              onBackToLobby={() => navigate('/games')}
-            />
+              {/* HTML overlay — interactive game layer */}
+              <div className="absolute inset-0 z-10 flex flex-col">
+                {screen === 'idle' && (
+                  <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white">
+                    <p className="text-4xl">🎯</p>
+                    <p className="text-xl font-bold">Quiz Arcade</p>
+                    <p className="text-sm text-white/60">
+                      {allQuestions.length} questions • {QUESTION_TIME}s each
+                    </p>
+                    <Button onClick={startGame} className="mt-2">Start Game</Button>
+                  </div>
+                )}
+
+                {screen === 'countdown' && (
+                  <div className="flex items-center justify-center flex-1 text-white">
+                    {/* key remounts the element each second, re-triggering the CSS animation */}
+                    <p key={countdown} className="text-8xl font-black [animation:quiz-pop_0.35s_ease-out]">
+                      {countdown > 0 ? countdown : 'GO!'}
+                    </p>
+                  </div>
+                )}
+
+                {(screen === 'question' || screen === 'answer_reveal') && currentQuestion && (
+                  <>
+                    <QuizHud
+                      score={score}
+                      questionIndex={currentIndex}
+                      total={gameQuestions.length}
+                      timeLeft={timeLeft}
+                      streak={streak}
+                    />
+                    <div className="flex flex-col justify-between flex-1">
+                      <QuizQuestionDisplay
+                        question={{
+                          id: currentQuestion.id,
+                          text: currentQuestion.text ?? '',
+                          type: currentQuestion.type,
+                          answers,
+                        }}
+                      />
+                      <QuizAnswerGrid
+                        answers={answers}
+                        selected={selected}
+                        onSelect={handleAnswer}
+                        disabled={screen === 'answer_reveal'}
+                        firstButtonRef={firstAnswerRef}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {screen === 'results' && result && (
+                  <QuizResults
+                    result={result}
+                    onPlayAgain={startGame}
+                    onBackToLobby={() => navigate('/games')}
+                  />
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
