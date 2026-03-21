@@ -10,5 +10,6 @@ export {
   useCreateQuestion,
   useUpdateQuestion,
   useDeleteQuestion,
+  useDuplicateQuestion,
   useSubmitForReview,
 } from './hooks';
