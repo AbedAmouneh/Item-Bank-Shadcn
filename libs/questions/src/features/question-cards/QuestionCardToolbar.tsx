@@ -32,7 +32,7 @@ function QuestionCardToolbar({
   const { t } = useTranslation('questions');
 
   return (
-    <div className="flex flex-col gap-3 pb-4">
+    <div className="flex flex-col gap-3 pb-6">
       {/* Top row: stats on the left, Add Question on the right */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
