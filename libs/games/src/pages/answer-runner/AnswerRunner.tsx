@@ -96,8 +96,12 @@ export default function AnswerRunner() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const questionType = searchParams.get('type') ?? 'multiple_choice';
+  const rawTag = searchParams.get('tag_ids');
+  const tag_ids = rawTag ? [Number(rawTag)] : undefined;
+  const rawBank = searchParams.get('item_bank_id');
+  const item_bank_id = rawBank ? Number(rawBank) : undefined;
 
-  const { data, isLoading } = useGameQuestions({ type: questionType });
+  const { data, isLoading } = useGameQuestions({ type: questionType, tag_ids, item_bank_id });
   const questions = (data?.items ?? []).filter((q) => extractAnswers(q).length > 0);
 
   const [started, setStarted] = useState(false);
