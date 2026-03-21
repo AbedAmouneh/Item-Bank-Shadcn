@@ -2,13 +2,12 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent } from '@item-bank/ui';
 import {
   QuestionEditorShell,
-  QuestionsTable,
+  QuestionCardList,
   type QuestionType,
   type QuestionFormData,
   QuestionViewShell,
   type QuestionRow,
   useQuestions,
-  useDeleteQuestion,
   useCreateQuestion,
   useUpdateQuestion,
 } from '@item-bank/questions';
@@ -119,11 +118,10 @@ const Home = () => {
   const selectedQuestion = useRef<QuestionRow | null>(null);
   const questionToEditId = useRef<string | number | null>(null);
 
-  // Fetch the question list from the REST API.
-  const { data: questionsPage, isError } = useQuestions();
+  // Fetch all questions at once so the card grid can filter client-side.
+  const { data: questionsPage, isError } = useQuestions({ limit: 1000 });
   const questions: QuestionRow[] = (questionsPage?.items ?? []).map(apiToRow);
 
-  const { mutate: deleteQuestionMutate } = useDeleteQuestion();
   const { mutate: createQuestionMutate } = useCreateQuestion();
   const { mutate: updateQuestionMutate } = useUpdateQuestion();
 
@@ -272,35 +270,16 @@ const Home = () => {
     setQuestionViewOpen(true);
   }, []);
 
-  const handleDeleteQuestion = useCallback(
-    (row: QuestionRow) => {
-      deleteQuestionMutate(row.id as number, {
-        onSuccess: () => {
-          setSnackbarSeverity('success');
-          setSnackbarMessage('Question deleted successfully.');
-          setSnackbarOpen(true);
-        },
-        onError: () => {
-          setSnackbarSeverity('error');
-          setSnackbarMessage('Failed to delete question.');
-          setSnackbarOpen(true);
-        },
-      });
-    },
-    [deleteQuestionMutate]
-  );
-
   return (
     <div className="w-full">
       {isError && (
         <p className="text-destructive">Failed to load questions</p>
       )}
-      <QuestionsTable
+      <QuestionCardList
         questions={questions}
-        onQuestionTypeChange={handleQuestionTypeChange}
-        handleQuestionViewOpen={handleQuestionViewOpen}
         onEditQuestion={handleEditQuestion}
-        onDeleteQuestion={handleDeleteQuestion}
+        onPreviewQuestion={handleQuestionViewOpen}
+        onQuestionTypeChange={handleQuestionTypeChange}
       />
 
       {/* Editor Dialog */}
