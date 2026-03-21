@@ -2,45 +2,10 @@ import { memo, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Eye, MoreVertical } from 'lucide-react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 import { cn } from '@item-bank/ui';
 import { type QuestionRow } from '../../components/QuestionsTable';
-import { type QuestionType } from '../../domain/types';
 import QuestionViewShell from '../../components/QuestionViewShell';
-
-// ---------------------------------------------------------------------------
-// Shared colour maps (same palette as QuestionsTable)
-// ---------------------------------------------------------------------------
-
-const TYPE_COLORS: Record<QuestionType, string> = {
-  multiple_choice: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
-  short_answer: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-  essay: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  true_false: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
-  fill_in_blanks: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  record_audio: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  drag_drop_image: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-  drag_drop_text: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
-  free_hand_drawing: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-  image_sequencing: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
-  multiple_hotspots: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-  numerical: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  select_correct_word: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
-  text_sequencing: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-  fill_in_blanks_image: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-  highlight_correct_word: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-  text_classification: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-  image_classification: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-  matching: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-};
-
-type QuestionStatus = 'Draft' | 'Published' | 'In Review';
-
-const STATUS_COLORS: Record<QuestionStatus, string> = {
-  Draft: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-  Published: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  'In Review': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-};
+import { TYPE_COLORS, STATUS_COLORS, type QuestionStatus } from './questionCardConstants';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -51,6 +16,11 @@ type QuestionCardProps = {
   /** 1-based display index shown in the number badge. */
   index: number;
   onEdit?: (id: number) => void;
+  /**
+   * Called when the user selects "Delete" from the card's action menu.
+   * The parent is responsible for showing a confirmation dialog before
+   * committing the delete — this card does not contain one.
+   */
   onDelete?: (id: number) => void;
   onDuplicate?: (id: number) => void;
   onPreview?: (id: number) => void;
@@ -80,7 +50,6 @@ function InlineMarkEditor({ id, mark, name, onMarkChange }: InlineMarkEditorProp
   const startEditing = useCallback(() => {
     setDraft(String(mark));
     setEditing(true);
-    // Focus is applied after re-render
     setTimeout(() => inputRef.current?.focus(), 0);
   }, [mark]);
 
@@ -92,10 +61,13 @@ function InlineMarkEditor({ id, mark, name, onMarkChange }: InlineMarkEditorProp
     setEditing(false);
   }, [draft, id, onMarkChange]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') commit();
-    if (e.key === 'Escape') setEditing(false);
-  }, [commit]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') commit();
+      if (e.key === 'Escape') setEditing(false);
+    },
+    [commit],
+  );
 
   if (editing) {
     return (
@@ -143,17 +115,14 @@ function QuestionCard({
 }: QuestionCardProps) {
   const { t } = useTranslation('questions');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
 
   const id = Number(question.id);
-  const typeKey = question.type.toLowerCase().replace(/ /g, '_');
-  const statusKey = question.status.toLowerCase().replace(/ /g, '_') as Lowercase<QuestionStatus>;
 
-  const handleConfirmDelete = useCallback(() => {
-    setDeleteDialogOpen(false);
-    onDelete?.(id);
-  }, [id, onDelete]);
+  // question.type is already snake_case — the key maps directly to i18n + colour maps.
+  const typeKey = question.type;
+  // Guard against unexpected runtime values arriving from the server.
+  const statusColor = STATUS_COLORS[question.status as QuestionStatus] ?? '';
 
   return (
     <div
@@ -205,7 +174,10 @@ function QuestionCard({
       </div>
 
       {/* ── Inline question preview (scaled) ── */}
-      <div className="mx-3 overflow-hidden rounded-xl border border-border bg-muted/30" style={{ height: 340 }}>
+      <div
+        className="mx-3 overflow-hidden rounded-xl border border-border bg-muted/30"
+        style={{ height: 340 }}
+      >
         <div
           style={{
             transform: 'scale(0.74)',
@@ -228,10 +200,10 @@ function QuestionCard({
         <span
           className={cn(
             'inline-flex items-center rounded-full px-2 py-0.5 text-[0.6rem] font-medium',
-            STATUS_COLORS[question.status],
+            statusColor,
           )}
         >
-          {t(`statuses.${statusKey}`)}
+          {t(`statuses.${question.status.toLowerCase().replace(/ /g, '_')}`)}
         </span>
         <span className="text-[0.65rem] text-muted-foreground">{question.lastModified}</span>
       </div>
@@ -299,12 +271,10 @@ function QuestionCard({
                   {t('submit_for_review')}
                 </DropdownMenuPrimitive.Item>
               )}
+              {/* Calls onDelete without internal confirmation — parent shows the dialog. */}
               <DropdownMenuPrimitive.Item
                 className="px-3 py-2 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 outline-none"
-                onSelect={() => {
-                  setMenuOpen(false);
-                  setDeleteDialogOpen(true);
-                }}
+                onSelect={() => onDelete?.(id)}
               >
                 {t('delete')}
               </DropdownMenuPrimitive.Item>
@@ -312,32 +282,6 @@ function QuestionCard({
           </DropdownMenuPrimitive.Portal>
         </DropdownMenuPrimitive.Root>
       </div>
-
-      {/* ── Delete confirmation AlertDialog ── */}
-      <AlertDialogPrimitive.Root open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogPrimitive.Portal>
-          <AlertDialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50 animate-in fade-in-0" />
-          <AlertDialogPrimitive.Content className="fixed start-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl animate-in fade-in-0 zoom-in-95">
-            <AlertDialogPrimitive.Title className="text-lg font-semibold text-foreground">
-              {t('delete_confirm_title')}
-            </AlertDialogPrimitive.Title>
-            <AlertDialogPrimitive.Description className="mt-2 text-sm text-muted-foreground">
-              {t('delete_confirm_message', { name: question.questionName })}
-            </AlertDialogPrimitive.Description>
-            <div className="mt-6 flex justify-end gap-3">
-              <AlertDialogPrimitive.Cancel className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground">
-                {t('cancel')}
-              </AlertDialogPrimitive.Cancel>
-              <AlertDialogPrimitive.Action
-                onClick={handleConfirmDelete}
-                className="px-4 py-2 text-sm font-medium rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
-              >
-                {t('delete')}
-              </AlertDialogPrimitive.Action>
-            </div>
-          </AlertDialogPrimitive.Content>
-        </AlertDialogPrimitive.Portal>
-      </AlertDialogPrimitive.Root>
     </div>
   );
 }
