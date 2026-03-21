@@ -43,6 +43,8 @@ export interface GetQuestionsParams {
   type?: string;
   status?: string;
   item_bank_id?: number;
+  /** One or more tag IDs to filter by. Serialised as repeated `tag_ids[]=N` params. */
+  tag_ids?: number[];
   search?: string;
 }
 
@@ -59,6 +61,9 @@ export async function getQuestions(params?: GetQuestionsParams): Promise<Questio
   if (params?.type !== undefined) query.set('type', params.type);
   if (params?.status !== undefined) query.set('status', params.status);
   if (params?.item_bank_id !== undefined) query.set('item_bank_id', String(params.item_bank_id));
+  if (params?.tag_ids !== undefined) {
+    params.tag_ids.forEach((id) => query.append('tag_ids[]', String(id)));
+  }
   if (params?.search !== undefined) query.set('search', params.search);
 
   const qs = query.toString() ? `?${query.toString()}` : '';
