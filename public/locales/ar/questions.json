@@ -484,5 +484,24 @@
   "export": "تصدير",
   "export_excel": "تصدير إلى Excel",
   "export_pdf": "تصدير إلى PDF",
-  "submit_for_review": "إرسال للمراجعة"
+  "submit_for_review": "إرسال للمراجعة",
+  "card": {
+    "question_count_one": "{{count}} سؤال",
+    "question_count_other": "{{count}} أسئلة",
+    "total_score": "المجموع: {{score}} نقطة",
+    "search_placeholder": "ابحث عن أسئلة...",
+    "filter_all": "الكل",
+    "pts": "نقطة",
+    "duplicate": "تكرار",
+    "copy_of": "نسخة من ",
+    "selected_delete": "{{count}} محدد — حذف",
+    "bulk_deleted_one": "تم حذف {{count}} سؤال",
+    "bulk_deleted_other": "تم حذف {{count}} أسئلة",
+    "undo": "تراجع",
+    "no_results": "لا توجد أسئلة تطابق بحثك.",
+    "mark_aria": "تعديل الدرجة لـ {{name}}",
+    "select_aria": "تحديد {{name}}",
+    "sidebar_title": "ترتيب الأسئلة",
+    "drag_handle_aria": "اسحب لإعادة ترتيب {{name}}"
+  }
 }
