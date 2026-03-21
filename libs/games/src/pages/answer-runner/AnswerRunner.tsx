@@ -322,6 +322,7 @@ export default function AnswerRunner() {
               correctCount={correctCount}
               totalQuestions={questions.length}
               survived={lives > 0}
+              item_bank_id={item_bank_id}
               onPlayAgain={handleStart}
               onBack={() => navigate('/games')}
             />
