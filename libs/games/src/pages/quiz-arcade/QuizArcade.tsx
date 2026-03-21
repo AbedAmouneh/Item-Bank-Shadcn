@@ -7,8 +7,9 @@
  * cycles through: idle → countdown → question → answer_reveal → results.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import type { Question } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
 import { useGameQuestions } from '../../domain/hooks';
 import { extractAnswers } from '../../domain/extractAnswers';
@@ -22,7 +23,7 @@ import QuizResults from './QuizResults';
 const CANVAS_W = 700;
 const CANVAS_H = 480;
 const QUESTION_TIME = 15; // seconds per question
-const REVEAL_DELAY = 1400; // ms to show correct/wrong before advancing
+const REVEAL_DELAY = 1500; // ms to show correct/wrong before advancing
 
 // ─── Scoring ─────────────────────────────────────────────────────────────────
 
@@ -38,41 +39,79 @@ function calcScore(timeLeft: number, streak: number): number {
 export default function QuizArcade() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
   const questionType = searchParams.get('type') ?? 'multiple_choice';
-  const tagId = searchParams.get('tag_id');
+  const rawTag = searchParams.get('tag_ids');
+  const tag_ids = rawTag ? [Number(rawTag)] : undefined;
+  const rawBank = searchParams.get('item_bank_id');
+  const item_bank_id = rawBank ? Number(rawBank) : undefined;
 
   const { data, isLoading, isError } = useGameQuestions({
     type: questionType,
-    ...(tagId ? { item_bank_id: undefined } : {}),
+    tag_ids,
+    item_bank_id,
   });
 
-  const questions = (data?.items ?? []).filter(
-    (q) => extractAnswers(q).length > 0,
+  // Questions that have at least one extractable answer — used for the
+  // idle screen count and to seed each shuffle.
+  const allQuestions = useMemo(
+    () => (data?.items ?? []).filter((q) => extractAnswers(q).length > 0),
+    [data],
   );
 
   // ── State ────────────────────────────────────────────────────────────────
+
   const [screen, setScreen] = useState<GameScreen>('idle');
+  // Shuffled copy populated (and reshuffled) by startGame each time.
+  const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [streak, setStreak] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
+  // Starts at 3, counts down to -1. When < 0 the game begins.
   const [countdown, setCountdown] = useState(3);
   const [showBurst, setShowBurst] = useState(false);
   const [shouldShake, setShouldShake] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
 
-  const currentQuestion = questions[currentIndex];
-  const answers: GameAnswer[] = currentQuestion ? extractAnswers(currentQuestion) : [];
+  const currentQuestion = gameQuestions[currentIndex];
+  const answers: GameAnswer[] = useMemo(
+    () => (currentQuestion ? extractAnswers(currentQuestion) : []),
+    [currentQuestion],
+  );
 
   // ── Countdown timer ───────────────────────────────────────────────────────
+  // countdown 3 → 2 → 1 → 0 (shows "GO!") → -1 → start question.
   useEffect(() => {
     if (screen !== 'countdown') return;
-    if (countdown <= 0) { setScreen('question'); return; }
+    if (countdown < 0) { setScreen('question'); return; }
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [screen, countdown]);
+
+  // ── Advance to next question ──────────────────────────────────────────────
+  const advance = useCallback(() => {
+    const next = currentIndex + 1;
+    if (next >= gameQuestions.length) {
+      setScreen('results');
+    } else {
+      setCurrentIndex(next);
+      setSelected(null);
+      setTimeLeft(QUESTION_TIME);
+      setScreen('question');
+    }
+  }, [currentIndex, gameQuestions.length]);
+
+  // ── Time-up handler ───────────────────────────────────────────────────────
+  const handleTimeUp = useCallback(() => {
+    setSelected('__timeout__');
+    setScreen('answer_reveal');
+    setStreak(0);
+    setShouldShake(true);
+    setTimeout(advance, REVEAL_DELAY);
+  }, [advance]);
 
   // ── Question timer ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -80,10 +119,13 @@ export default function QuizArcade() {
     if (timeLeft <= 0) { handleTimeUp(); return; }
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
-  });
+  }, [screen, timeLeft, handleTimeUp]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const startGame = () => {
+
+  const startGame = useCallback(() => {
+    // Reshuffle questions on every new session including Play Again.
+    setGameQuestions([...allQuestions].sort(() => Math.random() - 0.5));
     setCurrentIndex(0);
     setScore(0);
     setCorrect(0);
@@ -92,19 +134,7 @@ export default function QuizArcade() {
     setCountdown(3);
     setResult(null);
     setScreen('countdown');
-  };
-
-  const advance = useCallback(() => {
-    const next = currentIndex + 1;
-    if (next >= questions.length) {
-      setScreen('results');
-    } else {
-      setCurrentIndex(next);
-      setSelected(null);
-      setTimeLeft(QUESTION_TIME);
-      setScreen('question');
-    }
-  }, [currentIndex, questions.length]);
+  }, [allQuestions]);
 
   const handleAnswer = (answerId: string) => {
     if (screen !== 'question' || selected !== null) return;
@@ -127,21 +157,14 @@ export default function QuizArcade() {
     setTimeout(advance, REVEAL_DELAY);
   };
 
-  const handleTimeUp = () => {
-    setSelected('__timeout__');
-    setScreen('answer_reveal');
-    setStreak(0);
-    setShouldShake(true);
-    setTimeout(advance, REVEAL_DELAY);
-  };
-
   useEffect(() => {
     if (screen === 'results' && result === null) {
-      setResult({ score, total: questions.length, correct, streak });
+      setResult({ score, total: gameQuestions.length, correct, streak });
     }
-  }, [screen, score, questions.length, correct, streak, result]);
+  }, [screen, score, gameQuestions.length, correct, streak, result]);
 
   // ── Render ────────────────────────────────────────────────────────────────
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-20 text-muted-foreground">
@@ -150,7 +173,7 @@ export default function QuizArcade() {
     );
   }
 
-  if (isError || questions.length === 0) {
+  if (isError || allQuestions.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 p-20 text-center">
         <p className="text-muted-foreground">
@@ -192,14 +215,17 @@ export default function QuizArcade() {
             <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white">
               <p className="text-4xl">🎯</p>
               <p className="text-xl font-bold">Quiz Arcade</p>
-              <p className="text-sm text-white/60">{questions.length} questions • {QUESTION_TIME}s each</p>
+              <p className="text-sm text-white/60">
+                {allQuestions.length} questions • {QUESTION_TIME}s each
+              </p>
               <Button onClick={startGame} className="mt-2">Start Game</Button>
             </div>
           )}
 
           {screen === 'countdown' && (
             <div className="flex items-center justify-center flex-1 text-white">
-              <p className="text-8xl font-black animate-pulse">
+              {/* key remounts the element each second, re-triggering the CSS animation */}
+              <p key={countdown} className="text-8xl font-black [animation:quiz-pop_0.35s_ease-out]">
                 {countdown > 0 ? countdown : 'GO!'}
               </p>
             </div>
@@ -210,7 +236,7 @@ export default function QuizArcade() {
               <QuizHud
                 score={score}
                 questionIndex={currentIndex}
-                total={questions.length}
+                total={gameQuestions.length}
                 timeLeft={timeLeft}
                 streak={streak}
               />
