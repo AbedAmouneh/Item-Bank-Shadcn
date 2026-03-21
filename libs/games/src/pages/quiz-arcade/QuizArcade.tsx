@@ -279,6 +279,7 @@ export default function QuizArcade() {
                 {screen === 'results' && result && (
                   <QuizResults
                     result={result}
+                    item_bank_id={item_bank_id}
                     onPlayAgain={startGame}
                     onBackToLobby={() => navigate('/games')}
                   />
