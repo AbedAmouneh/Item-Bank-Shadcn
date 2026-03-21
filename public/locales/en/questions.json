@@ -481,6 +481,12 @@
     "justification_label": "Justify your answer"
   },
   "no_questions": "No questions found",
+  "preview_page": {
+    "back": "Back to questions",
+    "loading": "Loading question…",
+    "not_found": "Question not found.",
+    "unsupported_type": "Preview is not available for this question type."
+  },
   "export": "Export",
   "export_excel": "Export to Excel",
   "export_pdf": "Export to PDF",
@@ -502,6 +508,10 @@
     "mark_aria": "Edit mark for {{name}}",
     "select_aria": "Select {{name}}",
     "sidebar_title": "Question order",
-    "drag_handle_aria": "Drag to reorder {{name}}"
+    "drag_handle_aria": "Drag to reorder {{name}}",
+    "change_status": "Change Status",
+    "status_draft": "Draft",
+    "status_in_review": "In Review",
+    "status_published": "Published"
   }
 }
