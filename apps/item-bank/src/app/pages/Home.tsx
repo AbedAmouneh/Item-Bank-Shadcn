@@ -1,14 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@item-bank/ui';
 import {
   QuestionEditorShell,
-  QuestionsTable,
+  QuestionCardList,
   type QuestionType,
   type QuestionFormData,
-  QuestionViewShell,
   type QuestionRow,
   useQuestions,
-  useDeleteQuestion,
   useCreateQuestion,
   useUpdateQuestion,
 } from '@item-bank/questions';
@@ -99,7 +98,7 @@ function apiToRow(q: {
     id: q.id,
     type: q.type as QuestionType,
     questionName: q.name,
-    mark: q.mark ?? 0,
+    mark: Number(q.mark ?? 0),
     status: normalizeStatus(q.status),
     lastModified: q.updated_at ? formatLastModified(q.updated_at) : '',
     question_text: q.text ?? '',
@@ -107,8 +106,8 @@ function apiToRow(q: {
 }
 
 const Home = () => {
+  const navigate = useNavigate();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [questionViewOpen, setQuestionViewOpen] = useState(false);
   const [questionToEdit, setQuestionToEdit] = useState<QuestionRow | null>(null);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
   const [initialFormData, setInitialFormData] = useState<QuestionFormData | undefined>(undefined);
@@ -116,14 +115,12 @@ const Home = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<SnackbarSeverity>('success');
   const selectedQuestionType = useRef<QuestionType | null>(null);
-  const selectedQuestion = useRef<QuestionRow | null>(null);
   const questionToEditId = useRef<string | number | null>(null);
 
-  // Fetch the question list from the REST API.
-  const { data: questionsPage, isError } = useQuestions();
+  // Fetch all questions at once so the card grid can filter client-side.
+  const { data: questionsPage, isError } = useQuestions({ limit: 100 });
   const questions: QuestionRow[] = (questionsPage?.items ?? []).map(apiToRow);
 
-  const { mutate: deleteQuestionMutate } = useDeleteQuestion();
   const { mutate: createQuestionMutate } = useCreateQuestion();
   const { mutate: updateQuestionMutate } = useUpdateQuestion();
 
@@ -268,39 +265,19 @@ const Home = () => {
   );
 
   const handleQuestionViewOpen = useCallback((row: QuestionRow | null) => {
-    selectedQuestion.current = row;
-    setQuestionViewOpen(true);
-  }, []);
-
-  const handleDeleteQuestion = useCallback(
-    (row: QuestionRow) => {
-      deleteQuestionMutate(row.id as number, {
-        onSuccess: () => {
-          setSnackbarSeverity('success');
-          setSnackbarMessage('Question deleted successfully.');
-          setSnackbarOpen(true);
-        },
-        onError: () => {
-          setSnackbarSeverity('error');
-          setSnackbarMessage('Failed to delete question.');
-          setSnackbarOpen(true);
-        },
-      });
-    },
-    [deleteQuestionMutate]
-  );
+    if (row) navigate(`/questions/${row.id}/preview`);
+  }, [navigate]);
 
   return (
-    <div className="w-full">
+    <div className="w-full px-8 py-8">
       {isError && (
-        <p className="text-destructive">Failed to load questions</p>
+        <p className="text-destructive mb-4">Failed to load questions</p>
       )}
-      <QuestionsTable
+      <QuestionCardList
         questions={questions}
-        onQuestionTypeChange={handleQuestionTypeChange}
-        handleQuestionViewOpen={handleQuestionViewOpen}
         onEditQuestion={handleEditQuestion}
-        onDeleteQuestion={handleDeleteQuestion}
+        onPreviewQuestion={handleQuestionViewOpen}
+        onQuestionTypeChange={handleQuestionTypeChange}
       />
 
       {/* Editor Dialog */}
@@ -315,15 +292,6 @@ const Home = () => {
               initialData={initialFormData}
             />
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Question View Dialog */}
-      <Dialog open={questionViewOpen} onOpenChange={(open: boolean) => { if (!open) setQuestionViewOpen(false); }}>
-        <DialogContent
-          className={selectedQuestion.current?.type === 'free_hand_drawing' ? 'max-w-5xl' : 'max-w-3xl'}
-        >
-          <QuestionViewShell question={selectedQuestion.current} />
         </DialogContent>
       </Dialog>
 

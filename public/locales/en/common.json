@@ -13,7 +13,8 @@
         "itemBank": "Item Bank",
         "analytics": "Analytics",
         "settings": "Settings",
-        "adminUsers": "Admin"
+        "adminUsers": "Admin",
+        "games": "Games"
     },
     "table_actions": {
         "notifications": "Notifications",

@@ -107,6 +107,7 @@ export interface UpdateQuestionData {
   name?: string;
   text?: string;
   mark?: number;
+  status?: 'draft' | 'in_review' | 'published';
   item_bank_id?: number;
   tag_ids?: number[];
   content?: Record<string, unknown>;

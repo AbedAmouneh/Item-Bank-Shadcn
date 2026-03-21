@@ -481,8 +481,37 @@
     "justification_label": "Justify your answer"
   },
   "no_questions": "No questions found",
+  "preview_page": {
+    "back": "Back to questions",
+    "loading": "Loading question…",
+    "not_found": "Question not found.",
+    "unsupported_type": "Preview is not available for this question type."
+  },
   "export": "Export",
   "export_excel": "Export to Excel",
   "export_pdf": "Export to PDF",
-  "submit_for_review": "Submit for Review"
+  "submit_for_review": "Submit for Review",
+  "card": {
+    "question_count_one": "{{count}} question",
+    "question_count_other": "{{count}} questions",
+    "total_score": "{{score}} pts total",
+    "search_placeholder": "Search questions...",
+    "filter_all": "All",
+    "pts": "pts",
+    "duplicate": "Duplicate",
+    "copy_of": "Copy of ",
+    "selected_delete": "{{count}} selected — Delete",
+    "bulk_deleted_one": "{{count}} question deleted",
+    "bulk_deleted_other": "{{count}} questions deleted",
+    "undo": "Undo",
+    "no_results": "No questions match your search.",
+    "mark_aria": "Edit mark for {{name}}",
+    "select_aria": "Select {{name}}",
+    "sidebar_title": "Question order",
+    "drag_handle_aria": "Drag to reorder {{name}}",
+    "change_status": "Change Status",
+    "status_draft": "Draft",
+    "status_in_review": "In Review",
+    "status_published": "Published"
+  }
 }

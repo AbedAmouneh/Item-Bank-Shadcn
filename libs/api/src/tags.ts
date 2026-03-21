@@ -20,16 +20,24 @@ export interface Tag {
   slug: string;
 }
 
+/** Paginated list wrapper returned by list endpoints. */
+interface PaginatedList<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 /**
  * Fetch all tags.
  *
- * Tags are a small, stable list so no pagination is applied.
+ * The /tags endpoint returns a paginated envelope; we extract the items array.
  *
  * @returns An array of all tags.
  */
 export async function getTags(): Promise<Tag[]> {
-  const envelope = await apiRequest<Envelope<Tag[]>>('/tags');
-  return envelope.data;
+  const envelope = await apiRequest<Envelope<PaginatedList<Tag>>>('/tags');
+  return envelope.data.items;
 }
 
 /**
