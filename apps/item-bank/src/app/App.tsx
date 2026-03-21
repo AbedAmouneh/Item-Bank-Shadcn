@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Outlet, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import {
   Login,
   ForgotPassword,
@@ -10,6 +11,7 @@ import {
 import { ThemeModeProvider, useThemeMode, type ThemeMode } from '@item-bank/ui';
 import { ProfileSidebar } from '@item-bank/profile';
 import i18n from '@item-bank/i18n';
+import GamesLobby, { QuizArcade, MemoryMatch, AnswerRunner } from '@item-bank/games';
 import Home from './pages/Home';
 import ProfileGeneral from './pages/profile/General';
 import ChangePassword from './pages/profile/ChangePassword';
@@ -34,6 +36,7 @@ export default function App() {
 
   return (
     <ThemeModeProvider value={{ mode, setMode }}>
+      <Toaster richColors closeButton duration={5000} />
       <AppShell>
         <BrowserRouter>
           <Routes>
@@ -45,6 +48,10 @@ export default function App() {
                   <Route path='change-password' element={<ChangePassword />} />
                 </Route>
                 <Route path='/admin/users' element={<AdminUsers />} />
+                <Route path='/games' element={<GamesLobby />} />
+                <Route path='/games/quiz-arcade' element={<QuizArcade />} />
+                <Route path='/games/memory-match' element={<MemoryMatch />} />
+                <Route path='/games/answer-runner' element={<AnswerRunner />} />
               </Route>
             </Route>
 
