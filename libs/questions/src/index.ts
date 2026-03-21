@@ -1,5 +1,6 @@
 export * from './domain';
 export * from './types';
+export { QuestionCardList } from './features/question-cards';
 export { default as QuestionEditorShell } from './components/QuestionEditorShell';
 export type { QuestionFormData } from './components/QuestionEditorShell';
 export { default as QuestionsTable, type QuestionRow, type QuestionChoice } from './components/QuestionsTable';
