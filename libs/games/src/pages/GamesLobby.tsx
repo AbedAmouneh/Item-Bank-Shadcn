@@ -11,12 +11,14 @@
  *     Fetches the named item bank and shows its name as the heading. Filters
  *     are hidden because the questions are already scoped by item_bank_id.
  *     The Play button forwards item_bank_id to the game URL instead.
+ *     A "Leaderboard" tab is shown so players can see ranked scores.
  */
 
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getTags, getItemBank } from '@item-bank/api';
+import { getTags, getItemBank, getLeaderboard } from '@item-bank/api';
+import type { GameId } from '@item-bank/api';
 import {
   Button,
   Card,
@@ -30,12 +32,22 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@item-bank/ui';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface GameCardInfo {
-  id: string;
+  id: GameId;
   emoji: string;
   title: string;
   description: string;
@@ -79,13 +91,55 @@ const TYPE_LABELS: Record<string, string> = {
   matching: 'Matching',
 };
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+/** Game card grid — shared between full bank mode and the "Games" tab. */
+function GameCardGrid({ games, onPlay }: { games: GameCardInfo[]; onPlay: (g: GameCardInfo) => void }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {games.map((game) => (
+        <Card key={game.id} className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <span role="img" aria-label={game.title}>{game.emoji}</span>
+              {game.title}
+            </CardTitle>
+            <CardDescription>{game.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+              Compatible types
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {game.compatibleTypes.map((t) => (
+                <span
+                  key={t}
+                  className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5"
+                >
+                  {TYPE_LABELS[t] ?? t}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full" onClick={() => onPlay(game)}>
+              Play →
+            </Button>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function GamesLobby() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [selectedTagId, setSelectedTagId] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [leaderboardGame, setLeaderboardGame] = useState<GameId>('quiz-arcade');
 
   // Determine which mode we're in by checking the URL.
   const rawBankId = searchParams.get('item_bank_id');
@@ -106,6 +160,15 @@ export default function GamesLobby() {
     queryFn: getTags,
     enabled: !isItemBankMode,
     staleTime: 60_000,
+  });
+
+  // Fetch leaderboard only in item bank mode. Pre-fetched on mount so switching
+  // to the Leaderboard tab is instant.
+  const { data: leaderboard = [], isLoading: leaderboardLoading } = useQuery({
+    queryKey: ['leaderboard', leaderboardGame, itemBankId],
+    queryFn: () => getLeaderboard(leaderboardGame, itemBankId!),
+    enabled: isItemBankMode,
+    staleTime: 30_000,
   });
 
   function handlePlay(game: GameCardInfo) {
@@ -132,69 +195,113 @@ export default function GamesLobby() {
         <p className="text-muted-foreground mt-1">Play with your question bank</p>
       </div>
 
-      {/* Filters — only shown in full bank mode */}
-      {!isItemBankMode && (
-        <div className="flex flex-wrap gap-3 mb-8">
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="w-48" aria-label="Filter by question type">
-              <SelectValue placeholder="All types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {isItemBankMode ? (
+        /* Item bank mode: Games tab + Leaderboard tab */
+        <Tabs defaultValue="games">
+          <TabsList className="mb-8">
+            <TabsTrigger value="games">Games</TabsTrigger>
+            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          </TabsList>
 
-          <Select value={selectedTagId} onValueChange={setSelectedTagId}>
-            <SelectTrigger className="w-48" aria-label="Filter by tag">
-              <SelectValue placeholder="All tags" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All tags</SelectItem>
-              {tags.map((tag) => (
-                <SelectItem key={tag.id} value={String(tag.id)}>{tag.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+          <TabsContent value="games">
+            <GameCardGrid games={GAMES} onPlay={handlePlay} />
+          </TabsContent>
 
-      {/* Game cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {GAMES.map((game) => (
-          <Card key={game.id} className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <span role="img" aria-label={game.title}>{game.emoji}</span>
-                {game.title}
-              </CardTitle>
-              <CardDescription>{game.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                Compatible types
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {game.compatibleTypes.map((t) => (
-                  <span
-                    key={t}
-                    className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5"
-                  >
-                    {TYPE_LABELS[t] ?? t}
-                  </span>
-                ))}
+          <TabsContent value="leaderboard">
+            {/* Game selector for the leaderboard */}
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-sm font-medium text-muted-foreground">Game</span>
+              <Select
+                value={leaderboardGame}
+                onValueChange={(v) => setLeaderboardGame(v as GameId)}
+              >
+                <SelectTrigger className="w-48" aria-label="Select game for leaderboard">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {GAMES.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {g.emoji} {g.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {leaderboardLoading ? (
+              <div className="flex justify-center py-12">
+                <div
+                  className="w-8 h-8 rounded-full border-[3px] border-muted border-t-foreground animate-spin"
+                  role="status"
+                  aria-label="Loading leaderboard"
+                />
               </div>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full" onClick={() => handlePlay(game)}>
-                Play →
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+            ) : leaderboard.length === 0 ? (
+              <p className="text-center text-muted-foreground py-12">
+                No scores yet. Play a game to be first on the board!
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead>Player</TableHead>
+                    <TableHead className="text-end">Score</TableHead>
+                    <TableHead className="text-end">Accuracy</TableHead>
+                    <TableHead className="text-end">Correct</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {leaderboard.map((entry) => (
+                    <TableRow key={entry.rank}>
+                      <TableCell className="font-medium text-muted-foreground">
+                        {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : entry.rank}
+                      </TableCell>
+                      <TableCell>{entry.username}</TableCell>
+                      <TableCell className="text-end font-semibold">{entry.score}</TableCell>
+                      <TableCell className="text-end text-muted-foreground">{entry.accuracy}%</TableCell>
+                      <TableCell className="text-end text-muted-foreground">
+                        {entry.correct_qs}/{entry.total_qs}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </TabsContent>
+        </Tabs>
+      ) : (
+        /* Full bank mode: filters + game cards */
+        <>
+          <div className="flex flex-wrap gap-3 mb-8">
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-48" aria-label="Filter by question type">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {Object.entries(TYPE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedTagId} onValueChange={setSelectedTagId}>
+              <SelectTrigger className="w-48" aria-label="Filter by tag">
+                <SelectValue placeholder="All tags" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All tags</SelectItem>
+                {tags.map((tag) => (
+                  <SelectItem key={tag.id} value={String(tag.id)}>{tag.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <GameCardGrid games={GAMES} onPlay={handlePlay} />
+        </>
+      )}
     </div>
   );
 }
