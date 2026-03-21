@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { updateQuestion } from '@item-bank/api';
 import type { UpdateQuestionData } from '@item-bank/api';
@@ -24,6 +25,9 @@ export function useUpdateQuestion() {
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['questions'] });
       void queryClient.invalidateQueries({ queryKey: ['questions', variables.id] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update question');
     },
   });
 }
