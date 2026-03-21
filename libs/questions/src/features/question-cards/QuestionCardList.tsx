@@ -70,7 +70,9 @@ function QuestionCardList({
   const [addModalOpen, setAddModalOpen] = useState(false);
 
   // ── Selection state ───────────────────────────────────────────────────────
-  const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
+  // IDs are normalised to numbers to avoid Set membership mismatches
+  // when QuestionRow.id arrives as a string from IndexedDB.
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // ── Sidebar order state ───────────────────────────────────────────────────
   // Tracks manual reorder. Initialised from incoming questions; kept in sync
@@ -85,8 +87,8 @@ function QuestionCardList({
 
   // ── Pending bulk-delete ───────────────────────────────────────────────────
   // While the timer is running, these questions are hidden from the grid but
-  // not yet deleted on the server.
-  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<number | string>>(new Set());
+  // not yet deleted on the server. IDs are normalised to numbers.
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<number>>(new Set());
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Snapshot the rows being deleted so Undo can restore them.
   const pendingDeleteRowsRef = useRef<QuestionRow[]>([]);
@@ -107,7 +109,7 @@ function QuestionCardList({
 
   const visibleQuestions = useMemo(() => {
     return orderedQuestions.filter((q) => {
-      if (pendingDeleteIds.has(q.id)) return false;
+      if (pendingDeleteIds.has(Number(q.id))) return false;
       if (activeType !== 'all' && q.type !== activeType) return false;
       if (search.trim()) {
         const needle = search.trim().toLowerCase();
@@ -126,12 +128,13 @@ function QuestionCardList({
 
   // Sidebar shows all ordered questions (no filter applied) minus pending deletes.
   const sidebarQuestions = useMemo(
-    () => orderedQuestions.filter((q) => !pendingDeleteIds.has(q.id)),
+    () => orderedQuestions.filter((q) => !pendingDeleteIds.has(Number(q.id))),
     [orderedQuestions, pendingDeleteIds],
   );
 
   // ── Selection helpers ─────────────────────────────────────────────────────
-  const handleSelect = useCallback((id: number | string) => {
+  // QuestionCard always passes Number(q.id), so id is always a number here.
+  const handleSelect = useCallback((id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -205,11 +208,11 @@ function QuestionCardList({
 
   // ── Bulk delete with Undo ─────────────────────────────────────────────────
   const handleBulkDelete = useCallback(() => {
-    const ids = Array.from(selectedIds) as Array<number | string>;
+    const ids = Array.from(selectedIds); // already numbers
     if (ids.length === 0) return;
 
     // Snapshot rows for potential undo
-    pendingDeleteRowsRef.current = questions.filter((q) => ids.includes(q.id));
+    pendingDeleteRowsRef.current = questions.filter((q) => ids.includes(Number(q.id)));
     setPendingDeleteIds(new Set(ids));
     setSelectedIds(new Set());
 
@@ -282,7 +285,7 @@ function QuestionCardList({
                 onPreview={handlePreview}
                 onMarkChange={handleMarkChange}
                 onSubmitForReview={handleSubmitForReview}
-                isSelected={selectedIds.has(q.id)}
+                isSelected={selectedIds.has(Number(q.id))}
                 onSelect={handleSelect}
               />
             ))}
