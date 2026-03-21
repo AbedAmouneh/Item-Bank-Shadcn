@@ -252,3 +252,17 @@
     }
   }
 }
+
+/* ─── Quiz Arcade countdown animation ─────────────────────────────────────── */
+/* Pops each digit in with a quick scale-down + fade-in so each number feels
+   distinct. Used via Tailwind arbitrary value: [animation:quiz-pop_0.35s_ease-out] */
+@keyframes quiz-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
