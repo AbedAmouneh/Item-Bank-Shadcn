@@ -64,8 +64,9 @@ async function attemptRefresh(): Promise<string | null> {
       return null;
     }
 
-    const body = (await response.json()) as { csrf_token?: string };
-    return body.csrf_token ?? null;
+    // The server wraps every success response in { success, data: <payload> }.
+    const body = (await response.json()) as { data?: { csrf_token?: string } };
+    return body.data?.csrf_token ?? null;
   } catch {
     return null;
   }
