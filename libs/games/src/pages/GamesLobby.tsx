@@ -88,7 +88,7 @@ export default function GamesLobby() {
   function handlePlay(game: GameCardInfo) {
     const params = new URLSearchParams();
     if (selectedType && selectedType !== 'all') params.set('type', selectedType);
-    if (selectedTagId && selectedTagId !== 'all') params.set('tag_id', selectedTagId);
+    if (selectedTagId && selectedTagId !== 'all') params.set('tag_ids', selectedTagId);
     const qs = params.toString() ? `?${params.toString()}` : '';
     navigate(`${game.route}${qs}`);
   }
