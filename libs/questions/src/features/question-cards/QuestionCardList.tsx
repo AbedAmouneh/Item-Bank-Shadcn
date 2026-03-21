@@ -1,15 +1,15 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { getQuestion } from '@item-bank/api';
+import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 import { type QuestionRow } from '../../components/QuestionsTable';
 import { type QuestionType } from '../../domain/types';
 import {
   useDeleteQuestion,
   useUpdateQuestion,
-  useCreateQuestion,
+  useDuplicateQuestion,
   useSubmitForReview,
-} from '../../domain/hooks';
+} from '../../domain';
 import AddQuestionModal from '../../components/AddQuestionModal';
 import QuestionCard from './QuestionCard';
 import QuestionCardToolbar from './QuestionCardToolbar';
@@ -61,7 +61,7 @@ function QuestionCardList({
   // ── Server mutations ──────────────────────────────────────────────────────
   const { mutate: deleteQuestion } = useDeleteQuestion();
   const { mutate: updateQuestion } = useUpdateQuestion();
-  const { mutate: createQuestion } = useCreateQuestion();
+  const { mutate: duplicateQuestion } = useDuplicateQuestion();
   const submitForReview = useSubmitForReview();
 
   // ── Toolbar state ─────────────────────────────────────────────────────────
@@ -69,14 +69,18 @@ function QuestionCardList({
   const [activeType, setActiveType] = useState<QuestionType | 'all'>('all');
   const [addModalOpen, setAddModalOpen] = useState(false);
 
+  // ── Single-item delete confirmation (one shared dialog for the whole grid) ─
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const confirmDeleteQuestion = questions.find((q) => Number(q.id) === confirmDeleteId) ?? null;
+
   // ── Selection state ───────────────────────────────────────────────────────
   // IDs are normalised to numbers to avoid Set membership mismatches
   // when QuestionRow.id arrives as a string from IndexedDB.
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // ── Sidebar order state ───────────────────────────────────────────────────
-  // Tracks manual reorder. Initialised from incoming questions; kept in sync
-  // when the questions prop changes (e.g. after a server re-fetch).
+  // Tracks manual reorder. Kept in sync when the questions prop changes
+  // (e.g. after a server re-fetch).
   const [orderedIds, setOrderedIds] = useState<Array<number | string>>(() =>
     questions.map((q) => q.id),
   );
@@ -90,18 +94,15 @@ function QuestionCardList({
   // not yet deleted on the server. IDs are normalised to numbers.
   const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<number>>(new Set());
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Snapshot the rows being deleted so Undo can restore them.
-  const pendingDeleteRowsRef = useRef<QuestionRow[]>([]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
   const orderedQuestions = useMemo(() => {
     const idToQuestion = new Map(questions.map((q) => [q.id, q]));
-    // Ordered questions matching current server list; filter out any stale IDs.
     const ordered = orderedIds.flatMap((id) => {
       const q = idToQuestion.get(id);
       return q ? [q] : [];
     });
-    // Append any questions whose IDs aren't in orderedIds yet (newly created).
+    // Append newly-created questions whose IDs aren't in orderedIds yet.
     const orderedSet = new Set(orderedIds);
     const extras = questions.filter((q) => !orderedSet.has(q.id));
     return [...ordered, ...extras];
@@ -160,12 +161,16 @@ function QuestionCardList({
     [questions, onPreviewQuestion],
   );
 
-  const handleDelete = useCallback(
-    (id: number) => {
-      deleteQuestion(id);
-    },
-    [deleteQuestion],
-  );
+  // Opens the single shared delete-confirmation dialog.
+  const handleDeleteRequest = useCallback((id: number) => {
+    setConfirmDeleteId(id);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (confirmDeleteId === null) return;
+    deleteQuestion(confirmDeleteId);
+    setConfirmDeleteId(null);
+  }, [confirmDeleteId, deleteQuestion]);
 
   const handleMarkChange = useCallback(
     (id: number, mark: number) => {
@@ -176,21 +181,9 @@ function QuestionCardList({
 
   const handleDuplicate = useCallback(
     (id: number) => {
-      getQuestion(id)
-        .then((full) => {
-          createQuestion({
-            name: `${t('card.copy_of')}${full.name}`,
-            type: full.type,
-            text: full.text,
-            mark: full.mark,
-            content: full.content,
-          });
-        })
-        .catch(() => {
-          // Silently ignore — server errors surface via TanStack Query error state.
-        });
+      duplicateQuestion({ id, namePrefix: t('card.copy_of') });
     },
-    [createQuestion, t],
+    [duplicateQuestion, t],
   );
 
   const handleSubmitForReview = useCallback(
@@ -211,23 +204,19 @@ function QuestionCardList({
     const ids = Array.from(selectedIds); // already numbers
     if (ids.length === 0) return;
 
-    // Snapshot rows for potential undo
-    pendingDeleteRowsRef.current = questions.filter((q) => ids.includes(Number(q.id)));
     setPendingDeleteIds(new Set(ids));
     setSelectedIds(new Set());
 
-    // Clear any prior timer
+    // Clear any prior timer before starting a new one.
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
 
     const count = ids.length;
 
     undoTimerRef.current = setTimeout(() => {
-      // Timer fired — commit deletes to the server
       for (const id of ids) {
-        deleteQuestion(Number(id));
+        deleteQuestion(id);
       }
       setPendingDeleteIds(new Set());
-      pendingDeleteRowsRef.current = [];
     }, UNDO_DELAY_MS);
 
     toast(t('card.bulk_deleted', { count }), {
@@ -235,14 +224,12 @@ function QuestionCardList({
       action: {
         label: t('card.undo'),
         onClick: () => {
-          // Cancel the pending deletes
           if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
           setPendingDeleteIds(new Set());
-          pendingDeleteRowsRef.current = [];
         },
       },
     });
-  }, [selectedIds, questions, deleteQuestion, t]);
+  }, [selectedIds, deleteQuestion, t]);
 
   // ── Cleanup timer on unmount ──────────────────────────────────────────────
   useEffect(() => {
@@ -280,7 +267,7 @@ function QuestionCardList({
                 question={q}
                 index={i + 1}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={handleDeleteRequest}
                 onDuplicate={handleDuplicate}
                 onPreview={handlePreview}
                 onMarkChange={handleMarkChange}
@@ -292,9 +279,10 @@ function QuestionCardList({
           </div>
         )}
 
-        {/* Bulk delete bar — floats at the bottom when items are selected */}
+        {/* Bulk delete bar — floats at the bottom when items are selected.
+            Uses inset-x-0 + mx-auto for logical centering that works in both LTR and RTL. */}
         {selectedIds.size > 0 && (
-          <div className="fixed bottom-6 start-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3 shadow-xl">
+          <div className="fixed bottom-6 inset-x-0 mx-auto z-40 flex w-fit items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3 shadow-xl">
             <span className="text-sm font-medium text-foreground">
               {t('card.selected_delete', { count: selectedIds.size })}
             </span>
@@ -311,6 +299,42 @@ function QuestionCardList({
 
       {/* Right sidebar */}
       <QuestionCardSidebar questions={sidebarQuestions} onReorder={handleReorder} />
+
+      {/* ── Single shared delete-confirmation dialog for per-card deletes ──
+          One instance for the whole grid — avoids mounting N dialogs simultaneously. */}
+      <AlertDialogPrimitive.Root
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null); }}
+      >
+        <AlertDialogPrimitive.Portal>
+          <AlertDialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-50 animate-in fade-in-0" />
+          <AlertDialogPrimitive.Content
+            className={[
+              'fixed inset-x-0 top-1/2 -translate-y-1/2 mx-auto z-50',
+              'w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl',
+              'animate-in fade-in-0 zoom-in-95',
+            ].join(' ')}
+          >
+            <AlertDialogPrimitive.Title className="text-lg font-semibold text-foreground">
+              {t('delete_confirm_title')}
+            </AlertDialogPrimitive.Title>
+            <AlertDialogPrimitive.Description className="mt-2 text-sm text-muted-foreground">
+              {t('delete_confirm_message', { name: confirmDeleteQuestion?.questionName ?? '' })}
+            </AlertDialogPrimitive.Description>
+            <div className="mt-6 flex justify-end gap-3">
+              <AlertDialogPrimitive.Cancel className="px-4 py-2 text-sm font-medium rounded-xl border border-border hover:bg-muted transition-colors text-foreground">
+                {t('cancel')}
+              </AlertDialogPrimitive.Cancel>
+              <AlertDialogPrimitive.Action
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm font-medium rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+              >
+                {t('delete')}
+              </AlertDialogPrimitive.Action>
+            </div>
+          </AlertDialogPrimitive.Content>
+        </AlertDialogPrimitive.Portal>
+      </AlertDialogPrimitive.Root>
 
       {/* Add Question Modal */}
       <AddQuestionModal
