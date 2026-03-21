@@ -33,3 +33,5 @@ export { getProfile, updateProfile, changePassword } from './profile';
 export type { UserProfile, UpdateProfileData, ChangePasswordData } from './profile';
 export { getUsers, createUser, activateUser, deactivateUser, updateUser } from './admin';
 export type { AdminUser, AdminUsersPage, GetUsersParams, CreateUserData, UpdateUserData } from './admin';
+export { saveGameSession, getLeaderboard } from './gameSessions';
+export type { GameSessionData, LeaderboardEntry, GameId } from './gameSessions';
