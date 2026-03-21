@@ -23,7 +23,7 @@ interface QuizAnswerGridProps {
   /** True during answer_reveal phase — all buttons disabled. */
   disabled: boolean;
   /** Attached to button A so the parent can focus it when a new question mounts. */
-  firstButtonRef?: RefObject<HTMLButtonElement>;
+  firstButtonRef?: RefObject<HTMLButtonElement | null>;
 }
 
 const LABELS = ['A', 'B', 'C', 'D'];
