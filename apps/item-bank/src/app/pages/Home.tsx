@@ -269,9 +269,9 @@ const Home = () => {
   }, [navigate]);
 
   return (
-    <div className="w-full">
+    <div className="w-full px-8 py-8">
       {isError && (
-        <p className="text-destructive">Failed to load questions</p>
+        <p className="text-destructive mb-4">Failed to load questions</p>
       )}
       <QuestionCardList
         questions={questions}
