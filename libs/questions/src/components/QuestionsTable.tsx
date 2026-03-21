@@ -378,7 +378,7 @@ const QuestionsTable = ({ questions = [], onQuestionTypeChange, handleQuestionVi
         size: 70,
         enableSorting: false,
         cell: ({ row }) => (
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <DropdownMenuPrimitive.Root
               open={rowMenuOpen === row.id}
               onOpenChange={(open) => {
