@@ -1,0 +1,1 @@
+export { useGameQuestions } from './UseGameQuestions';
