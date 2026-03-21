@@ -126,10 +126,11 @@ export async function apiRequest<T>(
 ): Promise<T> {
   let response = await fetchRaw(path, options);
 
-  // Silent refresh on 401: try once to obtain a new access token.
-  // Skip the retry for auth endpoints that return 401 as a business response
+  // Skip the retry logic for auth endpoints that return 401/403 as business responses
   // (e.g. wrong password on /account/login) — those should surface the real error.
   const isAuthEndpoint = path === '/account/login' || path === '/account/refresh';
+
+  // Silent refresh on 401: try once to obtain a new access token.
   if (response.status === 401 && !isAuthEndpoint) {
     const newCsrfToken = await attemptRefresh();
 
@@ -143,6 +144,26 @@ export async function apiRequest<T>(
     if (response.status === 401) {
       window.dispatchEvent(new Event('auth:logout'));
       throw new Error('Session expired. Please log in again.');
+    }
+  }
+
+  // Silent CSRF-token refresh on 403: the module-level csrfToken is lost on every
+  // page reload.  If the server rejects a mutating request with CSRF_TOKEN_MISSING
+  // or INVALID_CSRF_TOKEN, fetch a fresh token and retry the request once.
+  if (response.status === 403 && !isAuthEndpoint) {
+    try {
+      const body = (await response.clone().json()) as { error?: { code?: string } };
+      const code = body.error?.code;
+      if (code === 'CSRF_TOKEN_MISSING' || code === 'INVALID_CSRF_TOKEN') {
+        const newCsrfToken = await attemptRefresh();
+        if (newCsrfToken !== null) {
+          setCsrfToken(newCsrfToken);
+          // Retry with the fresh CSRF token — headers are rebuilt inside fetchRaw.
+          response = await fetchRaw(path, options);
+        }
+      }
+    } catch {
+      // Could not parse the 403 body — fall through to the normal error path.
     }
   }
 
