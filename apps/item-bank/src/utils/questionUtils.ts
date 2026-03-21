@@ -1,12 +1,15 @@
 import type { QuestionStatus } from '../db/db';
 
 /**
- * Normalizes a stored question status to a valid QuestionStatus type
+ * Normalizes a stored question status to a valid QuestionStatus type.
+ * Accepts both the title-case UI values ('Draft', 'Published', 'In Review')
+ * and the snake_case API values ('draft', 'published', 'in_review').
  */
 export function normalizeStatus(status: string): QuestionStatus {
-  return (status === 'Draft' || status === 'Published' || status === 'In Review'
-    ? status
-    : 'Draft') as QuestionStatus;
+  if (status === 'Draft' || status === 'draft') return 'Draft';
+  if (status === 'Published' || status === 'published') return 'Published';
+  if (status === 'In Review' || status === 'in_review') return 'In Review';
+  return 'Draft';
 }
 
 /**
