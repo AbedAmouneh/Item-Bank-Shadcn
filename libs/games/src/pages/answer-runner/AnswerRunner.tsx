@@ -443,21 +443,16 @@ export default function AnswerRunner() {
         <div className="flex items-center justify-between w-full max-w-[700px]">
           <h2 className="text-xl font-bold">🏃 Answer Runner</h2>
         </div>
-        <div className="w-full">
-          <div
-            className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a] mx-auto"
-            style={{ width: canvasDims.w, height: canvasDims.h }}
-          >
-              <AnswerRunnerResults
-                score={score}
-                correctCount={correctCount}
-                totalQuestions={questions.length}
-                survived={lives > 0}
-                item_bank_id={item_bank_id}
-                onPlayAgain={handleStart}
-                onBack={() => navigate('/games')}
-              />
-          </div>
+        <div className="w-full max-w-[700px] mx-auto rounded-xl border border-border bg-[#0d0d2a]">
+          <AnswerRunnerResults
+            score={score}
+            correctCount={correctCount}
+            totalQuestions={questions.length}
+            survived={lives > 0}
+            item_bank_id={item_bank_id}
+            onPlayAgain={handleStart}
+            onBack={() => navigate('/games')}
+          />
         </div>
       </div>
     );
