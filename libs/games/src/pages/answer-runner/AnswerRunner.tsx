@@ -39,7 +39,10 @@ import AnswerRunnerResults from './AnswerRunnerResults';
 
 const CANVAS_W = 700;
 const CANVAS_H = 400;
+/** CSS x of the player — used for collision detection and HTML tile positioning. */
 const PLAYER_X = 100;
+/** Camera2D x of the player: CSS x relative to the canvas centre (x=0 is centre). */
+const CAM_PLAYER_X = PLAYER_X - CANVAS_W / 2; // 100 − 350 = −250
 /** Starting answer move speed in px/s. */
 const BASE_SPEED = 150;
 /** How much speed increases (px/s) every SPEED_EVERY_N questions. */
@@ -65,6 +68,12 @@ const keysDown = new Set<string>();
 // This is important: if playerScript were defined inside the component,
 // Cubeforge would remount the Script entity every render and lose the transform state.
 
+// Camera2D uses y=0 at the canvas centre (y up = negative, y down = positive).
+// CSS / React tile coords use y=0 at the top, so the centre is CANVAS_H/2.
+// Conversion:  camera_y = css_y − CANVAS_H/2
+//              css_y    = camera_y + CANVAS_H/2
+const CAM_HALF_H = CANVAS_H / 2;
+
 const playerScript: ScriptUpdateFn = (
   id: EntityId,
   world: ECSWorld,
@@ -73,10 +82,11 @@ const playerScript: ScriptUpdateFn = (
 ) => {
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
-  if (keysDown.has('ArrowUp'))   t.y = Math.max(20, t.y - PLAYER_SPEED * dt);
-  if (keysDown.has('ArrowDown')) t.y = Math.min(CANVAS_H - 20, t.y + PLAYER_SPEED * dt);
-  // Write back so the React collision tick knows where the player is.
-  sharedPlayerY = t.y;
+  // Clamp in camera-space: top rail = -(CAM_HALF_H - 20), bottom = +(CAM_HALF_H - 20).
+  if (keysDown.has('ArrowUp'))   t.y = Math.max(-(CAM_HALF_H - 20), t.y - PLAYER_SPEED * dt);
+  if (keysDown.has('ArrowDown')) t.y = Math.min( (CAM_HALF_H - 20), t.y + PLAYER_SPEED * dt);
+  // Convert camera_y → css_y so the React collision tick can compare against HTML tile positions.
+  sharedPlayerY = t.y + CAM_HALF_H;
 };
 
 // ─── Wave spawning helper ──────────────────────────────────────────────────────
@@ -142,6 +152,9 @@ export default function AnswerRunner() {
   // ── Game state ─────────────────────────────────────────────────────────────
 
   const [phase, setPhase] = useState<Phase>('idle');
+  // Incremented on every new game start to force the Cubeforge player Entity
+  // to remount and reset its Transform to the correct camera-space origin (y=0).
+  const [gameKey, setGameKey] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -274,7 +287,7 @@ export default function AnswerRunner() {
   // ── Start / reset ─────────────────────────────────────────────────────────
 
   const handleStart = useCallback(() => {
-    sharedPlayerY = CANVAS_H / 2;
+    sharedPlayerY = CANVAS_H / 2; // CSS-space centre; synced back by playerScript each frame
     speedRef.current = BASE_SPEED;
     answersRef.current = [];
     setScore(0);
@@ -282,6 +295,7 @@ export default function AnswerRunner() {
     setCurrentIndex(0);
     setCorrectCount(0);
     setAnswers([]);
+    setGameKey((k) => k + 1); // remount the Cubeforge Entity → resets Transform to y=0
     setPhase('playing');
   }, []);
 
@@ -365,8 +379,10 @@ export default function AnswerRunner() {
         <Game width={CANVAS_W} height={CANVAS_H} gravity={0}>
           <World background="#0d0d2a">
             <Camera2D />
-            <Entity id="player">
-              <Transform x={PLAYER_X} y={CANVAS_H / 2} />
+            {/* key={gameKey} forces a remount on every new game, resetting Transform to y=0.
+                y=0 is the Camera2D canvas centre; CSS collision coords use CANVAS_H/2 (200). */}
+            <Entity key={gameKey} id="player">
+              <Transform x={CAM_PLAYER_X} y={0} />
               <Sprite
                 width={40}
                 height={40}
