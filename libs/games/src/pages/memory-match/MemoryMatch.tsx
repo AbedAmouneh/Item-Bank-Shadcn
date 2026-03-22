@@ -313,31 +313,20 @@ export default function MemoryMatch() {
         <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
           How to Play
         </p>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">🃏</span>
-            <span className="text-white/65 text-xs leading-snug">All cards start face-down in a grid</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">👆</span>
-            <span className="text-white/65 text-xs leading-snug">Click any card to flip it over</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">🔍</span>
-            <span className="text-white/65 text-xs leading-snug">Click a second card to find its pair</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">✅</span>
-            <span className="text-white/65 text-xs leading-snug">Matching pair stays revealed in green</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">❌</span>
-            <span className="text-white/65 text-xs leading-snug">No match — both cards flip back after 0.9 s</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">🏆</span>
-            <span className="text-white/65 text-xs leading-snug">Match all pairs in as few moves as possible</span>
-          </div>
+        <div className="flex flex-col gap-2">
+          {[
+            'All cards start face-down in a grid',
+            'Click any card to flip it over',
+            'Click a second card to look for its matching pair',
+            'A matched pair stays revealed',
+            'No match — both cards flip back after a short delay',
+            'Match all pairs in as few moves as possible to win',
+          ].map((rule) => (
+            <div key={rule} className="flex items-start gap-3">
+              <span className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400" />
+              <span className="text-white/65 text-xs leading-snug">{rule}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
