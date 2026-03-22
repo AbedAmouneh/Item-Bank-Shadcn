@@ -1,6 +1,6 @@
 /**
- * AnswerRunner — side-scroller where the player moves up/down to collect
- * correct answers (green) and dodge wrong ones (red).
+ * AnswerRunner — side-scroller where the player moves in all four directions
+ * to collect correct answers and dodge wrong ones.
  *
  * Architecture:
  *  - Cubeforge canvas draws only the player sprite and the dark background.
@@ -58,8 +58,10 @@ const TICK_MS = 50; // collision + movement interval
 // These live outside React so the ECS Script (which runs on requestAnimationFrame)
 // and the React setInterval tick can share data without triggering re-renders.
 
-/** Player Y in world pixels — written by ECS Script, read by React collision tick. */
+/** Player Y in CSS pixels — written by ECS Script, read by React collision tick. */
 let sharedPlayerY = CANVAS_H / 2;
+/** Player X in CSS pixels — written by ECS Script, read by React collision tick. */
+let sharedPlayerX = PLAYER_X;
 
 // ─── Player ECS script ────────────────────────────────────────────────────────
 // Defined at module level so it is never recreated across re-renders.
@@ -75,6 +77,7 @@ let sharedPlayerY = CANVAS_H / 2;
 // Conversion:  camera_y = css_y − CANVAS_H/2
 //              css_y    = camera_y + CANVAS_H/2
 const CAM_HALF_H = CANVAS_H / 2;
+const CAM_HALF_W = CANVAS_W / 2;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const playerScript: ScriptUpdateFn = (
@@ -85,11 +88,15 @@ const playerScript: ScriptUpdateFn = (
 ) => {
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
-  // Clamp in camera-space: top rail = -(CAM_HALF_H - 20), bottom = +(CAM_HALF_H - 20).
-  if (input.isDown('ArrowUp'))   t.y = Math.max(-(CAM_HALF_H - 20), t.y - PLAYER_SPEED * dt);
-  if (input.isDown('ArrowDown')) t.y = Math.min( (CAM_HALF_H - 20), t.y + PLAYER_SPEED * dt);
-  // Convert camera_y → css_y so the React collision tick can compare against HTML tile positions.
+  // Clamp vertical: top rail = -(CAM_HALF_H − 20), bottom = +(CAM_HALF_H − 20).
+  if (input.isDown('ArrowUp'))    t.y = Math.max(-(CAM_HALF_H - 20), t.y - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowDown'))  t.y = Math.min( (CAM_HALF_H - 20), t.y + PLAYER_SPEED * dt);
+  // Clamp horizontal: left edge = -(CAM_HALF_W − 20), right edge = +(CAM_HALF_W − 20).
+  if (input.isDown('ArrowLeft'))  t.x = Math.max(-(CAM_HALF_W - 20), t.x - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowRight')) t.x = Math.min( (CAM_HALF_W - 20), t.x + PLAYER_SPEED * dt);
+  // Convert camera coords → CSS coords for the React collision tick.
   sharedPlayerY = t.y + CAM_HALF_H;
+  sharedPlayerX = t.x + CAM_HALF_W;
 };
 
 // ─── Wave spawning helper ──────────────────────────────────────────────────────
@@ -214,8 +221,8 @@ export default function AnswerRunner() {
       // Off-screen left → remove (no penalty).
       if (newX < -140) continue;
 
-      // Collision check: compare answer position with player position.
-      const dx = Math.abs(newX - PLAYER_X);
+      // Collision check: compare answer position with the player's live CSS position.
+      const dx = Math.abs(newX - sharedPlayerX);
       const dy = Math.abs(a.y - sharedPlayerY);
       if (dx < COLLISION_DX && dy < COLLISION_DY) {
         if (a.isCorrect) {
@@ -276,7 +283,8 @@ export default function AnswerRunner() {
   // ── Start / reset ─────────────────────────────────────────────────────────
 
   const handleStart = useCallback(() => {
-    sharedPlayerY = CANVAS_H / 2; // CSS-space centre; synced back by playerScript each frame
+    sharedPlayerY = CANVAS_H / 2;  // CSS-space centre; synced back by playerScript each frame
+    sharedPlayerX = PLAYER_X;      // reset to starting column
     speedRef.current = BASE_SPEED;
     answersRef.current = [];
     setScore(0);
@@ -416,7 +424,7 @@ export default function AnswerRunner() {
                 top: `${a.y - 17}px`,
                 width: 128,
                 height: 34,
-                backgroundColor: a.isCorrect ? '#16a34a' : '#dc2626',
+                backgroundColor: '#2563eb',
                 opacity: 0.9,
               }}
             >
@@ -430,7 +438,7 @@ export default function AnswerRunner() {
               <p className="text-3xl">🏃</p>
               <p className="text-xl font-bold">Answer Runner</p>
               <p className="text-sm text-white/60">
-                Use ↑ ↓ to move · collect green · dodge red
+                Use ↑ ↓ ← → to move · hit the correct answer · dodge the wrong ones
               </p>
               <Button onClick={handleStart} className="mt-2">
                 Start!
@@ -442,7 +450,7 @@ export default function AnswerRunner() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        ↑ ↓ arrow keys · green = correct (+10) · red = wrong (−1 life)
+        ↑ ↓ ← → arrow keys · correct answer = +10 · wrong answer = −1 life
       </p>
     </div>
   );
