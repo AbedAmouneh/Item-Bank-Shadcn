@@ -104,8 +104,10 @@ function applyCanvasDims(w: number, h: number): void {
   mCamRailBot = mSpawnYMax - mCamHalfH;
   // Scale player sprite: 40px on desktop, 24px on mobile (just right for a 358px canvas)
   mPlayerSize = w < CANVAS_W ? 24 : 40;
-  // Scale tile speed so they take the same time to cross any canvas width.
-  mSpeedScale = w / CANVAS_W;
+  // Scale tile speed using square-root of the width ratio.
+  // Linear (w/CANVAS_W) cuts speed too aggressively on mobile (51% → tiles crawl).
+  // Square-root gives a gentler reduction: 71% on a 358px canvas = ~107 px/s.
+  mSpeedScale = Math.sqrt(w / CANVAS_W);
 }
 
 // ─── Shared module-level state ────────────────────────────────────────────────
