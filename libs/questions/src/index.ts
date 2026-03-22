@@ -35,3 +35,4 @@ export { default as TextClassificationView } from './pages/text-classification/T
 export { default as ImageClassificationEditor } from './pages/image-classification/ImageClassificationEditor';
 export { default as ImageClassificationView } from './pages/image-classification/ImageClassificationView';
 export { MatchingWizard, MatchingView } from './pages/matching';
+export { CrosswordWizard, CrosswordView } from './pages/crossword';
