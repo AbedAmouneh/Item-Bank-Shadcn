@@ -7,7 +7,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {
   CheckCheck, ListChecks, AlignLeft, FileText, GripHorizontal, Image,
   Pen, GalleryHorizontal, MapPin, Calculator, PenLine, SpellCheck,
-  List, ScanSearch, Highlighter, Mic, Tags, Images, GitMerge, X, Search
+  List, ScanSearch, Highlighter, Mic, Tags, Images, GitMerge, Grid2X2, X, Search
 } from 'lucide-react';
 import { cn } from '@item-bank/ui';
 
@@ -37,6 +37,7 @@ const TILE_ICONS: Record<QuestionType, React.ReactElement> = {
   text_classification: <Tags />,
   image_classification: <Images />,
   matching: <GitMerge />,
+  crossword: <Grid2X2 />,
 };
 
 export default function AddQuestionModal({
