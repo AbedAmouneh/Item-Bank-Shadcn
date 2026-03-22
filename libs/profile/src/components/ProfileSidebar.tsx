@@ -2,10 +2,12 @@
 import { UserCircle, Lock, Folder, FileEdit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@item-bank/auth';
 import { Sidebar, type SidebarItem } from '@item-bank/ui';
 
 export default function ProfileSidebar() {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
   const location = useLocation();
   const selectedId = location.pathname.split('/')[2] || 'edit';
   const navigate = useNavigate();
@@ -54,10 +56,10 @@ export default function ProfileSidebar() {
       {/* User info */}
       <div className="min-w-0">
         <p className="font-medium text-[0.9375rem] leading-[1.3] text-foreground truncate">
-          {t('profile.username_placeholder')}
+          {user?.email ?? ''}
         </p>
         <p className="text-[0.8125rem] text-muted-foreground truncate">
-          {t('profile.role_admin')}
+          {user?.role === 'admin' ? t('profile.role_admin') : t('admin.users.role_user')}
         </p>
       </div>
     </div>
