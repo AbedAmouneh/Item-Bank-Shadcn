@@ -18,6 +18,7 @@ import DragDropImageView from '../pages/drag-drop-image/DragDropImageView';
 import TextClassificationView from '../pages/text-classification/TextClassificationView';
 import ImageClassificationView from '../pages/image-classification/ImageClassificationView';
 import { MatchingView } from '../pages/matching';
+import { CrosswordView } from '../pages/crossword';
 import DOMPurify from 'dompurify';
 
 type QuestionViewShellProps = {
@@ -75,6 +76,9 @@ const QuestionViewShell = ({ question }: QuestionViewShellProps) => {
       ) :
       question?.type === 'matching' ? (
         <MatchingView question={question} />
+      ) :
+      question?.type === 'crossword' ? (
+        <CrosswordView question={question} />
       ) : null
       }
     </div>
