@@ -293,6 +293,39 @@ export default function QuizArcade() {
           )}
         </div>
       </div>
+
+      {/* ── How to Play ─────────────────────────────────────────────────── */}
+      <div className="w-full max-w-[700px] rounded-xl border border-white/10 bg-[#0a0a1f] px-5 py-4">
+        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
+          How to Play
+        </p>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">👀</span>
+            <span className="text-white/65 text-xs leading-snug">Read the question, then pick your answer</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">⏱️</span>
+            <span className="text-white/65 text-xs leading-snug">15 seconds on the clock per question</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">⚡</span>
+            <span className="text-white/65 text-xs leading-snug">Answer faster to earn up to 100 points</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">🔥</span>
+            <span className="text-white/65 text-xs leading-snug">3 correct in a row = 2× score multiplier</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">⌨️</span>
+            <span className="text-white/65 text-xs leading-snug">Press A B C D to answer without a mouse</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">❌</span>
+            <span className="text-white/65 text-xs leading-snug">Wrong or timeout resets your streak</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
