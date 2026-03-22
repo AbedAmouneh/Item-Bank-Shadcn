@@ -70,6 +70,10 @@ export default function AnswerRunnerResults({
           </p>
           <p className="text-white/60">Correct</p>
         </div>
+        <div>
+          <p className="font-bold text-lg">{accuracy}%</p>
+          <p className="text-white/60">Accuracy</p>
+        </div>
       </div>
 
       {/* Subtle save indicator — only shown after the API call succeeds */}
