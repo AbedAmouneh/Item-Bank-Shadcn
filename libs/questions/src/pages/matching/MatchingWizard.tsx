@@ -1,6 +1,7 @@
 import React, {
   memo,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -101,6 +102,11 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
   // ── Step state ────────────────────────────────────────────────────────────
 
   const [step, setStep] = useState(0);
+  // Tracks whether TinyMCE is currently mounted (step 0 visible).
+  // Set to false synchronously in handleNext before setStep(1) so the TinyMCE
+  // onEditorChange that fires during unmount is ignored and cannot corrupt
+  // the `instructions` state with an empty string.
+  const isOnStep0Ref = useRef(true);
 
   // ── Step 1 state ──────────────────────────────────────────────────────────
 
@@ -130,6 +136,14 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
     () => ((initialData as Record<string, unknown>)?.matchingRightItems as RightItem[] | undefined) ?? createEmptyRightItems(3),
   );
   const [step1Errors, setStep1Errors] = useState<string[]>([]);
+  const step1ErrorsDivRef = useRef<HTMLDivElement>(null);
+  // Scroll the error banner into view whenever new validation errors appear so
+  // users scrolled to the bottom of step 1 are not left thinking "nothing happened."
+  useEffect(() => {
+    if (step1Errors.length > 0) {
+      step1ErrorsDivRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [step1Errors]);
   const [leftModeSwitchWarning, setLeftModeSwitchWarning] = useState(false);
   const [rightModeSwitchWarning, setRightModeSwitchWarning] = useState(false);
 
@@ -326,7 +340,12 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
       }
     }
     setStep1Errors(errs);
-    if (errs.length === 0) setStep(1);
+    if (errs.length === 0) {
+      // Flag must be set synchronously before setStep(1) so the TinyMCE
+      // onEditorChange that fires during its unmount is ignored.
+      isOnStep0Ref.current = false;
+      setStep(1);
+    }
   }, [name, instructions, leftItems, rightItems, leftMode, rightMode, t]);
 
   // ── Step 2: chooser handlers ──────────────────────────────────────────────
@@ -340,13 +359,27 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
   const handleChooserDone = useCallback(() => {
     if (chooserLeftIdx === null) return;
     setLeftItems((prev) =>
-      prev.map((item, i) =>
-        i === chooserLeftIdx ? { ...item, linkedRightIds: chooserSelection } : item,
-      ),
+      prev.map((item, i) => {
+        if (i === chooserLeftIdx) {
+          return { ...item, linkedRightIds: chooserSelection };
+        }
+        if (!allowRightReuse) {
+          // Strip any right item now claimed by the current left item so the
+          // "no reuse" rule is enforced at commit time instead of blocking
+          // the user from clicking at selection time.
+          return {
+            ...item,
+            linkedRightIds: item.linkedRightIds.filter(
+              (id) => !chooserSelection.includes(id),
+            ),
+          };
+        }
+        return item;
+      }),
     );
     setChooserOpen(false);
     setChooserLeftIdx(null);
-  }, [chooserLeftIdx, chooserSelection]);
+  }, [chooserLeftIdx, chooserSelection, allowRightReuse]);
 
   const handleChooserCancel = useCallback(() => {
     setChooserOpen(false);
@@ -377,18 +410,6 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
     );
   }, []);
 
-  // ── Right items already linked (for disabling in chooser) ─────────────────
-
-  const linkedRightIdsByOtherLeftItems = useMemo(() => {
-    if (chooserLeftIdx === null) return new Set<string>();
-    const ids = new Set<string>();
-    leftItems.forEach((item, i) => {
-      if (i !== chooserLeftIdx) {
-        item.linkedRightIds.forEach((rid) => ids.add(rid));
-      }
-    });
-    return ids;
-  }, [leftItems, chooserLeftIdx]);
 
   // ── Save handler ──────────────────────────────────────────────────────────
 
@@ -449,6 +470,8 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
   const handleStepClick = useCallback((targetStep: number) => {
     if (targetStep === step) return;
     if (targetStep === 0) {
+      // Re-enable the onEditorChange guard before TinyMCE remounts.
+      isOnStep0Ref.current = true;
       setStep(0);
     } else {
       handleNext();
@@ -503,7 +526,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
       {step === 0 && (
         <div className="flex flex-col gap-5">
           {step1Errors.length > 0 && (
-            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            <div ref={step1ErrorsDivRef} className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
               <ul className="m-0 ps-4">
                 {step1Errors.map((e) => (
                   <li key={e}>{e}</li>
@@ -548,7 +571,11 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                   editorRef.current = editor;
                 }}
                 initialValue={initialData?.text ?? ''}
-                onEditorChange={(val) => setInstructions(val)}
+                onEditorChange={(val) => {
+                  // Guard: TinyMCE fires onEditorChange with '' during unmount.
+                  // Only update state while the editor is actually visible.
+                  if (isOnStep0Ref.current) setInstructions(val);
+                }}
                 init={editorInit}
               />
             </div>
@@ -1193,22 +1220,18 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
               const currentLeft = chooserLeftIdx !== null ? leftItems[chooserLeftIdx] : null;
               const isMultiple = currentLeft?.multipleAnswers ?? false;
               const isSelected = chooserSelection.includes(rightItem.id);
-              const isLinkedElsewhere = linkedRightIdsByOtherLeftItems.has(rightItem.id);
-              const isDisabled = !allowRightReuse && isLinkedElsewhere && !isSelected;
 
               return (
                 <div
                   key={rightItem.id}
                   role={isMultiple ? 'checkbox' : 'radio'}
                   aria-checked={isSelected}
-                  tabIndex={isDisabled ? -1 : 0}
+                  tabIndex={0}
                   className={cn(
-                    'flex items-center gap-2 p-2 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    'flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     isSelected ? 'border-primary bg-primary/6' : 'border-border',
-                    isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                   )}
                   onClick={() => {
-                    if (isDisabled) return;
                     if (isMultiple) {
                       setChooserSelection((prev) =>
                         isSelected
@@ -1220,7 +1243,7 @@ function MatchingWizard({ onSave, onCancel, initialData }: MatchingWizardProps) 
                     }
                   }}
                   onKeyDown={(e) => {
-                    if ((e.key === ' ' || e.key === 'Enter') && !isDisabled) {
+                    if (e.key === ' ' || e.key === 'Enter') {
                       e.preventDefault();
                       if (isMultiple) {
                         setChooserSelection((prev) =>
