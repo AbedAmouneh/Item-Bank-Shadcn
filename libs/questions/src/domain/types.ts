@@ -133,3 +133,19 @@ export interface MatchingRightItem {
   text: string;           // used when rightMode = 'text'
   imageUrl: string;       // base64 dataURL, used when rightMode = 'image'
 }
+
+/**
+ * Flat content bag grouping all settings for a matching question.
+ * Useful as a portable shape for API payloads and storage layers.
+ */
+export interface MatchingQuestionContent {
+  leftMode: MatchingItemMode;
+  rightMode: MatchingItemMode;
+  leftItems: MatchingLeftItem[];
+  rightItems: MatchingRightItem[];
+  reuseRightItems: boolean;
+  penaltyPercent: number;
+  autoDistributeMarks: boolean;
+  justificationMode: JustificationMode;
+  justificationFraction: number;
+}
