@@ -19,6 +19,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
 import { useGameQuestions } from '../../domain/hooks';
+import { stripHtml } from '../../domain/extractAnswers';
 import type { MemoryCard } from '../../domain/types';
 import type { Question } from '@item-bank/api';
 import MemoryCanvas from './MemoryCanvas';
@@ -73,8 +74,8 @@ function buildMCPair(q: Question): MemoryCard[] {
   const correct = choices?.find((c) => c.isCorrect);
   if (!correct) return [];
   return [
-    { id: `Q-${q.id}`, pairId: String(q.id), content: q.text ?? q.name, isFlipped: false, isMatched: false },
-    { id: `A-${q.id}`, pairId: String(q.id), content: correct.text, isFlipped: false, isMatched: false },
+    { id: `Q-${q.id}`, pairId: String(q.id), content: stripHtml(q.text ?? q.name), isFlipped: false, isMatched: false },
+    { id: `A-${q.id}`, pairId: String(q.id), content: stripHtml(correct.text), isFlipped: false, isMatched: false },
   ];
 }
 
