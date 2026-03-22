@@ -10,6 +10,7 @@ import {
   MatchingLeftItem,
   MatchingRightItem,
   MatchingItemMode,
+  CrosswordWord,
 } from './types';
 
 export interface TrueFalseQuestion extends QuestionBase {
@@ -152,6 +153,14 @@ export interface MatchingQuestion extends QuestionBase {
   incorrectFeedback?: string;
 }
 
+export interface CrosswordQuestion extends QuestionBase {
+  type: 'crossword';
+  words: CrosswordWord[];
+  gridLayout: 'ltr' | 'rtl';
+  hintMode: 'none' | 'count' | 'percentage';
+  hintValue: number;
+}
+
 export type QuestionDomain =
   | TrueFalseQuestion
   | MultipleChoiceQuestion
@@ -171,4 +180,5 @@ export type QuestionDomain =
   | RecordAudioQuestion
   | TextClassificationQuestion
   | ImageClassificationQuestion
-  | MatchingQuestion;
+  | MatchingQuestion
+  | CrosswordQuestion;

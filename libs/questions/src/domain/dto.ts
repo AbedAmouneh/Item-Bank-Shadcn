@@ -150,6 +150,23 @@ export interface MatchingQuestionDTO extends QuestionDTOBase {
   incorrect_feedback?: string;
 }
 
+export interface CrosswordWordDTO {
+  word: string;
+  clue: string;
+  direction: 'across' | 'down';
+  row: number;
+  col: number;
+  clue_number: number;
+}
+
+export interface CrosswordQuestionDTO extends QuestionDTOBase {
+  type: 'crossword';
+  words: CrosswordWordDTO[];
+  grid_layout: 'ltr' | 'rtl';
+  hint_mode: 'none' | 'count' | 'percentage';
+  hint_value: number;
+}
+
 export type QuestionDTO =
   | TrueFalseQuestionDTO
   | MultipleChoiceQuestionDTO
@@ -167,4 +184,5 @@ export type QuestionDTO =
   | FillInBlanksImageQuestionDTO
   | HighlightCorrectWordQuestionDTO
   | RecordAudioQuestionDTO
-  | MatchingQuestionDTO;
+  | MatchingQuestionDTO
+  | CrosswordQuestionDTO;

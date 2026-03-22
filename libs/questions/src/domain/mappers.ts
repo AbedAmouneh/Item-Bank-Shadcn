@@ -186,6 +186,23 @@ export function toQuestionDto(question: QuestionDomain | QuestionDraft): Questio
     case 'image_classification':
       return baseDto as QuestionDTO;
 
+    case 'crossword':
+      return {
+        ...baseDto,
+        type: 'crossword',
+        words: (question.words ?? []).map((w) => ({
+          word: w.word,
+          clue: w.clue,
+          direction: w.direction,
+          row: w.row,
+          col: w.col,
+          clue_number: w.clueNumber,
+        })),
+        grid_layout: question.gridLayout ?? 'ltr',
+        hint_mode: question.hintMode ?? 'none',
+        hint_value: question.hintValue ?? 0,
+      };
+
     case 'matching':
       return {
         ...baseDto,
@@ -386,6 +403,23 @@ export function fromQuestionDto(dto: QuestionDTO): QuestionDomain {
         ...baseDomain,
         type: 'record_audio',
         maxDurationSeconds: dto.max_duration_seconds,
+      };
+
+    case 'crossword':
+      return {
+        ...baseDomain,
+        type: 'crossword',
+        words: dto.words.map((w) => ({
+          word: w.word,
+          clue: w.clue,
+          direction: w.direction,
+          row: w.row,
+          col: w.col,
+          clueNumber: w.clue_number,
+        })),
+        gridLayout: dto.grid_layout,
+        hintMode: dto.hint_mode,
+        hintValue: dto.hint_value,
       };
 
     case 'matching':
