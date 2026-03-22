@@ -83,6 +83,12 @@ let sharedPlayerX = PLAYER_X;
 const CAM_HALF_H = CANVAS_H / 2;
 const CAM_HALF_W = CANVAS_W / 2;
 
+// Player movement rails in camera-space (y=0 at canvas centre, up = negative).
+// Top rail is derived from SPAWN_Y_MIN so the player can never enter the question card.
+// Bottom rail mirrors SPAWN_Y_MAX symmetrically.
+const CAM_RAIL_TOP = SPAWN_Y_MIN - CAM_HALF_H; // 108 − 200 = −92  → CSS y = 108
+const CAM_RAIL_BOT = SPAWN_Y_MAX - CAM_HALF_H; // 376 − 200 =  176 → CSS y = 376
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const playerScript: ScriptUpdateFn = (
   id: EntityId,
@@ -92,9 +98,9 @@ const playerScript: ScriptUpdateFn = (
 ) => {
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
-  // Clamp vertical: top rail = -(CAM_HALF_H − 20), bottom = +(CAM_HALF_H − 20).
-  if (input.isDown('ArrowUp'))    t.y = Math.max(-(CAM_HALF_H - 20), t.y - PLAYER_SPEED * dt);
-  if (input.isDown('ArrowDown'))  t.y = Math.min( (CAM_HALF_H - 20), t.y + PLAYER_SPEED * dt);
+  // Clamp vertical: rails derived from the spawn zone keep the player below the question card.
+  if (input.isDown('ArrowUp'))    t.y = Math.max(CAM_RAIL_TOP, t.y - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowDown'))  t.y = Math.min(CAM_RAIL_BOT, t.y + PLAYER_SPEED * dt);
   // Clamp horizontal: left edge = -(CAM_HALF_W − 20), right edge = +(CAM_HALF_W − 20).
   if (input.isDown('ArrowLeft'))  t.x = Math.max(-(CAM_HALF_W - 20), t.x - PLAYER_SPEED * dt);
   if (input.isDown('ArrowRight')) t.x = Math.min( (CAM_HALF_W - 20), t.x + PLAYER_SPEED * dt);
@@ -256,7 +262,10 @@ export default function AnswerRunner() {
         if (hitTimerRef.current) clearTimeout(hitTimerRef.current);
         setHitFeedback({ correct: a.isCorrect, x: sharedPlayerX, y: sharedPlayerY });
         hitTimerRef.current = setTimeout(() => setHitFeedback(null), 650);
-        continue; // remove collided entity regardless of correct/wrong
+        // End the whole wave immediately — clear any tiles already queued and stop
+        // iterating so the player cannot hit a second tile in the same wave.
+        next.length = 0;
+        break;
       }
 
       next.push({ ...a, x: newX });
