@@ -164,6 +164,16 @@ export function createDefaultQuestion(type: QuestionType): QuestionDraft {
         justificationFraction: 30,
       };
 
+    case 'crossword':
+      return {
+        ...baseDefaults,
+        type: 'crossword',
+        words: [],
+        gridLayout: 'ltr',
+        hintMode: 'none',
+        hintValue: 0,
+      };
+
     case 'matching':
       return {
         ...baseDefaults,
