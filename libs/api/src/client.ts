@@ -175,5 +175,10 @@ export async function apiRequest<T>(
   // For auth endpoints that returned 401 (wrong credentials etc.),
   // fall through to parseErrorResponse via the !response.ok branch above.
 
+  // 204 No Content has no body — return undefined to match the Promise<void> type
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json() as Promise<T>;
 }
