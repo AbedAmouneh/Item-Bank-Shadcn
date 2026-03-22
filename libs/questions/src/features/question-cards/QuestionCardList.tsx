@@ -9,6 +9,7 @@ import {
   useUpdateQuestion,
   useDuplicateQuestion,
   useSubmitForReview,
+  useReorderQuestions,
 } from '../../domain';
 import AddQuestionModal from '../../components/AddQuestionModal';
 import QuestionCard from './QuestionCard';
@@ -63,6 +64,7 @@ function QuestionCardList({
   const { mutate: updateQuestion } = useUpdateQuestion();
   const { mutate: duplicateQuestion } = useDuplicateQuestion();
   const submitForReview = useSubmitForReview();
+  const { mutate: reorderQuestions } = useReorderQuestions();
 
   // ── Toolbar state ─────────────────────────────────────────────────────────
   const [search, setSearch] = useState('');
@@ -203,9 +205,11 @@ function QuestionCardList({
 
   // ── Sidebar reorder ───────────────────────────────────────────────────────
   const handleReorder = useCallback((reordered: QuestionRow[]) => {
-    setOrderedIds(reordered.map((q) => q.id));
-    // No API call — no reorder endpoint exists yet.
-  }, []);
+    const newOrder = reordered.map((q) => q.id);
+    setOrderedIds(newOrder);
+    // Persist the new order to the server
+    reorderQuestions(newOrder.map((id) => (typeof id === 'number' ? id : Number(id))));
+  }, [reorderQuestions]);
 
   // ── Bulk delete with Undo ─────────────────────────────────────────────────
   const handleBulkDelete = useCallback(() => {
