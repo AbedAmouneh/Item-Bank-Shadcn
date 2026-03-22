@@ -119,6 +119,37 @@ export interface RecordAudioQuestionDTO extends QuestionDTOBase {
   max_duration_seconds: number;
 }
 
+export interface MatchingLeftItemDTO {
+  id: string;
+  text: string;
+  image_url: string;
+  multiple_answers: boolean;
+  linked_right_ids: string[];
+  mark_percent: number;
+}
+
+export interface MatchingRightItemDTO {
+  id: string;
+  text: string;
+  image_url: string;
+}
+
+export interface MatchingQuestionDTO extends QuestionDTOBase {
+  type: 'matching';
+  left_items: MatchingLeftItemDTO[];
+  right_items: MatchingRightItemDTO[];
+  left_mode: 'text' | 'image';
+  right_mode: 'text' | 'image';
+  allow_right_item_reuse: boolean;
+  auto_distribute: boolean;
+  penalty_per_wrong_pair: number;
+  justification: 'disabled' | 'optional' | 'required';
+  justification_fraction: number;
+  correct_feedback?: string;
+  partial_feedback?: string;
+  incorrect_feedback?: string;
+}
+
 export type QuestionDTO =
   | TrueFalseQuestionDTO
   | MultipleChoiceQuestionDTO
@@ -135,4 +166,5 @@ export type QuestionDTO =
   | TextSequencingQuestionDTO
   | FillInBlanksImageQuestionDTO
   | HighlightCorrectWordQuestionDTO
-  | RecordAudioQuestionDTO;
+  | RecordAudioQuestionDTO
+  | MatchingQuestionDTO;
