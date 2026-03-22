@@ -239,6 +239,24 @@ export default function AnswerRunner() {
     if (phase !== 'playing') touchKeys.clear();
   }, [phase]);
 
+  // ── Responsive canvas scale ────────────────────────────────────────────
+  // The game always runs in a 700×400 coordinate space. On narrow viewports
+  // (phones) the entire game frame is CSS-scaled down to fit — no horizontal
+  // scrolling and no changes to any game logic or internal coordinates.
+  // 48px = p-6 (24px) × 2 sides of the outer flex container.
+  const [scale, setScale] = useState(() =>
+    typeof window !== 'undefined'
+      ? Math.min(1, (window.innerWidth - 48) / CANVAS_W)
+      : 1
+  );
+  useEffect(() => {
+    function onResize() {
+      setScale(Math.min(1, (window.innerWidth - 48) / CANVAS_W));
+    }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   // ── Spawn wave on new question ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -386,20 +404,32 @@ export default function AnswerRunner() {
         <div className="flex items-center justify-between w-full max-w-[700px]">
           <h2 className="text-xl font-bold">🏃 Answer Runner</h2>
         </div>
-        <div className="w-full overflow-x-auto">
+        <div className="w-full">
+          {/* Outer box: CSS dimensions = visible (scaled) size */}
           <div
-            className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a] mx-auto"
-            style={{ width: CANVAS_W, height: CANVAS_H }}
+            className="relative mx-auto"
+            style={{ width: Math.round(CANVAS_W * scale), height: Math.round(CANVAS_H * scale) }}
           >
-            <AnswerRunnerResults
-              score={score}
-              correctCount={correctCount}
-              totalQuestions={questions.length}
-              survived={lives > 0}
-              item_bank_id={item_bank_id}
-              onPlayAgain={handleStart}
-              onBack={() => navigate('/games')}
-            />
+            {/* Inner frame: full 700×400, CSS-scaled to fit */}
+            <div
+              className="absolute top-0 start-0 rounded-xl overflow-hidden border border-border bg-[#0d0d2a]"
+              style={{
+                width: CANVAS_W,
+                height: CANVAS_H,
+                transform: scale < 1 ? `scale(${scale})` : undefined,
+                transformOrigin: 'top left',
+              }}
+            >
+              <AnswerRunnerResults
+                score={score}
+                correctCount={correctCount}
+                totalQuestions={questions.length}
+                survived={lives > 0}
+                item_bank_id={item_bank_id}
+                onPlayAgain={handleStart}
+                onBack={() => navigate('/games')}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -416,12 +446,22 @@ export default function AnswerRunner() {
         <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
       </div>
 
-      {/* Responsive wrapper — allows horizontal scroll on narrow viewports */}
-      <div className="w-full overflow-x-auto">
-      {/* Game frame */}
+      {/* Responsive wrapper — outer box holds scaled dimensions, inner game frame is CSS-transformed */}
+      <div className="w-full">
+      {/* Outer box: CSS dimensions = visible (scaled) size */}
       <div
-        className="relative rounded-xl overflow-hidden border border-border mx-auto"
-        style={{ width: CANVAS_W, height: CANVAS_H }}
+        className="relative mx-auto"
+        style={{ width: Math.round(CANVAS_W * scale), height: Math.round(CANVAS_H * scale) }}
+      >
+      {/* Game frame: always 700×400 internally, CSS-scaled to fit viewport */}
+      <div
+        className="absolute top-0 start-0 rounded-xl overflow-hidden border border-border"
+        style={{
+          width: CANVAS_W,
+          height: CANVAS_H,
+          transform: scale < 1 ? `scale(${scale})` : undefined,
+          transformOrigin: 'top left',
+        }}
       >
         {isLoading && (
           /* Loading spinner centred inside the dark game frame */
@@ -513,73 +553,6 @@ export default function AnswerRunner() {
             </div>
           )}
 
-          {/* Touch D-pad — shown only on touch-capable devices while playing.
-              Absolutely positioned bottom-start so it doesn't overlap the question card.
-              pointer-events-auto re-enables interaction inside the pointer-events-none overlay. */}
-          {phase === 'playing' && showTouchControls && (
-            <div
-              className="absolute bottom-4 pointer-events-auto"
-              style={{ insetInlineStart: '16px' }}
-            >
-              {/* 3×3 grid: corners/centre are spacers; the 4 edges hold the arrow buttons. */}
-              <div
-                className="grid gap-1.5"
-                style={{
-                  gridTemplateColumns: 'repeat(3, 52px)',
-                  gridTemplateRows: 'repeat(3, 52px)',
-                  touchAction: 'none', // lets us read touch events without triggering page scroll
-                }}
-              >
-                {/* Row 1: spacer · Up · spacer */}
-                <span />
-                <button
-                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-                  aria-label="Move up"
-                  onTouchStart={() => addTouchKey('ArrowUp')}
-                  onTouchEnd={() => removeTouchKey('ArrowUp')}
-                  onMouseDown={() => addTouchKey('ArrowUp')}
-                  onMouseUp={() => removeTouchKey('ArrowUp')}
-                  onMouseLeave={() => removeTouchKey('ArrowUp')}
-                >↑</button>
-                <span />
-
-                {/* Row 2: Left · spacer · Right */}
-                <button
-                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-                  aria-label="Move left"
-                  onTouchStart={() => addTouchKey('ArrowLeft')}
-                  onTouchEnd={() => removeTouchKey('ArrowLeft')}
-                  onMouseDown={() => addTouchKey('ArrowLeft')}
-                  onMouseUp={() => removeTouchKey('ArrowLeft')}
-                  onMouseLeave={() => removeTouchKey('ArrowLeft')}
-                >←</button>
-                <span />
-                <button
-                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-                  aria-label="Move right"
-                  onTouchStart={() => addTouchKey('ArrowRight')}
-                  onTouchEnd={() => removeTouchKey('ArrowRight')}
-                  onMouseDown={() => addTouchKey('ArrowRight')}
-                  onMouseUp={() => removeTouchKey('ArrowRight')}
-                  onMouseLeave={() => removeTouchKey('ArrowRight')}
-                >→</button>
-
-                {/* Row 3: spacer · Down · spacer */}
-                <span />
-                <button
-                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-                  aria-label="Move down"
-                  onTouchStart={() => addTouchKey('ArrowDown')}
-                  onTouchEnd={() => removeTouchKey('ArrowDown')}
-                  onMouseDown={() => addTouchKey('ArrowDown')}
-                  onMouseUp={() => removeTouchKey('ArrowDown')}
-                  onMouseLeave={() => removeTouchKey('ArrowDown')}
-                >↓</button>
-                <span />
-              </div>
-            </div>
-          )}
-
           {/* Idle screen */}
           {phase === 'idle' && (
             <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white pointer-events-auto">
@@ -598,6 +571,70 @@ export default function AnswerRunner() {
         </div>
       </div>
       </div>
+      </div>
+
+      {/* ── Touch D-pad — below the canvas ──────────────────────────────── */}
+      {/* Rendered outside the scaled game frame so buttons stay 56×56px  */}
+      {/* (WCAG AA touch target) regardless of how much the canvas shrinks. */}
+      {phase === 'playing' && showTouchControls && (
+        <div className="flex justify-center">
+          <div
+            className="grid gap-2"
+            style={{
+              gridTemplateColumns: 'repeat(3, 56px)',
+              gridTemplateRows: 'repeat(3, 56px)',
+              touchAction: 'none',
+            }}
+          >
+            {/* Row 1: spacer · Up · spacer */}
+            <span />
+            <button
+              className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+              aria-label="Move up"
+              onTouchStart={() => addTouchKey('ArrowUp')}
+              onTouchEnd={() => removeTouchKey('ArrowUp')}
+              onMouseDown={() => addTouchKey('ArrowUp')}
+              onMouseUp={() => removeTouchKey('ArrowUp')}
+              onMouseLeave={() => removeTouchKey('ArrowUp')}
+            >↑</button>
+            <span />
+
+            {/* Row 2: Left · spacer · Right */}
+            <button
+              className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+              aria-label="Move left"
+              onTouchStart={() => addTouchKey('ArrowLeft')}
+              onTouchEnd={() => removeTouchKey('ArrowLeft')}
+              onMouseDown={() => addTouchKey('ArrowLeft')}
+              onMouseUp={() => removeTouchKey('ArrowLeft')}
+              onMouseLeave={() => removeTouchKey('ArrowLeft')}
+            >←</button>
+            <span />
+            <button
+              className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+              aria-label="Move right"
+              onTouchStart={() => addTouchKey('ArrowRight')}
+              onTouchEnd={() => removeTouchKey('ArrowRight')}
+              onMouseDown={() => addTouchKey('ArrowRight')}
+              onMouseUp={() => removeTouchKey('ArrowRight')}
+              onMouseLeave={() => removeTouchKey('ArrowRight')}
+            >→</button>
+
+            {/* Row 3: spacer · Down · spacer */}
+            <span />
+            <button
+              className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+              aria-label="Move down"
+              onTouchStart={() => addTouchKey('ArrowDown')}
+              onTouchEnd={() => removeTouchKey('ArrowDown')}
+              onMouseDown={() => addTouchKey('ArrowDown')}
+              onMouseUp={() => removeTouchKey('ArrowDown')}
+              onMouseLeave={() => removeTouchKey('ArrowDown')}
+            >↓</button>
+            <span />
+          </div>
+        </div>
+      )}
 
       {/* ── How to Play ─────────────────────────────────────────────────── */}
       <div className="w-full max-w-[700px] rounded-xl border border-white/10 bg-[#0a0a1f] px-5 py-4">
