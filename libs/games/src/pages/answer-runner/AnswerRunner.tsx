@@ -494,9 +494,38 @@ export default function AnswerRunner() {
       </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        ↑ ↓ ← → arrow keys · correct answer = +10 · wrong answer = −1 life
-      </p>
+      {/* ── How to Play ─────────────────────────────────────────────────── */}
+      <div className="w-full max-w-[700px] rounded-xl border border-white/10 bg-[#0a0a1f] px-5 py-4">
+        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
+          How to Play
+        </p>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">🕹️</span>
+            <span className="text-white/65 text-xs leading-snug">↑ ↓ ← → arrow keys move your player</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">🎯</span>
+            <span className="text-white/65 text-xs leading-snug">Steer into a tile to give your answer</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">✅</span>
+            <span className="text-white/65 text-xs leading-snug">Correct answer = +10 points</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">❌</span>
+            <span className="text-white/65 text-xs leading-snug">Wrong answer = −1 life (3 lives total)</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">💀</span>
+            <span className="text-white/65 text-xs leading-snug">Lose all 3 lives and the run ends early</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">⚡</span>
+            <span className="text-white/65 text-xs leading-snug">Tiles speed up every 3 questions</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
