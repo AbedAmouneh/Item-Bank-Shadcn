@@ -81,11 +81,10 @@ export function extractAnswers(q: Question): GameAnswer[] {
   switch (q.type) {
     case 'multiple_choice': {
       const content = q.content as MCContent;
-      return content.choices.map((c) => ({
-        id: c.id,
-        text: stripHtml(c.text),
-        isCorrect: c.isCorrect,
-      }));
+      // Shuffle so the correct choice isn't always option A.
+      return content.choices
+        .map((c) => ({ id: c.id, text: stripHtml(c.text), isCorrect: c.isCorrect }))
+        .sort(() => Math.random() - 0.5);
     }
 
     case 'true_false': {
