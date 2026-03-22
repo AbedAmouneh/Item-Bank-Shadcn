@@ -83,7 +83,8 @@
     "highlight_correct_word": "تحديد الكلمة الصحيحة",
     "record_audio": "تسجيل صوتي",
     "text_classification": "تصنيف النص",
-    "image_classification": "تصنيف الصور"
+    "image_classification": "تصنيف الصور",
+    "crossword": "كلمات متقاطعة"
   },
   "statuses": {
     "draft": "مسودة",
@@ -475,11 +476,33 @@
     },
     "answer_placeholder": "الإجابة {{index}}",
     "require_unique_answers": "تطلب إجابات فريدة",
-    "enable_word_limit": "تمكين حد الكلمات"
+    "enable_word_limit": "تمكين حد الكلمات",
+    "crossword": {
+      "word_label": "الكلمة",
+      "clue_label": "التلميح",
+      "add_word": "إضافة كلمة",
+      "generate_layout": "إنشاء التخطيط",
+      "grid_direction": "اتجاه الشبكة",
+      "hint_mode": "وضع التلميح",
+      "hint_value": "قيمة التلميح",
+      "hint_mode_none": "لا شيء",
+      "hint_mode_count": "عدد",
+      "hint_mode_percentage": "نسبة مئوية",
+      "error_no_layout": "لم يتمكن من وضع أي كلمة. أضف كلمات أكثر تشترك في حروف.",
+      "error_min_words": "أضف كلمتين على الأقل مع تلميحاتهما.",
+      "error_generate_first": "أنشئ التخطيط قبل الحفظ.",
+      "ltr": "يسار لـ يمين",
+      "rtl": "يمين لـ يسار"
+    }
   },
   "matching": {
     "justification_label": "برر إجابتك"
   },
+  "crossword_across": "أفقي",
+  "crossword_down": "عمودي",
+  "crossword_check": "تحقق من الإجابة",
+  "crossword_hint": "تلميح",
+  "crossword_score": "النتيجة: {{score}} / {{max}}",
   "no_questions": "لا توجد أسئلة",
   "preview_page": {
     "back": "العودة إلى الأسئلة",
