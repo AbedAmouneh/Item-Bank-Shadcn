@@ -296,22 +296,75 @@ describe('toQuestionDto', () => {
     expect(dto.type).toBe('image_classification');
   });
 
-  it('converts matching to a base DTO', () => {
+  it('converts matching domain to a full MatchingQuestionDTO', () => {
+    const leftItem = {
+      id: 'l1',
+      text: 'Left A',
+      imageUrl: '',
+      multipleAnswers: false,
+      linkedRightIds: ['r1'],
+      markPercent: 100,
+    };
+    const rightItem = { id: 'r1', text: 'Right A', imageUrl: '' };
     const dto = toQuestionDto({
       type: 'matching',
       name: 'Q',
       text: 'T',
-      leftItems: [],
-      rightItems: [],
+      leftItems: [leftItem],
+      rightItems: [rightItem],
       leftMode: 'text',
       rightMode: 'text',
       allowRightItemReuse: false,
       autoDistribute: true,
-      penaltyPerWrongPair: 0,
-      justification: 'disabled',
+      penaltyPerWrongPair: 25,
+      justification: 'optional',
       justificationFraction: 30,
     });
     expect(dto.type).toBe('matching');
+    if (dto.type !== 'matching') return;
+    expect(dto.left_mode).toBe('text');
+    expect(dto.right_mode).toBe('text');
+    expect(dto.allow_right_item_reuse).toBe(false);
+    expect(dto.auto_distribute).toBe(true);
+    expect(dto.penalty_per_wrong_pair).toBe(25);
+    expect(dto.justification).toBe('optional');
+    expect(dto.justification_fraction).toBe(30);
+    expect(dto.left_items).toHaveLength(1);
+    expect(dto.left_items[0].id).toBe('l1');
+    expect(dto.left_items[0].linked_right_ids).toEqual(['r1']);
+    expect(dto.right_items).toHaveLength(1);
+    expect(dto.right_items[0].id).toBe('r1');
+  });
+
+  it('round-trips matching through toQuestionDto → fromQuestionDto', () => {
+    const domain: Parameters<typeof toQuestionDto>[0] = {
+      type: 'matching',
+      name: 'Q',
+      text: 'T',
+      leftItems: [{ id: 'l1', text: 'L', imageUrl: '', multipleAnswers: true, linkedRightIds: ['r1'], markPercent: 50 }],
+      rightItems: [{ id: 'r1', text: 'R', imageUrl: '' }],
+      leftMode: 'text',
+      rightMode: 'image',
+      allowRightItemReuse: true,
+      autoDistribute: false,
+      penaltyPerWrongPair: 10,
+      justification: 'required',
+      justificationFraction: 50,
+    };
+    const dto = toQuestionDto(domain);
+    const back = fromQuestionDto(dto);
+    expect(back.type).toBe('matching');
+    if (back.type !== 'matching') return;
+    expect(back.leftItems[0].id).toBe('l1');
+    expect(back.leftItems[0].multipleAnswers).toBe(true);
+    expect(back.rightItems[0].id).toBe('r1');
+    expect(back.leftMode).toBe('text');
+    expect(back.rightMode).toBe('image');
+    expect(back.allowRightItemReuse).toBe(true);
+    expect(back.autoDistribute).toBe(false);
+    expect(back.penaltyPerWrongPair).toBe(10);
+    expect(back.justification).toBe('required');
+    expect(back.justificationFraction).toBe(50);
   });
 
   it('populates the base DTO fields from the domain object', () => {
