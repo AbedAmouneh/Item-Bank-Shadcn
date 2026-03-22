@@ -40,10 +40,11 @@ import AnswerRunnerResults from './AnswerRunnerResults';
 
 const CANVAS_W = 700;
 const CANVAS_H = 400;
-/** CSS x of the player — used for collision detection and HTML tile positioning. */
-const PLAYER_X = 100;
+/** CSS x of the player — used for collision detection and HTML tile positioning.
+ *  Set to 180 so the player clears the D-pad's right edge (~184px) on touch devices. */
+const PLAYER_X = 180;
 /** Camera2D x of the player: CSS x relative to the canvas centre (x=0 is centre). */
-const CAM_PLAYER_X = PLAYER_X - CANVAS_W / 2; // 100 − 350 = −250
+const CAM_PLAYER_X = PLAYER_X - CANVAS_W / 2; // 180 − 350 = −170
 /** Starting answer move speed in px/s. */
 const BASE_SPEED = 150;
 /** How much speed increases (px/s) every SPEED_EVERY_N questions. */
