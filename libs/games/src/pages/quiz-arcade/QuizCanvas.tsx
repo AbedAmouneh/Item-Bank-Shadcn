@@ -87,18 +87,24 @@ export default function QuizCanvas({
         <CameraEffects shouldShake={shouldShake} onShakeDone={onShakeDone} />
 
         {/* Timer bar — shrinks as time runs out, colour shifts green → red.
+            Camera2D origin is the canvas centre, so x=0 is the horizontal
+            mid-point. The bar is left-anchored: its left edge sits 16 px from
+            the canvas left edge (CSS x=16 → Camera2D x = 16 − width/2).
+            As barWidth shrinks the centre shifts left so the left edge stays
+            fixed and the bar retreats from the right.
             Only rendered when there is an active question (fraction > 0). */}
         {timerFraction > 0 && (
           <Entity id="timer-bar">
-            <Transform x={16 + barWidth / 2} y={8} />
+            <Transform x={barWidth / 2 - (width / 2 - 16)} y={8} />
             <Sprite width={barWidth} height={6} color={barColor} />
           </Entity>
         )}
 
-        {/* Gold particle burst on correct answer */}
+        {/* Gold particle burst on correct answer.
+            Camera2D x=0, y=0 is the canvas centre. */}
         {showBurst && (
           <Entity id={`burst-${Date.now()}`}>
-            <Transform x={width / 2} y={height / 2} />
+            <Transform x={0} y={0} />
             <ParticleEmitter
               burstCount={40}
               color="#fbbf24"
