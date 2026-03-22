@@ -67,6 +67,17 @@ let sharedPlayerY = CANVAS_H / 2;
 /** Player X in CSS pixels — written by ECS Script, read by React collision tick. */
 let sharedPlayerX = PLAYER_X;
 
+/**
+ * Keys currently held via the on-screen touch D-pad.
+ * Stored at module level (same pattern as sharedPlayerX/Y) so playerScript,
+ * which runs on requestAnimationFrame, can read it without a closure.
+ */
+const touchKeys = new Set<string>();
+/** Add a direction key — called by D-pad onTouchStart / onMouseDown. */
+function addTouchKey(key: string): void { touchKeys.add(key); }
+/** Remove a direction key — called by D-pad onTouchEnd / onMouseUp / onMouseLeave. */
+function removeTouchKey(key: string): void { touchKeys.delete(key); }
+
 // ─── Player ECS script ────────────────────────────────────────────────────────
 // Defined at module level so it is never recreated across re-renders.
 // This is important: if playerScript were defined inside the component,
@@ -98,12 +109,12 @@ const playerScript: ScriptUpdateFn = (
 ) => {
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
-  // Clamp vertical: rails derived from the spawn zone keep the player below the question card.
-  if (input.isDown('ArrowUp'))    t.y = Math.max(CAM_RAIL_TOP, t.y - PLAYER_SPEED * dt);
-  if (input.isDown('ArrowDown'))  t.y = Math.min(CAM_RAIL_BOT, t.y + PLAYER_SPEED * dt);
-  // Clamp horizontal: left edge = -(CAM_HALF_W − 20), right edge = +(CAM_HALF_W − 20).
-  if (input.isDown('ArrowLeft'))  t.x = Math.max(-(CAM_HALF_W - 20), t.x - PLAYER_SPEED * dt);
-  if (input.isDown('ArrowRight')) t.x = Math.min( (CAM_HALF_W - 20), t.x + PLAYER_SPEED * dt);
+  // Each direction checks both the physical keyboard (InputManager) and
+  // the on-screen D-pad (touchKeys), so both control methods work simultaneously.
+  if (input.isDown('ArrowUp')    || touchKeys.has('ArrowUp'))    t.y = Math.max(CAM_RAIL_TOP, t.y - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowDown')  || touchKeys.has('ArrowDown'))  t.y = Math.min(CAM_RAIL_BOT, t.y + PLAYER_SPEED * dt);
+  if (input.isDown('ArrowLeft')  || touchKeys.has('ArrowLeft'))  t.x = Math.max(-(CAM_HALF_W - 20), t.x - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowRight') || touchKeys.has('ArrowRight')) t.x = Math.min( (CAM_HALF_W - 20), t.x + PLAYER_SPEED * dt);
   // Convert camera coords → CSS coords for the React collision tick.
   sharedPlayerY = t.y + CAM_HALF_H;
   sharedPlayerX = t.x + CAM_HALF_W;
@@ -211,6 +222,21 @@ export default function AnswerRunner() {
 
   const [hitFeedback, setHitFeedback] = useState<HitFeedback | null>(null);
   const hitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Touch controls ────────────────────────────────────────────────────────
+  // Detect touch support once on mount — drives whether the D-pad is shown.
+  // navigator.maxTouchPoints > 0 covers both iOS/Android and hybrid laptops.
+
+  const [showTouchControls, setShowTouchControls] = useState(false);
+  useEffect(() => {
+    setShowTouchControls(navigator.maxTouchPoints > 0 || 'ontouchstart' in window);
+  }, []);
+
+  // Clear any stale touch presses when the game ends or resets so the player
+  // doesn't start the next game with a direction already held down.
+  useEffect(() => {
+    if (phase !== 'playing') touchKeys.clear();
+  }, [phase]);
 
   // ── Spawn wave on new question ─────────────────────────────────────────────
 
@@ -486,13 +512,82 @@ export default function AnswerRunner() {
             </div>
           )}
 
+          {/* Touch D-pad — shown only on touch-capable devices while playing.
+              Absolutely positioned bottom-start so it doesn't overlap the question card.
+              pointer-events-auto re-enables interaction inside the pointer-events-none overlay. */}
+          {phase === 'playing' && showTouchControls && (
+            <div
+              className="absolute bottom-4 pointer-events-auto"
+              style={{ insetInlineStart: '16px' }}
+            >
+              {/* 3×3 grid: corners/centre are spacers; the 4 edges hold the arrow buttons. */}
+              <div
+                className="grid gap-1.5"
+                style={{
+                  gridTemplateColumns: 'repeat(3, 52px)',
+                  gridTemplateRows: 'repeat(3, 52px)',
+                  touchAction: 'none', // lets us read touch events without triggering page scroll
+                }}
+              >
+                {/* Row 1: spacer · Up · spacer */}
+                <span />
+                <button
+                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+                  aria-label="Move up"
+                  onTouchStart={() => addTouchKey('ArrowUp')}
+                  onTouchEnd={() => removeTouchKey('ArrowUp')}
+                  onMouseDown={() => addTouchKey('ArrowUp')}
+                  onMouseUp={() => removeTouchKey('ArrowUp')}
+                  onMouseLeave={() => removeTouchKey('ArrowUp')}
+                >↑</button>
+                <span />
+
+                {/* Row 2: Left · spacer · Right */}
+                <button
+                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+                  aria-label="Move left"
+                  onTouchStart={() => addTouchKey('ArrowLeft')}
+                  onTouchEnd={() => removeTouchKey('ArrowLeft')}
+                  onMouseDown={() => addTouchKey('ArrowLeft')}
+                  onMouseUp={() => removeTouchKey('ArrowLeft')}
+                  onMouseLeave={() => removeTouchKey('ArrowLeft')}
+                >←</button>
+                <span />
+                <button
+                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+                  aria-label="Move right"
+                  onTouchStart={() => addTouchKey('ArrowRight')}
+                  onTouchEnd={() => removeTouchKey('ArrowRight')}
+                  onMouseDown={() => addTouchKey('ArrowRight')}
+                  onMouseUp={() => removeTouchKey('ArrowRight')}
+                  onMouseLeave={() => removeTouchKey('ArrowRight')}
+                >→</button>
+
+                {/* Row 3: spacer · Down · spacer */}
+                <span />
+                <button
+                  className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
+                  aria-label="Move down"
+                  onTouchStart={() => addTouchKey('ArrowDown')}
+                  onTouchEnd={() => removeTouchKey('ArrowDown')}
+                  onMouseDown={() => addTouchKey('ArrowDown')}
+                  onMouseUp={() => removeTouchKey('ArrowDown')}
+                  onMouseLeave={() => removeTouchKey('ArrowDown')}
+                >↓</button>
+                <span />
+              </div>
+            </div>
+          )}
+
           {/* Idle screen */}
           {phase === 'idle' && (
             <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white pointer-events-auto">
               <p className="text-3xl">🏃</p>
               <p className="text-xl font-bold">Answer Runner</p>
               <p className="text-sm text-white/60">
-                Use ↑ ↓ ← → to move · hit the correct answer · dodge the wrong ones
+                {showTouchControls
+                  ? 'Use the on-screen D-pad to move · hit the correct answer · dodge the wrong ones'
+                  : 'Use ↑ ↓ ← → to move · hit the correct answer · dodge the wrong ones'}
               </p>
               <Button onClick={handleStart} className="mt-2">
                 Start!
