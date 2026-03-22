@@ -9,6 +9,7 @@ import { type AnswerEntry } from '../domain/types';
 import DragDropTextEditor from '../pages/drag-drop-text/DragDropTextEditor';
 import DragDropImageWizard from '../pages/drag-drop-image/DragDropImageWizard';
 import { MatchingWizard } from '../pages/matching';
+import { CrosswordWizard } from '../pages/crossword';
 import FillInBlanksEditor from '../pages/fill-in-blanks/FillInBlanksEditor';
 import FillInBlanksImageEditor from '../pages/fill-in-blanks-image/FillInBlanksImageEditor';
 import MultipleChoiceEditor from '../pages/multiple-choice/MultipleChoiceEditor';
@@ -257,6 +258,18 @@ export type QuestionFormData = {
   matchingPenalty?: number;
   matchingJustification?: 'disabled' | 'optional' | 'required';
   matchingJustificationFraction?: number;
+  // Crossword
+  crosswordWords?: Array<{
+    word: string;
+    clue: string;
+    direction: 'across' | 'down';
+    row: number;
+    col: number;
+    clueNumber: number;
+  }>;
+  crosswordGridLayout?: 'ltr' | 'rtl';
+  crosswordHintMode?: 'none' | 'count' | 'percentage';
+  crosswordHintValue?: number;
   // Answer feedback (correct / partially correct / incorrect)
   correctAnswerFeedback?: string;
   partiallyCorrectAnswerFeedback?: string;
@@ -1716,6 +1729,15 @@ function QuestionEditorShell(props: QuestionEditorShellProps) {
   if (props.questionType === 'matching') {
     return (
       <MatchingWizard
+        onSave={props.onSave}
+        onCancel={props.onCancel}
+        initialData={props.initialData}
+      />
+    );
+  }
+  if (props.questionType === 'crossword') {
+    return (
+      <CrosswordWizard
         onSave={props.onSave}
         onCancel={props.onCancel}
         initialData={props.initialData}
