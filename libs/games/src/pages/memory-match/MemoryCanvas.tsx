@@ -22,7 +22,7 @@ export default function MemoryCanvas({ width, height, showBurst }: MemoryCanvasP
         <Camera2D />
         {showBurst && (
           <Entity id={`match-burst-${Date.now()}`}>
-            <Transform x={width / 2} y={height / 2} />
+            <Transform x={0} y={0} />
             <ParticleEmitter
               burstCount={30}
               color="#22c55e"
