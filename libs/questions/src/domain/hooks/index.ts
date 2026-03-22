@@ -6,3 +6,4 @@ export { useDeleteQuestion } from './useDeleteQuestion';
 export { useDuplicateQuestion } from './useDuplicateQuestion';
 export { useSubmitForReview } from './useSubmitForReview';
 export { useImageUpload } from './useImageUpload';
+export { useReorderQuestions } from './useReorderQuestions';

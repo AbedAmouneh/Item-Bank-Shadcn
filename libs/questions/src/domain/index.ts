@@ -12,4 +12,5 @@ export {
   useDeleteQuestion,
   useDuplicateQuestion,
   useSubmitForReview,
+  useReorderQuestions,
 } from './hooks';
