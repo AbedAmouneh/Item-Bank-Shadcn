@@ -407,8 +407,8 @@ export default function AnswerRunner() {
               key={a.id}
               className="absolute flex items-center justify-center rounded-md text-white text-xs font-semibold text-center leading-tight px-1"
               style={{
-                insetInlineStart: a.x - 64,
-                top: a.y - 17,
+                insetInlineStart: `${a.x - 64}px`,
+                top: `${a.y - 17}px`,
                 width: 128,
                 height: 34,
                 backgroundColor: a.isCorrect ? '#16a34a' : '#dc2626',
