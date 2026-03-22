@@ -499,31 +499,20 @@ export default function AnswerRunner() {
         <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
           How to Play
         </p>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">🕹️</span>
-            <span className="text-white/65 text-xs leading-snug">↑ ↓ ← → arrow keys move your player</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">🎯</span>
-            <span className="text-white/65 text-xs leading-snug">Steer into a tile to give your answer</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">✅</span>
-            <span className="text-white/65 text-xs leading-snug">Correct answer = +10 points</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">❌</span>
-            <span className="text-white/65 text-xs leading-snug">Wrong answer = −1 life (3 lives total)</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">💀</span>
-            <span className="text-white/65 text-xs leading-snug">Lose all 3 lives and the run ends early</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">⚡</span>
-            <span className="text-white/65 text-xs leading-snug">Tiles speed up every 3 questions</span>
-          </div>
+        <div className="flex flex-col gap-2">
+          {[
+            'Move with arrow keys ↑ ↓ ← →',
+            'Steer into a tile to give your answer',
+            'Correct answer scores +10 points',
+            'Wrong answer costs 1 life — you start with 3',
+            'Losing all 3 lives ends the run early',
+            'Tiles speed up every 3 questions',
+          ].map((rule) => (
+            <div key={rule} className="flex items-start gap-3">
+              <span className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400" />
+              <span className="text-white/65 text-xs leading-snug">{rule}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
