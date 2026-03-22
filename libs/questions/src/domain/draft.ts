@@ -1,4 +1,4 @@
-import { QuestionType, DragDropTextDraggableItem, DragDropTextGroup, TextClassificationCategory, TextClassificationLayout, JustificationMode, JustificationFraction, ImageClassificationCategory, MatchingLeftItem, MatchingRightItem, MatchingItemMode } from './types';
+import { QuestionType, DragDropTextDraggableItem, DragDropTextGroup, TextClassificationCategory, TextClassificationLayout, JustificationMode, JustificationFraction, ImageClassificationCategory, MatchingLeftItem, MatchingRightItem, MatchingItemMode, CrosswordWord } from './types';
 
 export interface QuestionDraftBase {
   type: QuestionType;
@@ -142,6 +142,14 @@ export interface MatchingQuestionDraft extends QuestionDraftBase {
   justificationFraction?: JustificationFraction;
 }
 
+export interface CrosswordQuestionDraft extends QuestionDraftBase {
+  type: 'crossword';
+  words?: CrosswordWord[];
+  gridLayout?: 'ltr' | 'rtl';
+  hintMode?: 'none' | 'count' | 'percentage';
+  hintValue?: number;
+}
+
 export type QuestionDraft =
   | TrueFalseQuestionDraft
   | MultipleChoiceQuestionDraft
@@ -161,4 +169,5 @@ export type QuestionDraft =
   | RecordAudioQuestionDraft
   | TextClassificationQuestionDraft
   | ImageClassificationQuestionDraft
-  | MatchingQuestionDraft;
+  | MatchingQuestionDraft
+  | CrosswordQuestionDraft;
