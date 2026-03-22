@@ -184,8 +184,36 @@ export function toQuestionDto(question: QuestionDomain | QuestionDraft): Questio
 
     case 'text_classification':
     case 'image_classification':
-    case 'matching':
       return baseDto as QuestionDTO;
+
+    case 'matching':
+      return {
+        ...baseDto,
+        type: 'matching',
+        left_items: (question.leftItems ?? []).map((item) => ({
+          id: item.id,
+          text: item.text,
+          image_url: item.imageUrl,
+          multiple_answers: item.multipleAnswers,
+          linked_right_ids: item.linkedRightIds,
+          mark_percent: item.markPercent,
+        })),
+        right_items: (question.rightItems ?? []).map((item) => ({
+          id: item.id,
+          text: item.text,
+          image_url: item.imageUrl,
+        })),
+        left_mode: question.leftMode ?? 'text',
+        right_mode: question.rightMode ?? 'text',
+        allow_right_item_reuse: question.allowRightItemReuse ?? false,
+        auto_distribute: question.autoDistribute ?? true,
+        penalty_per_wrong_pair: question.penaltyPerWrongPair ?? 0,
+        justification: question.justification ?? 'disabled',
+        justification_fraction: question.justificationFraction ?? 30,
+        correct_feedback: question.correctFeedback,
+        partial_feedback: question.partialFeedback,
+        incorrect_feedback: question.incorrectFeedback,
+      };
 
     default: {
       const exhaustiveCheck: never = question;
@@ -358,6 +386,35 @@ export function fromQuestionDto(dto: QuestionDTO): QuestionDomain {
         ...baseDomain,
         type: 'record_audio',
         maxDurationSeconds: dto.max_duration_seconds,
+      };
+
+    case 'matching':
+      return {
+        ...baseDomain,
+        type: 'matching',
+        leftItems: dto.left_items.map((item) => ({
+          id: item.id,
+          text: item.text,
+          imageUrl: item.image_url,
+          multipleAnswers: item.multiple_answers,
+          linkedRightIds: item.linked_right_ids,
+          markPercent: item.mark_percent,
+        })),
+        rightItems: dto.right_items.map((item) => ({
+          id: item.id,
+          text: item.text,
+          imageUrl: item.image_url,
+        })),
+        leftMode: dto.left_mode,
+        rightMode: dto.right_mode,
+        allowRightItemReuse: dto.allow_right_item_reuse,
+        autoDistribute: dto.auto_distribute,
+        penaltyPerWrongPair: dto.penalty_per_wrong_pair,
+        justification: dto.justification,
+        justificationFraction: dto.justification_fraction,
+        correctFeedback: dto.correct_feedback,
+        partialFeedback: dto.partial_feedback,
+        incorrectFeedback: dto.incorrect_feedback,
       };
 
     default: {
