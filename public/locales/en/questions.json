@@ -83,7 +83,8 @@
     "highlight_correct_word": "Highlight correct words",
     "record_audio": "Record Audio",
     "text_classification": "Text classification",
-    "image_classification": "Image classification"
+    "image_classification": "Image classification",
+    "crossword": "Crossword"
   },
   "statuses": {
     "draft": "Draft",
@@ -475,11 +476,33 @@
     },
     "answer_placeholder": "Answer {{index}}",
     "require_unique_answers": "Require unique answers",
-    "enable_word_limit": "Enable word limit"
+    "enable_word_limit": "Enable word limit",
+    "crossword": {
+      "word_label": "Word",
+      "clue_label": "Clue",
+      "add_word": "Add Word",
+      "generate_layout": "Generate Layout",
+      "grid_direction": "Grid Direction",
+      "hint_mode": "Hint Mode",
+      "hint_value": "Hint Value",
+      "hint_mode_none": "None",
+      "hint_mode_count": "Count",
+      "hint_mode_percentage": "Percentage",
+      "error_no_layout": "No words could be placed. Add more words with shared letters.",
+      "error_min_words": "Add at least 2 words with clues.",
+      "error_generate_first": "Generate the layout before saving.",
+      "ltr": "LTR",
+      "rtl": "RTL"
+    }
   },
   "matching": {
     "justification_label": "Justify your answer"
   },
+  "crossword_across": "Across",
+  "crossword_down": "Down",
+  "crossword_check": "Check Answer",
+  "crossword_hint": "Hint",
+  "crossword_score": "Score: {{score}} / {{max}}",
   "no_questions": "No questions found",
   "preview_page": {
     "back": "Back to questions",
