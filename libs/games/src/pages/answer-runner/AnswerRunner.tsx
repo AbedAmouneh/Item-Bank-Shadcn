@@ -36,15 +36,14 @@ import { extractAnswers } from '../../domain/extractAnswers';
 import type { RunnerAnswer } from '../../domain/types';
 import AnswerRunnerResults from './AnswerRunnerResults';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Fixed constants ──────────────────────────────────────────────────────────
 
+/** Maximum (desktop) canvas width. Mobile gets a physically smaller canvas. */
 const CANVAS_W = 700;
+/** Maximum (desktop) canvas height. */
 const CANVAS_H = 400;
-/** CSS x of the player — used for collision detection and HTML tile positioning.
- *  Set to 220 so the player clears the D-pad's right edge (~184px) with comfortable margin. */
+/** CSS x where the player starts. Chosen to clear the D-pad width (~184px). */
 const PLAYER_X = 220;
-/** Camera2D x of the player: CSS x relative to the canvas centre (x=0 is centre). */
-const CAM_PLAYER_X = PLAYER_X - CANVAS_W / 2; // 220 − 350 = −130
 /** Starting answer move speed in px/s. */
 const BASE_SPEED = 150;
 /** How much speed increases (px/s) every SPEED_EVERY_N questions. */
@@ -52,19 +51,61 @@ const SPEED_INCREMENT = 0.5;
 const SPEED_EVERY_N = 3;
 const PLAYER_SPEED = 200; // px/s
 const COLLISION_DX = 80; // horizontal overlap threshold (px)
-const COLLISION_DY = 30; // vertical overlap threshold (px) — from spec
+const COLLISION_DY = 30; // vertical overlap threshold (px)
 const TICK_MS = 50; // collision + movement interval
 /** Top of the spawn zone — kept below the question card (~100 px tall). */
 const SPAWN_Y_MIN = 108;
+
+// ─── Reactive canvas dimensions ───────────────────────────────────────────────
+// On mobile the canvas is physically smaller (not CSS-scaled) to fill the screen
+// more naturally. All coordinate constants derived from canvas size are module-level
+// `let` variables so the playerScript RAF callback always reads the latest values.
+
+let mCanvasW = CANVAS_W;
+let mCanvasH = CANVAS_H;
+let mCamHalfW = CANVAS_W / 2;
+let mCamHalfH = CANVAS_H / 2;
+/** Camera2D x of the player: CSS x relative to canvas centre. */
+let mCamPlayerX = PLAYER_X - CANVAS_W / 2; // 220 − 350 = −130
 /** Bottom of the spawn zone — leaves a small gap above the canvas floor. */
-const SPAWN_Y_MAX = CANVAS_H - 24;
+let mSpawnYMax = CANVAS_H - 24;
+/** Top player movement rail (camera-space). */
+let mCamRailTop = SPAWN_Y_MIN - CANVAS_H / 2; // −92
+/** Bottom player movement rail (camera-space). */
+let mCamRailBot = (CANVAS_H - 24) - CANVAS_H / 2; // 176
+
+/**
+ * Choose canvas dimensions from the current viewport width.
+ * Desktop (≥640 px): full 700×400.
+ * Mobile (<640 px): nearly full-width with a squarish aspect ratio (~5:6)
+ * so the canvas is tall enough to be playable without eating too much screen.
+ */
+function getCanvasDims(vw: number): { w: number; h: number } {
+  if (vw < 640) {
+    const w = Math.min(CANVAS_W, vw - 32);
+    return { w, h: Math.round(w * 0.85) }; // ≈358×304 on iPhone 12 Pro
+  }
+  return { w: CANVAS_W, h: CANVAS_H };
+}
+
+/** Sync all module-level coordinate vars whenever the canvas size changes. */
+function applyCanvasDims(w: number, h: number): void {
+  mCanvasW = w;
+  mCanvasH = h;
+  mCamHalfW = w / 2;
+  mCamHalfH = h / 2;
+  mCamPlayerX = PLAYER_X - mCamHalfW;
+  mSpawnYMax = h - 24;
+  mCamRailTop = SPAWN_Y_MIN - mCamHalfH;
+  mCamRailBot = mSpawnYMax - mCamHalfH;
+}
 
 // ─── Shared module-level state ────────────────────────────────────────────────
 // These live outside React so the ECS Script (which runs on requestAnimationFrame)
 // and the React setInterval tick can share data without triggering re-renders.
 
 /** Player Y in CSS pixels — written by ECS Script, read by React collision tick. */
-let sharedPlayerY = CANVAS_H / 2;
+let sharedPlayerY = mCamHalfH;
 /** Player X in CSS pixels — written by ECS Script, read by React collision tick. */
 let sharedPlayerX = PLAYER_X;
 
@@ -89,17 +130,11 @@ function removeTouchKey(key: string): void { touchKeys.delete(key); }
 // persists correctly across React's component lifecycle.
 
 // Camera2D uses y=0 at the canvas centre (y up = negative, y down = positive).
-// CSS / React tile coords use y=0 at the top, so the centre is CANVAS_H/2.
-// Conversion:  camera_y = css_y − CANVAS_H/2
-//              css_y    = camera_y + CANVAS_H/2
-const CAM_HALF_H = CANVAS_H / 2;
-const CAM_HALF_W = CANVAS_W / 2;
-
-// Player movement rails in camera-space (y=0 at canvas centre, up = negative).
-// Top rail is derived from SPAWN_Y_MIN so the player can never enter the question card.
-// Bottom rail mirrors SPAWN_Y_MAX symmetrically.
-const CAM_RAIL_TOP = SPAWN_Y_MIN - CAM_HALF_H; // 108 − 200 = −92  → CSS y = 108
-const CAM_RAIL_BOT = SPAWN_Y_MAX - CAM_HALF_H; // 376 − 200 =  176 → CSS y = 376
+// CSS / React tile coords use y=0 at the top, so the centre is mCamHalfH.
+// Conversion:  camera_y = css_y − mCamHalfH
+//              css_y    = camera_y + mCamHalfH
+// All rail/half constants are the mutable module-level vars so they always
+// reflect the current canvas size, even when the canvas is resized.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const playerScript: ScriptUpdateFn = (
@@ -112,13 +147,13 @@ const playerScript: ScriptUpdateFn = (
   if (!t) return;
   // Each direction checks both the physical keyboard (InputManager) and
   // the on-screen D-pad (touchKeys), so both control methods work simultaneously.
-  if (input.isDown('ArrowUp')    || touchKeys.has('ArrowUp'))    t.y = Math.max(CAM_RAIL_TOP, t.y - PLAYER_SPEED * dt);
-  if (input.isDown('ArrowDown')  || touchKeys.has('ArrowDown'))  t.y = Math.min(CAM_RAIL_BOT, t.y + PLAYER_SPEED * dt);
-  if (input.isDown('ArrowLeft')  || touchKeys.has('ArrowLeft'))  t.x = Math.max(-(CAM_HALF_W - 20), t.x - PLAYER_SPEED * dt);
-  if (input.isDown('ArrowRight') || touchKeys.has('ArrowRight')) t.x = Math.min( (CAM_HALF_W - 20), t.x + PLAYER_SPEED * dt);
+  if (input.isDown('ArrowUp')    || touchKeys.has('ArrowUp'))    t.y = Math.max(mCamRailTop, t.y - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowDown')  || touchKeys.has('ArrowDown'))  t.y = Math.min(mCamRailBot, t.y + PLAYER_SPEED * dt);
+  if (input.isDown('ArrowLeft')  || touchKeys.has('ArrowLeft'))  t.x = Math.max(-(mCamHalfW - 20), t.x - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowRight') || touchKeys.has('ArrowRight')) t.x = Math.min( (mCamHalfW - 20), t.x + PLAYER_SPEED * dt);
   // Convert camera coords → CSS coords for the React collision tick.
-  sharedPlayerY = t.y + CAM_HALF_H;
-  sharedPlayerX = t.x + CAM_HALF_W;
+  sharedPlayerY = t.y + mCamHalfH;
+  sharedPlayerX = t.x + mCamHalfW;
 };
 
 // ─── Wave spawning helper ──────────────────────────────────────────────────────
@@ -144,12 +179,12 @@ function spawnWave(questionIndex: number, extracted: RawAnswer[]): RunnerAnswer[
 
   // Space entities evenly inside the safe play zone (below the question card).
   const count = shuffled.length;
-  const usableH = SPAWN_Y_MAX - SPAWN_Y_MIN;
+  const usableH = mSpawnYMax - SPAWN_Y_MIN;
   const step = count > 1 ? usableH / (count - 1) : 0;
 
   return shuffled.map((a, i) => ({
     id: `ans-${questionIndex}-${i}`,
-    x: CANVAS_W + 20,
+    x: mCanvasW + 20,
     y: SPAWN_Y_MIN + i * step,
     text: a.text,
     isCorrect: a.isCorrect,
@@ -239,19 +274,19 @@ export default function AnswerRunner() {
     if (phase !== 'playing') touchKeys.clear();
   }, [phase]);
 
-  // ── Responsive canvas scale ────────────────────────────────────────────
-  // The game always runs in a 700×400 coordinate space. On narrow viewports
-  // (phones) the entire game frame is CSS-scaled down to fit — no horizontal
-  // scrolling and no changes to any game logic or internal coordinates.
-  // 48px = p-6 (24px) × 2 sides of the outer flex container.
-  const [scale, setScale] = useState(() =>
-    typeof window !== 'undefined'
-      ? Math.min(1, (window.innerWidth - 48) / CANVAS_W)
-      : 1
-  );
+  // ── Responsive canvas dimensions ──────────────────────────────────────
+  // On mobile the canvas is physically sized to fill the screen (not CSS-scaled).
+  // applyCanvasDims syncs the module-level vars used by playerScript and spawnWave.
+  const [canvasDims, setCanvasDimsState] = useState(() => {
+    const dims = getCanvasDims(typeof window !== 'undefined' ? window.innerWidth : 1024);
+    applyCanvasDims(dims.w, dims.h);
+    return dims;
+  });
   useEffect(() => {
     function onResize() {
-      setScale(Math.min(1, (window.innerWidth - 48) / CANVAS_W));
+      const dims = getCanvasDims(window.innerWidth);
+      applyCanvasDims(dims.w, dims.h);
+      setCanvasDimsState(dims);
     }
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
@@ -362,7 +397,7 @@ export default function AnswerRunner() {
   // ── Start / reset ─────────────────────────────────────────────────────────
 
   const handleStart = useCallback(() => {
-    sharedPlayerY = CANVAS_H / 2;  // CSS-space centre; synced back by playerScript each frame
+    sharedPlayerY = mCamHalfH;  // CSS-space centre; synced back by playerScript each frame
     sharedPlayerX = PLAYER_X;      // reset to starting column
     speedRef.current = BASE_SPEED;
     answersRef.current = [];
@@ -405,21 +440,10 @@ export default function AnswerRunner() {
           <h2 className="text-xl font-bold">🏃 Answer Runner</h2>
         </div>
         <div className="w-full">
-          {/* Outer box: CSS dimensions = visible (scaled) size */}
           <div
-            className="relative mx-auto"
-            style={{ width: Math.round(CANVAS_W * scale), height: Math.round(CANVAS_H * scale) }}
+            className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a] mx-auto"
+            style={{ width: canvasDims.w, height: canvasDims.h }}
           >
-            {/* Inner frame: full 700×400, CSS-scaled to fit */}
-            <div
-              className="absolute top-0 start-0 rounded-xl overflow-hidden border border-border bg-[#0d0d2a]"
-              style={{
-                width: CANVAS_W,
-                height: CANVAS_H,
-                transform: scale < 1 ? `scale(${scale})` : undefined,
-                transformOrigin: 'top left',
-              }}
-            >
               <AnswerRunnerResults
                 score={score}
                 correctCount={correctCount}
@@ -429,7 +453,6 @@ export default function AnswerRunner() {
                 onPlayAgain={handleStart}
                 onBack={() => navigate('/games')}
               />
-            </div>
           </div>
         </div>
       </div>
@@ -446,22 +469,11 @@ export default function AnswerRunner() {
         <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
       </div>
 
-      {/* Responsive wrapper — outer box holds scaled dimensions, inner game frame is CSS-transformed */}
+      {/* Game frame — physically sized to fill the screen on any viewport */}
       <div className="w-full">
-      {/* Outer box: CSS dimensions = visible (scaled) size */}
       <div
-        className="relative mx-auto"
-        style={{ width: Math.round(CANVAS_W * scale), height: Math.round(CANVAS_H * scale) }}
-      >
-      {/* Game frame: always 700×400 internally, CSS-scaled to fit viewport */}
-      <div
-        className="absolute top-0 start-0 rounded-xl overflow-hidden border border-border"
-        style={{
-          width: CANVAS_W,
-          height: CANVAS_H,
-          transform: scale < 1 ? `scale(${scale})` : undefined,
-          transformOrigin: 'top left',
-        }}
+        className="relative rounded-xl overflow-hidden border border-border mx-auto"
+        style={{ width: canvasDims.w, height: canvasDims.h }}
       >
         {isLoading && (
           /* Loading spinner centred inside the dark game frame */
@@ -474,13 +486,13 @@ export default function AnswerRunner() {
           </div>
         )}
         {/* Cubeforge canvas — player sprite + dark background only */}
-        <Game width={CANVAS_W} height={CANVAS_H} gravity={0}>
+        <Game width={canvasDims.w} height={canvasDims.h} gravity={0}>
           <World background="#0d0d2a">
             <Camera2D />
             {/* key={gameKey} forces a remount on every new game, resetting Transform to y=0.
-                y=0 is the Camera2D canvas centre; CSS collision coords use CANVAS_H/2 (200). */}
+                y=0 is the Camera2D canvas centre; CSS collision coords use mCamHalfH. */}
             <Entity key={gameKey} id="player">
-              <Transform x={CAM_PLAYER_X} y={0} />
+              <Transform x={mCamPlayerX} y={0} />
               <Sprite
                 width={40}
                 height={40}
@@ -569,7 +581,6 @@ export default function AnswerRunner() {
             </div>
           )}
         </div>
-      </div>
       </div>
       </div>
 
