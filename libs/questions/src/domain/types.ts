@@ -17,7 +17,8 @@ export type QuestionType =
   | 'record_audio'
   | 'text_classification'
   | 'image_classification'
-  | 'matching';
+  | 'matching'
+  | 'crossword';
 
 export interface QuestionBase {
   type: QuestionType;
@@ -132,6 +133,23 @@ export interface MatchingRightItem {
   id: string;
   text: string;           // used when rightMode = 'text'
   imageUrl: string;       // base64 dataURL, used when rightMode = 'image'
+}
+
+// Crossword types
+export interface CrosswordWord {
+  word: string;
+  clue: string;
+  direction: 'across' | 'down';
+  row: number;
+  col: number;
+  clueNumber: number;
+}
+
+export interface CrosswordQuestionContent {
+  words: CrosswordWord[];
+  gridLayout: 'ltr' | 'rtl';
+  hintMode: 'none' | 'count' | 'percentage';
+  hintValue: number;
 }
 
 /**
