@@ -11,6 +11,7 @@ export {
   submitForReview,
   uploadImage,
   uploadImageBase64,
+  reorderQuestions,
 } from './questions';
 export type {
   Question,

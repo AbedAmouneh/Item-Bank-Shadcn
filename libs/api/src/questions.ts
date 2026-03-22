@@ -188,3 +188,15 @@ export async function uploadImageBase64(data: string, mimeType: string): Promise
   });
   return envelope.data;
 }
+
+/**
+ * Reorder questions by their IDs.
+ *
+ * @param questionIds - Array of question IDs in the new desired order.
+ */
+export async function reorderQuestions(questionIds: number[]): Promise<void> {
+  await apiRequest<void>('/questions/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ question_ids: questionIds }),
+  });
+}
