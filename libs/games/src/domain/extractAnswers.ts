@@ -31,6 +31,17 @@ interface NumericalContent extends Record<string, unknown> {
   tolerance?: number;
 }
 
+// ─── HTML helpers ────────────────────────────────────────────────────────────
+
+/**
+ * Strip HTML tags from a string so game tiles always render plain text.
+ * Choice text is authored in TinyMCE (e.g. "<p>Paris</p>") but games need
+ * the bare string.
+ */
+export function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').trim();
+}
+
 // ─── Numerical helpers ───────────────────────────────────────────────────────
 
 /**
@@ -72,7 +83,7 @@ export function extractAnswers(q: Question): GameAnswer[] {
       const content = q.content as MCContent;
       return content.choices.map((c) => ({
         id: c.id,
-        text: c.text,
+        text: stripHtml(c.text),
         isCorrect: c.isCorrect,
       }));
     }
