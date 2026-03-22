@@ -250,7 +250,9 @@ export default function AnswerRunner() {
     }
 
     // Advance to next question when correct collected OR all answers gone.
-    if (correctCollected || next.length === 0) {
+    // Guard: prev.length > 0 prevents advancing on the first tick before the
+    // wave spawn effect has had a chance to populate answersRef.
+    if (correctCollected || (prev.length > 0 && next.length === 0)) {
       const nextIdx = currentIndexRef.current + 1;
       if (nextIdx >= questions.length) {
         setPhase('results');
