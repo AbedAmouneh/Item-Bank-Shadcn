@@ -299,31 +299,20 @@ export default function QuizArcade() {
         <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
           How to Play
         </p>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">👀</span>
-            <span className="text-white/65 text-xs leading-snug">Read the question, then pick your answer</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">⏱️</span>
-            <span className="text-white/65 text-xs leading-snug">15 seconds on the clock per question</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">⚡</span>
-            <span className="text-white/65 text-xs leading-snug">Answer faster to earn up to 100 points</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">🔥</span>
-            <span className="text-white/65 text-xs leading-snug">3 correct in a row = 2× score multiplier</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">⌨️</span>
-            <span className="text-white/65 text-xs leading-snug">Press A B C D to answer without a mouse</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-base leading-none w-6 text-center shrink-0">❌</span>
-            <span className="text-white/65 text-xs leading-snug">Wrong or timeout resets your streak</span>
-          </div>
+        <div className="flex flex-col gap-2">
+          {[
+            'A question appears — pick the correct answer before time runs out',
+            'Each question has a 15-second timer',
+            'Faster answers earn more points, up to 100 per question',
+            '3 correct answers in a row doubles your score multiplier',
+            'Press A, B, C, or D to answer using the keyboard',
+            'A wrong answer or timeout resets your streak',
+          ].map((rule) => (
+            <div key={rule} className="flex items-start gap-3">
+              <span className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400" />
+              <span className="text-white/65 text-xs leading-snug">{rule}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
