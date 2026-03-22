@@ -307,6 +307,39 @@ export default function MemoryMatch() {
           </div>
         </div>
       </div>
+
+      {/* ── How to Play ─────────────────────────────────────────────────── */}
+      <div className="w-full max-w-[672px] rounded-xl border border-white/10 bg-[#0a0a1f] px-5 py-4">
+        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
+          How to Play
+        </p>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">🃏</span>
+            <span className="text-white/65 text-xs leading-snug">All cards start face-down in a grid</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">👆</span>
+            <span className="text-white/65 text-xs leading-snug">Click any card to flip it over</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">🔍</span>
+            <span className="text-white/65 text-xs leading-snug">Click a second card to find its pair</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">✅</span>
+            <span className="text-white/65 text-xs leading-snug">Matching pair stays revealed in green</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">❌</span>
+            <span className="text-white/65 text-xs leading-snug">No match — both cards flip back after 0.9 s</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-base leading-none w-6 text-center shrink-0">🏆</span>
+            <span className="text-white/65 text-xs leading-snug">Match all pairs in as few moves as possible</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
