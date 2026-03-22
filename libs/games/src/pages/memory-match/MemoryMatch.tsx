@@ -62,8 +62,8 @@ function buildMatchingPairs(q: Question): MemoryCard[] {
     const right = rightItems.find((r) => r.id === linkedId);
     if (!right) return [];
     return [
-      { id: `L-${left.id}`, pairId: left.id, content: left.text, isFlipped: false, isMatched: false },
-      { id: `R-${right.id}`, pairId: left.id, content: right.text, isFlipped: false, isMatched: false },
+      { id: `L-${q.id}-${left.id}`, pairId: `${q.id}-${left.id}`, content: left.text, isFlipped: false, isMatched: false },
+      { id: `R-${q.id}-${right.id}`, pairId: `${q.id}-${left.id}`, content: right.text, isFlipped: false, isMatched: false },
     ];
   });
 }
