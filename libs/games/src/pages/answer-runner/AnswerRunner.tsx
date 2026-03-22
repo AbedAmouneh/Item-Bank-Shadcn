@@ -73,6 +73,8 @@ let mSpawnYMax = CANVAS_H - 24;
 let mCamRailTop = SPAWN_Y_MIN - CANVAS_H / 2; // −92
 /** Bottom player movement rail (camera-space). */
 let mCamRailBot = (CANVAS_H - 24) - CANVAS_H / 2; // 176
+/** Player sprite size in px. Smaller on mobile so it doesn't dominate the canvas. */
+let mPlayerSize = 40;
 
 /**
  * Choose canvas dimensions from the current viewport width.
@@ -98,6 +100,8 @@ function applyCanvasDims(w: number, h: number): void {
   mSpawnYMax = h - 24;
   mCamRailTop = SPAWN_Y_MIN - mCamHalfH;
   mCamRailBot = mSpawnYMax - mCamHalfH;
+  // Scale player sprite: 40px on desktop, 24px on mobile (just right for a 358px canvas)
+  mPlayerSize = w < CANVAS_W ? 24 : 40;
 }
 
 // ─── Shared module-level state ────────────────────────────────────────────────
@@ -494,11 +498,11 @@ export default function AnswerRunner() {
             <Entity key={gameKey} id="player">
               <Transform x={mCamPlayerX} y={0} />
               <Sprite
-                width={40}
-                height={40}
+                width={mPlayerSize}
+                height={mPlayerSize}
                 color="#4fc3f7"
                 shape="roundedRect"
-                borderRadius={8}
+                borderRadius={Math.round(mPlayerSize * 0.2)}
               />
               <Script update={playerScript} />
             </Entity>
