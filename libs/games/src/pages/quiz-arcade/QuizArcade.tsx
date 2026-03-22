@@ -218,7 +218,11 @@ export default function QuizArcade() {
                 <QuizCanvas
                   width={CANVAS_W}
                   height={CANVAS_H}
-                  timerFraction={screen === 'question' ? timeLeft / QUESTION_TIME : 1}
+                  timerFraction={
+                    screen === 'question' || screen === 'answer_reveal'
+                      ? timeLeft / QUESTION_TIME
+                      : 0
+                  }
                   showBurst={showBurst}
                   shouldShake={shouldShake}
                   onShakeDone={() => setShouldShake(false)}
