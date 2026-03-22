@@ -391,9 +391,11 @@ export default function AnswerRunner() {
           {/* Question text — centered overlay above the play field */}
           {phase === 'playing' && currentQuestion && (
             <div className="flex justify-center px-6 py-2">
-              <span className="bg-black/70 text-white text-sm font-semibold rounded px-3 py-1 max-w-[520px] text-center leading-snug">
-                {currentQuestion.text ?? currentQuestion.name}
-              </span>
+              {/* eslint-disable-next-line react/no-danger */}
+              <span
+                className="bg-black/70 text-white text-sm font-semibold rounded px-3 py-1 max-w-[520px] text-center leading-snug"
+                dangerouslySetInnerHTML={{ __html: currentQuestion.text ?? currentQuestion.name }}
+              />
             </div>
           )}
 
