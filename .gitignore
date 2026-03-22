@@ -47,6 +47,11 @@ coverage/
 # TypeScript
 *.tsbuildinfo
 
+# Working documents — not project source
+*.docx
+*.xlsx
+*.pptx
+
 # Misc
 *.pem
 .worktrees/
