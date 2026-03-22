@@ -5,7 +5,7 @@ import { deleteQuestion } from '@item-bank/api';
 /**
  * Mutation hook to permanently delete a question.
  *
- * On success, invalidates the `['questions']` query family so list views
+ * On success, invalidates all `['questions', ...]` queries so list views
  * re-fetch and no longer show the deleted item.
  */
 export function useDeleteQuestion() {
@@ -14,7 +14,7 @@ export function useDeleteQuestion() {
   return useMutation({
     mutationFn: (id: number) => deleteQuestion(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['questions'] });
+      void queryClient.invalidateQueries({ queryKey: ['questions'], exact: false });
     },
   });
 }
