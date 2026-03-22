@@ -86,11 +86,14 @@ export default function QuizCanvas({
         {/* Camera shake — useCamera() hook lives inside <Game> here */}
         <CameraEffects shouldShake={shouldShake} onShakeDone={onShakeDone} />
 
-        {/* Timer bar — shrinks as time runs out, colour shifts green → red */}
-        <Entity id="timer-bar">
-          <Transform x={16 + barWidth / 2} y={8} />
-          <Sprite width={barWidth} height={6} color={barColor} />
-        </Entity>
+        {/* Timer bar — shrinks as time runs out, colour shifts green → red.
+            Only rendered when there is an active question (fraction > 0). */}
+        {timerFraction > 0 && (
+          <Entity id="timer-bar">
+            <Transform x={16 + barWidth / 2} y={8} />
+            <Sprite width={barWidth} height={6} color={barColor} />
+          </Entity>
+        )}
 
         {/* Gold particle burst on correct answer */}
         {showBurst && (
