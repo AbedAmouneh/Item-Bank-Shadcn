@@ -75,6 +75,8 @@ let mCamRailTop = SPAWN_Y_MIN - CANVAS_H / 2; // −92
 let mCamRailBot = (CANVAS_H - 24) - CANVAS_H / 2; // 176
 /** Player sprite size in px. Smaller on mobile so it doesn't dominate the canvas. */
 let mPlayerSize = 40;
+/** Speed multiplier — tiles travel at the same fraction of canvas width per second on every device. */
+let mSpeedScale = 1.0;
 
 /**
  * Choose canvas dimensions from the current viewport width.
@@ -102,6 +104,8 @@ function applyCanvasDims(w: number, h: number): void {
   mCamRailBot = mSpawnYMax - mCamHalfH;
   // Scale player sprite: 40px on desktop, 24px on mobile (just right for a 358px canvas)
   mPlayerSize = w < CANVAS_W ? 24 : 40;
+  // Scale tile speed so they take the same time to cross any canvas width.
+  mSpeedScale = w / CANVAS_W;
 }
 
 // ─── Shared module-level state ────────────────────────────────────────────────
@@ -312,7 +316,7 @@ export default function AnswerRunner() {
 
   useEffect(() => {
     if (phase !== 'playing') return;
-    speedRef.current = BASE_SPEED + Math.floor(currentIndex / SPEED_EVERY_N) * SPEED_INCREMENT;
+    speedRef.current = (BASE_SPEED + Math.floor(currentIndex / SPEED_EVERY_N) * SPEED_INCREMENT) * mSpeedScale;
   }, [phase, currentIndex]);
 
   // ── Game tick: move + collide + cleanup ───────────────────────────────────
@@ -403,7 +407,7 @@ export default function AnswerRunner() {
   const handleStart = useCallback(() => {
     sharedPlayerY = mCamHalfH;  // CSS-space centre; synced back by playerScript each frame
     sharedPlayerX = PLAYER_X;      // reset to starting column
-    speedRef.current = BASE_SPEED;
+    speedRef.current = BASE_SPEED * mSpeedScale;
     answersRef.current = [];
     setScore(0);
     setLives(3);
