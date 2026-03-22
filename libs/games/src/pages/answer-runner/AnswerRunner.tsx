@@ -8,7 +8,8 @@
  *    in the overlay so their positions are always in sync with React state.
  *  - Player Y is tracked in a shared module-level ref so the ECS playerScript
  *    can write it and the React collision tick can read it without setState.
- *  - Keyboard state lives in a module-level Set read by the ECS Script each frame.
+ *  - Keyboard input is read via the Cubeforge InputManager passed to playerScript
+ *    as the `input` parameter — the official Cubeforge pattern for script input.
  *
  * Collision is checked in a React setInterval loop (TICK_MS = 50):
  *  - Correct hit  → score +10, remove entity, advance to next question.
@@ -60,13 +61,14 @@ const TICK_MS = 50; // collision + movement interval
 /** Player Y in world pixels — written by ECS Script, read by React collision tick. */
 let sharedPlayerY = CANVAS_H / 2;
 
-/** Keys currently held down — written by window listeners, read by ECS Script. */
-const keysDown = new Set<string>();
-
 // ─── Player ECS script ────────────────────────────────────────────────────────
 // Defined at module level so it is never recreated across re-renders.
 // This is important: if playerScript were defined inside the component,
 // Cubeforge would remount the Script entity every render and lose the transform state.
+//
+// Keyboard input is read via the Cubeforge InputManager (`input` parameter) —
+// the official Cubeforge pattern. InputManager.keyboard attaches to window and
+// persists correctly across React's component lifecycle.
 
 // Camera2D uses y=0 at the canvas centre (y up = negative, y down = positive).
 // CSS / React tile coords use y=0 at the top, so the centre is CANVAS_H/2.
@@ -74,17 +76,18 @@ const keysDown = new Set<string>();
 //              css_y    = camera_y + CANVAS_H/2
 const CAM_HALF_H = CANVAS_H / 2;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const playerScript: ScriptUpdateFn = (
   id: EntityId,
   world: ECSWorld,
-  _input: unknown,
+  input: any,
   dt: number,
 ) => {
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
   // Clamp in camera-space: top rail = -(CAM_HALF_H - 20), bottom = +(CAM_HALF_H - 20).
-  if (keysDown.has('ArrowUp'))   t.y = Math.max(-(CAM_HALF_H - 20), t.y - PLAYER_SPEED * dt);
-  if (keysDown.has('ArrowDown')) t.y = Math.min( (CAM_HALF_H - 20), t.y + PLAYER_SPEED * dt);
+  if (input.isDown('ArrowUp'))   t.y = Math.max(-(CAM_HALF_H - 20), t.y - PLAYER_SPEED * dt);
+  if (input.isDown('ArrowDown')) t.y = Math.min( (CAM_HALF_H - 20), t.y + PLAYER_SPEED * dt);
   // Convert camera_y → css_y so the React collision tick can compare against HTML tile positions.
   sharedPlayerY = t.y + CAM_HALF_H;
 };
@@ -174,20 +177,6 @@ export default function AnswerRunner() {
   answersRef.current = answers;
   // Speed increases +0.5 px/s every 3 questions.
   const speedRef = useRef(BASE_SPEED);
-
-  // ── Keyboard tracking ─────────────────────────────────────────────────────
-
-  useEffect(() => {
-    const onDown = (e: KeyboardEvent) => keysDown.add(e.key);
-    const onUp = (e: KeyboardEvent) => keysDown.delete(e.key);
-    window.addEventListener('keydown', onDown);
-    window.addEventListener('keyup', onUp);
-    return () => {
-      window.removeEventListener('keydown', onDown);
-      window.removeEventListener('keyup', onUp);
-      keysDown.clear();
-    };
-  }, []);
 
   // ── Spawn wave on new question ─────────────────────────────────────────────
 
