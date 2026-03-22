@@ -53,6 +53,10 @@ const PLAYER_SPEED = 200; // px/s
 const COLLISION_DX = 80; // horizontal overlap threshold (px)
 const COLLISION_DY = 30; // vertical overlap threshold (px) — from spec
 const TICK_MS = 50; // collision + movement interval
+/** Top of the spawn zone — kept below the question card (~100 px tall). */
+const SPAWN_Y_MIN = 108;
+/** Bottom of the spawn zone — leaves a small gap above the canvas floor. */
+const SPAWN_Y_MAX = CANVAS_H - 24;
 
 // ─── Shared module-level state ────────────────────────────────────────────────
 // These live outside React so the ECS Script (which runs on requestAnimationFrame)
@@ -120,19 +124,30 @@ function spawnWave(questionIndex: number, extracted: RawAnswer[]): RunnerAnswer[
   // Shuffle so the correct answer isn't always in the same vertical slot.
   const shuffled = [...all].sort(() => Math.random() - 0.5);
 
-  // Space entities evenly between y=40 and y=CANVAS_H-40.
+  // Space entities evenly inside the safe play zone (below the question card).
   const count = shuffled.length;
-  const usableH = CANVAS_H - 80;
+  const usableH = SPAWN_Y_MAX - SPAWN_Y_MIN;
   const step = count > 1 ? usableH / (count - 1) : 0;
 
   return shuffled.map((a, i) => ({
     id: `ans-${questionIndex}-${i}`,
     x: CANVAS_W + 20,
-    y: 40 + i * step,
+    y: SPAWN_Y_MIN + i * step,
     text: a.text,
     isCorrect: a.isCorrect,
   }));
 }
+
+// ─── Hit feedback ─────────────────────────────────────────────────────────────
+
+/** Brief visual flash shown at the player position after a collision. */
+type HitFeedback = {
+  correct: boolean;
+  /** CSS-space X at the moment of collision — used to position the label. */
+  x: number;
+  /** CSS-space Y at the moment of collision — used to position the label. */
+  y: number;
+};
 
 // ─── Phase type ───────────────────────────────────────────────────────────────
 
@@ -185,6 +200,12 @@ export default function AnswerRunner() {
   // Speed increases +0.5 px/s every 3 questions.
   const speedRef = useRef(BASE_SPEED);
 
+  // ── Hit feedback ──────────────────────────────────────────────────────────
+  // Shows a "+10 ✓" or "−1 ✗" label at the player's position for 650 ms.
+
+  const [hitFeedback, setHitFeedback] = useState<HitFeedback | null>(null);
+  const hitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // ── Spawn wave on new question ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -231,6 +252,10 @@ export default function AnswerRunner() {
         } else {
           lifeChange -= 1;
         }
+        // Show hit feedback at the player's current position.
+        if (hitTimerRef.current) clearTimeout(hitTimerRef.current);
+        setHitFeedback({ correct: a.isCorrect, x: sharedPlayerX, y: sharedPlayerY });
+        hitTimerRef.current = setTimeout(() => setHitFeedback(null), 650);
         continue; // remove collided entity regardless of correct/wrong
       }
 
@@ -395,42 +420,62 @@ export default function AnswerRunner() {
         {/* HTML overlay — z-index 10, pointer-events managed per child */}
         <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
 
-          {/* HUD: score + lives */}
-          {phase === 'playing' && (
-            <div className="flex items-center justify-between px-4 py-2 bg-black/50 text-white text-sm font-medium">
-              <span>⭐ {score}</span>
-              <span>{'❤️'.repeat(Math.max(0, lives))}</span>
-            </div>
-          )}
-
-          {/* Question text — centered overlay above the play field */}
+          {/* ── Question card: score · progress · lives · question text ─── */}
           {phase === 'playing' && currentQuestion && (
-            <div className="flex justify-center px-6 py-2">
+            <div className="mx-3 mt-3 rounded-xl border border-white/10 bg-black/65 px-4 pt-2.5 pb-3">
+              {/* Row 1: score · progress counter · lives */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-yellow-400 font-bold text-sm tabular-nums">⭐ {score}</span>
+                <span className="text-white/40 text-xs font-medium tracking-wide">
+                  Q {currentIndex + 1} / {questions.length}
+                </span>
+                <span className="text-sm leading-none">
+                  {'❤️'.repeat(Math.max(0, lives))}
+                </span>
+              </div>
+              {/* Row 2: question text */}
               {/* eslint-disable-next-line react/no-danger */}
-              <span
-                className="bg-black/70 text-white text-sm font-semibold rounded px-3 py-1 max-w-[520px] text-center leading-snug"
+              <p
+                className="text-white text-sm font-semibold text-center leading-snug"
                 dangerouslySetInnerHTML={{ __html: currentQuestion.text ?? currentQuestion.name }}
               />
             </div>
           )}
 
-          {/* Answer sprites — absolutely positioned colored rectangles */}
+          {/* Answer tiles — absolutely positioned, neutral colour until hit */}
           {phase === 'playing' && answers.map((a) => (
             <div
               key={a.id}
-              className="absolute flex items-center justify-center rounded-md text-white text-xs font-semibold text-center leading-tight px-1"
+              className="absolute flex items-center justify-center rounded-lg text-white text-xs font-semibold text-center leading-tight px-2 shadow-lg"
               style={{
                 insetInlineStart: `${a.x - 64}px`,
                 top: `${a.y - 17}px`,
                 width: 128,
                 height: 34,
-                backgroundColor: '#2563eb',
-                opacity: 0.9,
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                border: '1px solid rgba(255,255,255,0.15)',
               }}
             >
               {a.text}
             </div>
           ))}
+
+          {/* Hit feedback — floats near the player for 650 ms */}
+          {hitFeedback && (
+            <div
+              className="absolute pointer-events-none font-extrabold text-base drop-shadow-lg"
+              style={{
+                insetInlineStart: `${hitFeedback.x - 24}px`,
+                top: `${hitFeedback.y - 44}px`,
+                color: hitFeedback.correct ? '#4ade80' : '#f87171',
+                textShadow: hitFeedback.correct
+                  ? '0 0 12px rgba(74,222,128,0.8)'
+                  : '0 0 12px rgba(248,113,113,0.8)',
+              }}
+            >
+              {hitFeedback.correct ? '+10 ✓' : '−1 ✗'}
+            </div>
+          )}
 
           {/* Idle screen */}
           {phase === 'idle' && (
