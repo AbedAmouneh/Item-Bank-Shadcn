@@ -35,6 +35,15 @@ import type { EntityId, ECSWorld, TransformComponent, ScriptUpdateFn } from 'cub
 import { bridge, entityRegistry } from './PixelDashBridge';
 import { PLAYER_ROW_CSS } from './hooks/usePixelDashLogic';
 import type { ActiveEntity } from './hooks/usePixelDashLogic';
+import {
+  drawExplorer,
+  drawExplorerStreak,
+  drawLog,
+  drawBoulder,
+  drawCoin,
+  drawGateBar,
+  drawJungleFloor,
+} from './PixelDashSprites';
 
 // ─── Module-level geometry ─────────────────────────────────────────────────────
 // Updated by syncGeometry() when props change; read by every Script function.
@@ -165,8 +174,8 @@ export default function PixelDashCanvas({
   // Camera y for the player sprite row.
   const playerRowCamY = toCamY(PLAYER_ROW_CSS);
 
-  // Jungle palette: amber explorer normally, fiery orange during streak.
-  const playerColor = streakFire ? '#ff8c00' : '#f8b84a';
+  // Pick the correct pixel-art draw function depending on streak state.
+  const playerDraw = streakFire ? drawExplorerStreak : drawExplorer;
 
   return (
     <Game key={gameKey} width={width} height={height} gravity={0}>
@@ -181,6 +190,33 @@ export default function PixelDashCanvas({
        */}
       <World background="#1a3a0a">
         <Camera2D />
+
+        {/* ── Background floor — 2 copies scroll with stripeScript for jungle feel */}
+        {/* Copy A starts at canvas centre; copy B starts one full height above. */}
+        <Entity key="bgA" id="pixel-dash-bgA">
+          <Transform x={0} y={0} />
+          <Sprite
+            width={width}
+            height={height}
+            color="#1a3a0a"
+            zIndex={-10}
+            sampling="nearest"
+            customDraw={drawJungleFloor}
+          />
+          <Script update={stripeScript} />
+        </Entity>
+        <Entity key="bgB" id="pixel-dash-bgB">
+          <Transform x={0} y={-height} />
+          <Sprite
+            width={width}
+            height={height}
+            color="#1a3a0a"
+            zIndex={-10}
+            sampling="nearest"
+            customDraw={drawJungleFloor}
+          />
+          <Script update={stripeScript} />
+        </Entity>
 
         {/* ── Lane stripes — 3 lanes × 2 copies for seamless vertical scroll ── */}
 
@@ -202,48 +238,60 @@ export default function PixelDashCanvas({
           </Entity>
         ))}
 
-        {/* ── Player — 28×28 rounded-rect explorer sprite ───────────────────── */}
-        <Entity key="player" id="pixel-dash-player">
+        {/* ── Player — 28×28 pixel-art explorer, redraws when streak changes ─── */}
+        <Entity key={`player-${streakFire ? 'streak' : 'normal'}`} id="pixel-dash-player">
           <Transform x={toCamX(laneXArr[1])} y={playerRowCamY} />
           <Sprite
             width={28}
             height={28}
-            color={playerColor}
-            shape="roundedRect"
-            borderRadius={6}
+            color="#f8b84a"
+            sampling="nearest"
+            customDraw={playerDraw}
           />
           <Script update={playerScript} />
         </Entity>
 
-        {/* ── Gate — full-width wooden bamboo beam, remounted via gateKey ───── */}
+        {/* ── Gate — full-width bamboo beam with pixel-art draw, remounted per gateKey */}
         <Entity key={`gate-${gateKey}`} id="pixel-dash-gate">
           {/* Initial position: top edge just above canvas (CSS y = -4) */}
           <Transform x={0} y={toCamY(-4)} />
-          <Sprite width={width} height={10} color="#6b3a08" />
+          <Sprite
+            width={width}
+            height={12}
+            color="#6b3a08"
+            sampling="nearest"
+            customDraw={drawGateBar}
+          />
           <Script update={gateScript} />
         </Entity>
 
-        {/* ── Obstacles — log or boulder sprites ───────────────────────────── */}
+        {/* ── Obstacles — pixel-art log or boulder ─────────────────────────── */}
         {activeObstacles.map((ent) => (
           <Entity key={ent.id} id={ent.id}>
             {/* Start above the canvas so they fall in from the top */}
             <Transform x={toCamX(laneXArr[ent.lane])} y={toCamY(-30)} />
             <Sprite
-              width={26}
-              height={26}
+              width={28}
+              height={28}
               color={ent.variant === 'barrel' ? '#5a3210' : '#6a5a4a'}
-              shape="roundedRect"
-              borderRadius={5}
+              sampling="nearest"
+              customDraw={ent.variant === 'barrel' ? drawLog : drawBoulder}
             />
             <Script update={fallScript} />
           </Entity>
         ))}
 
-        {/* ── Coins — gold jungle artifact squares ──────────────────────────── */}
+        {/* ── Coins — pixel-art gold artifact discs ─────────────────────────── */}
         {activeCoins.map((ent) => (
           <Entity key={ent.id} id={ent.id}>
             <Transform x={toCamX(laneXArr[ent.lane])} y={toCamY(-30)} />
-            <Sprite width={14} height={14} color="#ffd700" />
+            <Sprite
+              width={16}
+              height={16}
+              color="#ffd700"
+              sampling="nearest"
+              customDraw={drawCoin}
+            />
             <Script update={fallScript} />
           </Entity>
         ))}
