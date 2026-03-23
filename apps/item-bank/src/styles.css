@@ -314,3 +314,15 @@
   0%   { background-color: rgba(239, 68, 68, 0.25); }
   100% { background-color: transparent; }
 }
+
+/* ─── Stack Attack block crack ─────────────────────────────────────────────── */
+/* Applied to the wrong-answer block: shakes horizontally and falls off-screen.
+   Consumed as Tailwind arbitrary: [animation:block-crack_550ms_ease-out_forwards] */
+@keyframes block-crack {
+  0%   { transform: translateX(0)    translateY(0);    opacity: 1; }
+  15%  { transform: translateX(-7px) translateY(3px);  opacity: 0.9; }
+  30%  { transform: translateX(7px)  translateY(8px);  opacity: 0.75; }
+  50%  { transform: translateX(-5px) translateY(16px); opacity: 0.5; }
+  70%  { transform: translateX(4px)  translateY(26px); opacity: 0.3; }
+  100% { transform: translateX(0)    translateY(48px); opacity: 0; }
+}
