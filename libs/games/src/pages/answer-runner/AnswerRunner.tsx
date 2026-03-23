@@ -521,7 +521,7 @@ export default function AnswerRunner() {
       <HowToPlaySidebar rules={RUNNER_RULES} />
 
       {/* Game column — flex-1 so the canvas is centred in the remaining space */}
-      <div className="flex flex-col flex-1 items-center gap-4 pt-6 pb-6 min-w-0 pe-4">
+      <div className="flex flex-col flex-1 items-center gap-4 pt-6 pb-6 min-w-0">
         <div className="flex items-center justify-between shrink-0" style={{ width: canvasDims.w }}>
           <h2 className="text-xl font-bold">Answer Runner</h2>
           <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
@@ -729,6 +729,10 @@ export default function AnswerRunner() {
       )}
 
       </div>
+
+      {/* Right spacer — same width as the sidebar so the canvas is centred
+          on the full page width, matching the nav pills above it */}
+      <div className="hidden lg:block w-64 shrink-0" />
     </div>
   );
 }
