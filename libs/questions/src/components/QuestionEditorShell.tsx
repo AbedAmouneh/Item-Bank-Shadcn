@@ -71,6 +71,7 @@ type QuestionEditorShellProps = {
   onCancel: () => void;
   initialData?: QuestionFormData;
   showJustification?: boolean;
+  questionId?: number;
 };
 
 export type QuestionFormData = {
@@ -270,6 +271,11 @@ export type QuestionFormData = {
   crosswordGridLayout?: 'ltr' | 'rtl';
   crosswordHintMode?: 'none' | 'count' | 'percentage';
   crosswordHintValue?: number;
+  // Spelling Dictation
+  spellingAudioUrl?: string | null;
+  spellingAudioName?: string | null;
+  spellingCorrectAnswers?: string[];
+  spellingHint?: string;
   // Answer feedback (correct / partially correct / incorrect)
   correctAnswerFeedback?: string;
   partiallyCorrectAnswerFeedback?: string;
