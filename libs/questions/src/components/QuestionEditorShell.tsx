@@ -10,6 +10,7 @@ import DragDropTextEditor from '../pages/drag-drop-text/DragDropTextEditor';
 import DragDropImageWizard from '../pages/drag-drop-image/DragDropImageWizard';
 import { MatchingWizard } from '../pages/matching';
 import { CrosswordWizard } from '../pages/crossword';
+import { SpellingDictationEditor } from '../pages/spelling-dictation';
 import FillInBlanksEditor from '../pages/fill-in-blanks/FillInBlanksEditor';
 import FillInBlanksImageEditor from '../pages/fill-in-blanks-image/FillInBlanksImageEditor';
 import MultipleChoiceEditor from '../pages/multiple-choice/MultipleChoiceEditor';
@@ -1747,6 +1748,16 @@ function QuestionEditorShell(props: QuestionEditorShellProps) {
         onSave={props.onSave}
         onCancel={props.onCancel}
         initialData={props.initialData}
+      />
+    );
+  }
+  if (props.questionType === 'spelling_dictation') {
+    return (
+      <SpellingDictationEditor
+        onSave={props.onSave}
+        onCancel={props.onCancel}
+        initialData={props.initialData}
+        questionId={props.questionId ?? null}
       />
     );
   }
