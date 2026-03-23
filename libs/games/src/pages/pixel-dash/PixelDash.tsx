@@ -178,9 +178,10 @@ export default function PixelDash() {
           <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
         </div>
 
-        {/* Game frame — canvas behind, HTML overlay in front */}
+        {/* Game frame — canvas behind, HTML overlay in front.
+            game-bezel applies the multi-layer dark-green arcade frame (see styles.css). */}
         <div
-          className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a]"
+          className="relative rounded-2xl overflow-hidden bg-[#1a3a0a] game-bezel"
           style={{ width: canvasDims.w, height: canvasDims.h }}
         >
           {/* Wrong-answer screen flash — key remount re-triggers CSS animation */}
@@ -222,9 +223,14 @@ export default function PixelDash() {
             {/* ── Active game (running / quiz_gate) ────────────────────── */}
             {!isIdle && phase !== 'results' && (
               <>
-                {/* HUD — score, streak badge, lives */}
-                <div className="flex items-center justify-between px-4 pt-3 pb-2 text-white shrink-0">
-                  <span className="text-lg font-black tabular-nums">{score}</span>
+                {/* HUD — score (gold pixel font), streak badge, lives */}
+                <div className="flex items-center justify-between px-4 pt-3 pb-2 text-white shrink-0 bg-black/40 border-b border-amber-900/30">
+                  <span
+                    className="tabular-nums text-[#ffd700] text-sm leading-none"
+                    style={{ fontFamily: "'Press Start 2P', monospace" }}
+                  >
+                    {String(score).padStart(6, '0')}
+                  </span>
                   <StreakFire streak={streak} visible={streakFire} />
                   <LivesBar lives={lives} maxLives={3} />
                 </div>
@@ -234,7 +240,7 @@ export default function PixelDash() {
                   <div className="absolute inset-0 z-20 pointer-events-none">
                     {/* Centred question card — always visible during quiz_gate */}
                     <div className="absolute inset-x-0 top-16 flex justify-center px-6">
-                      <div className="pointer-events-auto bg-indigo-900/95 border-2 border-indigo-400/70 rounded-xl px-6 py-4 max-w-[420px] text-center shadow-2xl">
+                      <div className="pointer-events-auto bg-stone-900/95 border-2 border-amber-600/70 rounded-xl px-6 py-4 max-w-[420px] text-center shadow-2xl">
                         <p className="text-white text-base font-bold leading-snug">
                           {stripHtml(currentQuestion.text ?? currentQuestion.name ?? '')}
                         </p>
@@ -267,12 +273,12 @@ export default function PixelDash() {
                             onClick={() => handleAnswerGate(laneIdx)}
                             className={[
                               'pointer-events-auto absolute w-32 h-14 rounded-xl border-2',
-                              'text-white text-sm font-bold flex items-center justify-center',
+                              'text-amber-100 text-sm font-bold flex items-center justify-center',
                               'px-3 text-center transition-all',
-                              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white',
+                              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300',
                               isHighlighted
-                                ? 'bg-indigo-500 border-white/90 shadow-lg shadow-indigo-500/40 scale-105'
-                                : 'bg-indigo-700/85 border-indigo-400/60 hover:bg-indigo-600/90 hover:border-indigo-300/80',
+                                ? 'bg-amber-600 border-amber-200/90 shadow-lg shadow-amber-500/50 scale-105'
+                                : 'bg-amber-900/85 border-amber-700/60 hover:bg-amber-800/90 hover:border-amber-600/80',
                             ].join(' ')}
                             style={{
                               // Clamp so tiles never clip the canvas edge.
@@ -337,7 +343,7 @@ export default function PixelDash() {
               <button
                 type="button"
                 aria-label="Move left"
-                className="pointer-events-auto bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold transition-colors"
+                className="pointer-events-auto bg-amber-900/70 hover:bg-amber-800/85 active:bg-amber-700/90 border-2 border-amber-600/50 text-amber-200 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold transition-colors"
                 onClick={() => switchLane(-1)}
               >
                 ←
@@ -345,7 +351,7 @@ export default function PixelDash() {
               <button
                 type="button"
                 aria-label="Move right"
-                className="pointer-events-auto bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold transition-colors"
+                className="pointer-events-auto bg-amber-900/70 hover:bg-amber-800/85 active:bg-amber-700/90 border-2 border-amber-600/50 text-amber-200 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold transition-colors"
                 onClick={() => switchLane(1)}
               >
                 →
