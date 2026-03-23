@@ -32,8 +32,8 @@ const CANVAS_H = 480;
 
 /**
  * CSS y from canvas top where the player sprite's centre sits.
- * Gate triggers when bridge.gateCssY >= this value.
- * Must match PLAYER_ROW_CSS in PixelDashCanvas and PixelDash.
+ * Gate triggers when the computed gate CSS y (derived from bridge.gateSpawnedAt)
+ * reaches this value. Must match PixelDashCanvas and PixelDash.
  */
 export const PLAYER_ROW_CSS = 390;
 
@@ -163,7 +163,7 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
   useEffect(() => {
     if (gameKey > 0 && lives <= 0 && phaseRef.current !== 'results') {
       bridge.pausedM = true;
-      bridge.gateCssY = -9999;
+      bridge.gateSpawnedAt = 0;
       phaseRef.current = 'results';
       setPhase('results');
     }
@@ -235,8 +235,13 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
       // Accumulate distance: scrollSpeedM px/s × 0.05 s per tick
       setDistancePx((d) => d + bridge.scrollSpeedM * 0.05);
 
-      // Gate trigger — activate quiz_gate when gate bar reaches player row
-      if (bridge.gateCssY >= PLAYER_ROW_CSS && phaseRef.current === 'running') {
+      // Gate trigger — activate quiz_gate when the gate bar reaches the player row.
+      // Uses a wall-clock timestamp instead of reading ECS position: the tick
+      // computes where the gate must be based on elapsed time and scroll speed.
+      const elapsedMs = bridge.gateSpawnedAt > 0 ? Date.now() - bridge.gateSpawnedAt : 0;
+      const computedGateCssY = -4 + bridge.scrollSpeedM * (elapsedMs / 1000);
+      if (computedGateCssY >= PLAYER_ROW_CSS && phaseRef.current === 'running') {
+        bridge.gateSpawnedAt = 0; // prevent re-trigger on the next tick
         const q = dequeueQuestion();
         const qAnswers = extractAnswers(q).slice(0, 3);
         bridge.pausedM = true;
@@ -302,7 +307,7 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
     // Reset bridge
     bridge.scrollSpeedM = 140;
     bridge.pausedM = false;
-    bridge.gateCssY = -9999;
+    bridge.gateSpawnedAt = Date.now();
     bridge.playerTargetX = laneXPositions[1];
     bridge.playerCssX = laneXPositions[1];
 
@@ -371,7 +376,7 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
       setTimeout(() => { setShowCoinBurst(false); setShowScorePopup(false); }, 800);
 
       bridge.scrollSpeedM += 6;
-      bridge.gateCssY = -9999;
+      bridge.gateSpawnedAt = Date.now();
       bridge.pausedM = false;
       phaseRef.current = 'running';
       setPhase('running');
@@ -390,7 +395,7 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
         // Lives effect will trigger results transition, but set bridge immediately
         // so the canvas stops rendering on the next frame.
         bridge.pausedM = true;
-        bridge.gateCssY = -9999;
+        bridge.gateSpawnedAt = 0;
         phaseRef.current = 'results';
         setPhase('results');
         setGateKey((k) => k + 1);
@@ -399,7 +404,7 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
         // 1200ms freeze then resume
         setTimeout(() => {
           if (phaseRef.current === 'results') return;
-          bridge.gateCssY = -9999;
+          bridge.gateSpawnedAt = Date.now();
           bridge.pausedM = false;
           phaseRef.current = 'running';
           setPhase('running');
@@ -417,7 +422,7 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
       entityRegistry.clear();
       bridge.pausedM = false;
       bridge.scrollSpeedM = 140;
-      bridge.gateCssY = -9999;
+      bridge.gateSpawnedAt = 0;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
