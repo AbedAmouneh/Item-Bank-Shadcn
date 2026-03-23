@@ -104,3 +104,4 @@ export {
   DropdownMenuLabel,
   DropdownMenuGroup,
 } from './components/ui/dropdown-menu';
+export { Slider } from './components/ui/slider';
