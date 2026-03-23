@@ -111,6 +111,14 @@ export interface RecordAudioQuestion extends QuestionBase {
   maxDurationSeconds: number;
 }
 
+export interface SpellingDictationQuestion extends QuestionBase {
+  type: 'spelling_dictation';
+  audioUrl: string | null;
+  audioName: string | null;
+  correctAnswers: string[];
+  hint: string;
+}
+
 export interface TextClassificationQuestion extends QuestionBase {
   type: 'text_classification';
   categories: TextClassificationCategory[];
@@ -178,6 +186,7 @@ export type QuestionDomain =
   | FillInBlanksImageQuestion
   | HighlightCorrectWordQuestion
   | RecordAudioQuestion
+  | SpellingDictationQuestion
   | TextClassificationQuestion
   | ImageClassificationQuestion
   | MatchingQuestion
