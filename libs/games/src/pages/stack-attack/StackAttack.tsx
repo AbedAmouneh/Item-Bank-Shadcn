@@ -17,7 +17,7 @@
  *   [fox mascot strip]
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
 import { stripHtml } from '../../domain/extractAnswers';
@@ -87,21 +87,42 @@ export default function StackAttack() {
     if (phase === 'swinging') setFoxLine(FOX_LINES.stack_playing);
   }, [phase]);
 
-  // ── Keyboard: Space / Enter submits the first correct answer for accessibility
-  // Players can also use number keys 1–4 to pick an answer by index.
+  /**
+   * wrongFeedback — set to the correct answer text when the player picks wrong.
+   * Shown during the ~570ms answer_reveal freeze so kids learn before continuing.
+   * Cleared when phase returns to 'swinging'.
+   */
+  const [wrongFeedback, setWrongFeedback] = useState<string | null>(null);
+  // Use a ref so the keyboard handler closure always reads the current value.
+  const wrongFeedbackRef = useRef<string | null>(null);
+  wrongFeedbackRef.current = wrongFeedback;
+
+  useEffect(() => {
+    if (phase === 'swinging') setWrongFeedback(null);
+  }, [phase]);
+
+  // ── Keyboard: Players use number keys 1–4 to pick an answer by index.
+  // Guard: ignore key presses while wrongFeedback panel is showing (answer_reveal).
   useEffect(() => {
     if (phase !== 'swinging') return;
 
     function handleKey(e: KeyboardEvent) {
+      // Ignore if the wrong-feedback panel is already open.
+      if (wrongFeedbackRef.current !== null) return;
       const idx = ['1', '2', '3', '4'].indexOf(e.key);
       if (idx !== -1 && currentAnswers[idx]) {
         e.preventDefault();
+        const chosen = currentAnswers[idx];
         setFoxLine(
-          currentAnswers[idx].isCorrect
+          chosen.isCorrect
             ? pickLine(FOX_LINES.stack_correct)
             : pickLine(FOX_LINES.stack_wrong),
         );
-        submitAnswer(currentAnswers[idx].isCorrect);
+        if (!chosen.isCorrect) {
+          const correct = currentAnswers.find((a) => a.isCorrect);
+          setWrongFeedback(correct ? correct.text : '—');
+        }
+        submitAnswer(chosen.isCorrect);
       }
     }
 
@@ -138,7 +159,7 @@ export default function StackAttack() {
         {/* ── Question card — above canvas ──────────────────────────────── */}
         {isActive && currentQuestion && (
           <div
-            className="shrink-0 rounded-xl border border-white/10 bg-[#1e1b4b]/80 px-5 py-3 text-center shadow-lg"
+            className="shrink-0 rounded-xl border-2 border-indigo-400/70 bg-indigo-900/95 px-5 py-3 text-center shadow-lg"
             style={{ width: canvasDims.w }}
           >
             <p className="text-white text-sm font-semibold leading-snug">
@@ -235,46 +256,67 @@ export default function StackAttack() {
           )}
         </div>
 
-        {/* ── Answer buttons — below canvas ─────────────────────────────── */}
+        {/* ── Answer buttons / wrong-feedback panel — below canvas ──────── */}
         {isActive && (
-          <div
-            className="flex flex-wrap justify-center gap-2 shrink-0"
-            style={{ maxWidth: canvasDims.w }}
-          >
-            {currentAnswers.map((answer, idx) => (
-              <button
-                key={answer.id}
-                type="button"
-                disabled={answersDisabled}
-                aria-label={`Answer ${idx + 1}: ${answer.text}`}
-                onClick={() => {
-                  setFoxLine(
-                    answer.isCorrect
-                      ? pickLine(FOX_LINES.stack_correct)
-                      : pickLine(FOX_LINES.stack_wrong),
-                  );
-                  submitAnswer(answer.isCorrect);
-                }}
-                className={[
-                  'flex-1 min-w-[120px] max-w-[180px] rounded-xl border px-3 py-3',
-                  'text-white text-sm font-semibold text-center leading-tight',
-                  'transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400',
-                  answersDisabled
-                    ? 'opacity-40 cursor-not-allowed bg-indigo-900/50 border-indigo-700/30'
-                    : 'bg-indigo-700/80 border-indigo-500/50 hover:bg-indigo-600 hover:border-indigo-400 active:scale-95',
-                ].join(' ')}
-              >
-                <span className="block text-[10px] font-bold text-indigo-300/70 mb-0.5 uppercase tracking-wide">
-                  {idx + 1}
-                </span>
-                {answer.text}
-              </button>
-            ))}
-          </div>
+          answersDisabled && wrongFeedback !== null ? (
+            /* Wrong-answer feedback panel: shown during answer_reveal freeze */
+            <div
+              className="flex flex-col items-center justify-center gap-3 shrink-0 py-2"
+              style={{ width: canvasDims.w }}
+            >
+              <p className="text-2xl font-black text-red-400 drop-shadow">✗ Wrong!</p>
+              <div className="bg-emerald-900/80 border-2 border-emerald-400/70 rounded-xl px-6 py-3 text-center">
+                <p className="text-emerald-300/70 text-xs font-medium mb-1 uppercase tracking-wide">
+                  Correct answer
+                </p>
+                <p className="text-emerald-200 text-base font-bold">{wrongFeedback}</p>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="flex flex-wrap justify-center gap-2 shrink-0"
+              style={{ maxWidth: canvasDims.w }}
+            >
+              {currentAnswers.map((answer, idx) => (
+                <button
+                  key={answer.id}
+                  type="button"
+                  disabled={answersDisabled}
+                  aria-label={`Answer ${idx + 1}: ${answer.text}`}
+                  onClick={() => {
+                    setFoxLine(
+                      answer.isCorrect
+                        ? pickLine(FOX_LINES.stack_correct)
+                        : pickLine(FOX_LINES.stack_wrong),
+                    );
+                    if (!answer.isCorrect) {
+                      const correct = currentAnswers.find((a) => a.isCorrect);
+                      setWrongFeedback(correct ? correct.text : '—');
+                    }
+                    submitAnswer(answer.isCorrect);
+                  }}
+                  className={[
+                    'flex-1 min-w-[130px] max-w-[190px] rounded-xl border-2 px-3 py-4',
+                    'text-white text-base font-semibold text-center leading-tight',
+                    'transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400',
+                    answersDisabled
+                      ? 'opacity-40 cursor-not-allowed bg-indigo-900/50 border-indigo-700/30'
+                      : 'bg-indigo-700/80 border-indigo-500/50 hover:bg-indigo-600 hover:border-indigo-400 active:scale-95',
+                  ].join(' ')}
+                >
+                  <span className="block text-[10px] font-bold text-indigo-300/70 mb-0.5 uppercase tracking-wide">
+                    {idx + 1}
+                  </span>
+                  {answer.text}
+                </button>
+              ))}
+            </div>
+          )
         )}
 
-        {/* ── Fox mascot strip — below buttons ─────────────────────────── */}
-        {(isIdle || isActive) && (
+        {/* ── Fox mascot strip — below buttons (active phases only) ─────── */}
+        {/* isIdle is excluded: the idle overlay already renders FoxMascot inside the canvas */}
+        {isActive && (
           <div className="flex justify-start shrink-0" style={{ width: canvasDims.w }}>
             <FoxMascot line={foxLine} />
           </div>
