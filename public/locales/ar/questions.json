@@ -84,7 +84,8 @@
     "record_audio": "تسجيل صوتي",
     "text_classification": "تصنيف النص",
     "image_classification": "تصنيف الصور",
-    "crossword": "كلمات متقاطعة"
+    "crossword": "كلمات متقاطعة",
+    "spelling_dictation": "إملاء الكلمات"
   },
   "statuses": {
     "draft": "مسودة",
@@ -474,6 +475,22 @@
       "try_again": "حاول مجدداً",
       "show_solution": "اعرض الحل"
     },
+    "spelling_dictation": {
+      "record_tab": "تسجيل",
+      "upload_tab": "رفع ملف",
+      "record_btn": "بدء التسجيل",
+      "pause_btn": "إيقاف مؤقت",
+      "resume_btn": "استئناف",
+      "stop_btn": "إيقاف",
+      "re_record_btn": "إعادة التسجيل",
+      "upload_area": "انقر أو أسقط ملف صوتي هنا",
+      "correct_answers_label": "الإملاء الصحيح",
+      "add_alternate": "+ إضافة إملاء بديل",
+      "hint_label": "تلميح (اختياري)",
+      "error_no_name": "اسم السؤال مطلوب.",
+      "error_min_answers": "يجب إدخال إملاء صحيح واحد على الأقل.",
+      "save_first_for_audio": "احفظ السؤال أولاً قبل رفع الصوت."
+    },
     "answer_placeholder": "الإجابة {{index}}",
     "require_unique_answers": "تطلب إجابات فريدة",
     "enable_word_limit": "تمكين حد الكلمات",
@@ -488,11 +505,13 @@
       "hint_mode_none": "لا شيء",
       "hint_mode_count": "عدد",
       "hint_mode_percentage": "نسبة مئوية",
+      "error_no_name": "اسم السؤال مطلوب.",
       "error_no_layout": "لم يتمكن من وضع أي كلمة. أضف كلمات أكثر تشترك في حروف.",
       "error_min_words": "أضف كلمتين على الأقل مع تلميحاتهما.",
       "error_generate_first": "أنشئ التخطيط قبل الحفظ.",
       "ltr": "يسار لـ يمين",
-      "rtl": "يمين لـ يسار"
+      "rtl": "يمين لـ يسار",
+      "warning_dropped_words": "لم يتمكن من وضع الكلمات التالية وتم استبعادها: {{words}}"
     }
   },
   "matching": {
@@ -503,6 +522,12 @@
   "crossword_check": "تحقق من الإجابة",
   "crossword_hint": "تلميح",
   "crossword_score": "النتيجة: {{score}} / {{max}}",
+  "spelling_dictation_no_audio": "لا يوجد تسجيل صوتي",
+  "spelling_dictation_check": "تحقق",
+  "spelling_dictation_try_again": "حاول مرة أخرى",
+  "spelling_dictation_show_solution": "عرض الإجابة",
+  "spelling_dictation_score_correct": "{{mark}} / {{mark}}",
+  "spelling_dictation_score_wrong": "0 / {{mark}}",
   "no_questions": "لا توجد أسئلة",
   "preview_page": {
     "back": "العودة إلى الأسئلة",
