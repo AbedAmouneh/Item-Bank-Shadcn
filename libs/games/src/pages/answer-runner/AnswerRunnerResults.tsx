@@ -12,6 +12,8 @@ import { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
+import { useGameScores } from '../../domain/hooks';
+import ScoreHistory from '../../components/ScoreHistory';
 
 interface AnswerRunnerResultsProps {
   score: number;
@@ -37,10 +39,12 @@ export default function AnswerRunnerResults({
     ? Math.round((correctCount / totalQuestions) * 100)
     : 0;
 
+  const { scores, save } = useGameScores('answer-runner');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
   // Fire once on mount — one component mount = one completed game session.
   useEffect(() => {
+    save({ score, correct: correctCount, total: totalQuestions, accuracy });
     mutate({
       game: 'answer-runner',
       score,
@@ -91,6 +95,8 @@ export default function AnswerRunnerResults({
         </Button>
         <Button onClick={onPlayAgain}>Play Again</Button>
       </div>
+
+      <ScoreHistory scores={scores} />
     </div>
   );
 }
