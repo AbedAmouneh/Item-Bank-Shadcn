@@ -78,6 +78,13 @@ const GAMES: GameCardInfo[] = [
     compatibleTypes: ['multiple_choice', 'true_false'],
     route: '/games/answer-runner',
   },
+  {
+    id: 'pixel-dash',
+    title: 'Pixel Dash',
+    description: 'Switch lanes to dodge obstacles, collect coins, and answer quiz gates in an endless runner.',
+    compatibleTypes: ['multiple_choice'],
+    route: '/games/pixel-dash',
+  },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
