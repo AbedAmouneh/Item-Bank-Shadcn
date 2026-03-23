@@ -1,6 +1,7 @@
-import { QuestionDomain } from './domain';
+import { QuestionDomain, MatchingQuestion } from './domain';
 import { QuestionDraft } from './draft';
 import { QuestionDTO } from './dto';
+import { TextClassificationColor } from './types';
 
 export function toQuestionDto(question: QuestionDomain | QuestionDraft): QuestionDTO {
   const baseDto = {
@@ -183,8 +184,62 @@ export function toQuestionDto(question: QuestionDomain | QuestionDraft): Questio
       };
 
     case 'text_classification':
+      return {
+        ...baseDto,
+        type: 'text_classification',
+        categories: (question.categories || []).map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          color: cat.color,
+          answers: cat.answers.map((a) => ({
+            id: a.id,
+            text: a.text,
+            feedback: a.feedback,
+            mark_percent: a.markPercent,
+          })),
+        })),
+        layout: question.layout ?? 'columns',
+        auto_distribute: question.autoDistribute ?? true,
+        justification: question.justification ?? 'disabled',
+        justification_fraction: question.justificationFraction ?? 30,
+        correct_feedback: question.correctFeedback,
+        partial_feedback: question.partialFeedback,
+        incorrect_feedback: question.incorrectFeedback,
+      };
+
     case 'image_classification':
-      return baseDto as QuestionDTO;
+      return {
+        ...baseDto,
+        type: 'image_classification',
+        categories: (question.categories || []).map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          color: cat.color,
+          answers: cat.answers.map((a) => ({
+            id: a.id,
+            image_url: a.imageUrl,
+            feedback: a.feedback,
+            mark_percent: a.markPercent,
+          })),
+        })),
+        layout: question.layout ?? 'columns',
+        auto_distribute: question.autoDistribute ?? true,
+        justification: question.justification ?? 'disabled',
+        justification_fraction: question.justificationFraction ?? 30,
+        correct_feedback: question.feedbackSettings?.correctFeedback,
+        partial_feedback: question.feedbackSettings?.partialFeedback,
+        incorrect_feedback: question.feedbackSettings?.incorrectFeedback,
+      };
+
+    case 'spelling_dictation':
+      return {
+        ...baseDto,
+        type: 'spelling_dictation',
+        audio_url: question.audioUrl ?? null,
+        audio_name: question.audioName ?? null,
+        correct_answers: question.correctAnswers || [],
+        hint: question.hint || '',
+      };
 
     case 'crossword':
       return {
@@ -227,9 +282,9 @@ export function toQuestionDto(question: QuestionDomain | QuestionDraft): Questio
         penalty_per_wrong_pair: question.penaltyPerWrongPair ?? 0,
         justification: question.justification ?? 'disabled',
         justification_fraction: question.justificationFraction ?? 30,
-        correct_feedback: question.correctFeedback,
-        partial_feedback: question.partialFeedback,
-        incorrect_feedback: question.incorrectFeedback,
+        correct_feedback: (question as MatchingQuestion).correctFeedback,
+        partial_feedback: (question as MatchingQuestion).partialFeedback,
+        incorrect_feedback: (question as MatchingQuestion).incorrectFeedback,
       };
 
     default: {
@@ -420,6 +475,66 @@ export function fromQuestionDto(dto: QuestionDTO): QuestionDomain {
         gridLayout: dto.grid_layout,
         hintMode: dto.hint_mode,
         hintValue: dto.hint_value,
+      };
+
+    case 'text_classification':
+      return {
+        ...baseDomain,
+        type: 'text_classification',
+        categories: dto.categories.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          color: cat.color as TextClassificationColor,
+          answers: cat.answers.map((a) => ({
+            id: a.id,
+            text: a.text,
+            feedback: a.feedback,
+            markPercent: a.mark_percent,
+          })),
+        })),
+        layout: dto.layout,
+        autoDistribute: dto.auto_distribute,
+        justification: dto.justification,
+        justificationFraction: dto.justification_fraction,
+        correctFeedback: dto.correct_feedback,
+        partialFeedback: dto.partial_feedback,
+        incorrectFeedback: dto.incorrect_feedback,
+      };
+
+    case 'image_classification':
+      return {
+        ...baseDomain,
+        type: 'image_classification',
+        categories: dto.categories.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          color: cat.color as TextClassificationColor,
+          answers: cat.answers.map((a) => ({
+            id: a.id,
+            imageUrl: a.image_url,
+            feedback: a.feedback,
+            markPercent: a.mark_percent,
+          })),
+        })),
+        layout: dto.layout,
+        autoDistribute: dto.auto_distribute,
+        justification: dto.justification,
+        justificationFraction: dto.justification_fraction,
+        feedbackSettings: {
+          correctFeedback: dto.correct_feedback,
+          partialFeedback: dto.partial_feedback,
+          incorrectFeedback: dto.incorrect_feedback,
+        },
+      };
+
+    case 'spelling_dictation':
+      return {
+        ...baseDomain,
+        type: 'spelling_dictation',
+        audioUrl: dto.audio_url,
+        audioName: dto.audio_name,
+        correctAnswers: dto.correct_answers,
+        hint: dto.hint,
       };
 
     case 'matching':
