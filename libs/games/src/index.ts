@@ -11,6 +11,7 @@ export { default as GamesLobby } from './pages/GamesLobby';
 export { default as QuizArcade } from './pages/quiz-arcade/QuizArcade';
 export { default as MemoryMatch } from './pages/memory-match/MemoryMatch';
 export { default as AnswerRunner } from './pages/answer-runner/AnswerRunner';
+export { default as PixelDash } from './pages/pixel-dash/PixelDash';
 
 // ── Domain hooks ───────────────────────────────────────────────────────────
 export { useGameQuestions, useGameScores, useFallbackQuestions, usePostGameSession } from './domain/hooks';
