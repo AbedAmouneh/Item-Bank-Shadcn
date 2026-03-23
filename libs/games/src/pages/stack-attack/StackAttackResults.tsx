@@ -85,7 +85,7 @@ export default function StackAttackResults({
         </div>
         <div>
           <p className="font-bold text-xl text-yellow-400 tabular-nums">
-            {goldenBlocks > 0 ? `${goldenBlocks} 👑` : '—'}
+            {goldenBlocks > 0 ? `${goldenBlocks} 👑` : '0'}
           </p>
           <p className="text-white/60">Golden blocks</p>
         </div>
@@ -113,7 +113,7 @@ export default function StackAttackResults({
         >
           ← Back
         </Button>
-        <Button onClick={onPlayAgain}>Play Again</Button>
+        <Button onClick={onPlayAgain} className="bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">Play Again</Button>
       </div>
 
       <ScoreHistory scores={scores} />
