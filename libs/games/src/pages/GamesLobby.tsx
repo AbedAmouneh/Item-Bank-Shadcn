@@ -48,7 +48,6 @@ import {
 
 interface GameCardInfo {
   id: GameId;
-  emoji: string;
   title: string;
   description: string;
   compatibleTypes: string[];
@@ -60,7 +59,6 @@ interface GameCardInfo {
 const GAMES: GameCardInfo[] = [
   {
     id: 'quiz-arcade',
-    emoji: '🎯',
     title: 'Quiz Arcade',
     description: 'Answer multiple-choice, true/false and numerical questions against the clock.',
     compatibleTypes: ['multiple_choice', 'true_false', 'numerical'],
@@ -68,7 +66,6 @@ const GAMES: GameCardInfo[] = [
   },
   {
     id: 'memory-match',
-    emoji: '🃏',
     title: 'Memory Match',
     description: 'Flip cards to pair questions with their matching answers.',
     compatibleTypes: ['matching', 'multiple_choice'],
@@ -76,7 +73,6 @@ const GAMES: GameCardInfo[] = [
   },
   {
     id: 'answer-runner',
-    emoji: '🏃',
     title: 'Answer Runner',
     description: 'Dodge wrong answers and collect correct ones as they fly toward you.',
     compatibleTypes: ['multiple_choice', 'true_false'],
@@ -101,7 +97,6 @@ function GameCardGrid({ games, onPlay }: { games: GameCardInfo[]; onPlay: (g: Ga
         <Card key={game.id} className="flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <span role="img" aria-label={game.title}>{game.emoji}</span>
               {game.title}
             </CardTitle>
             <CardDescription>{game.description}</CardDescription>
@@ -221,7 +216,7 @@ export default function GamesLobby() {
                 <SelectContent>
                   {GAMES.map((g) => (
                     <SelectItem key={g.id} value={g.id}>
-                      {g.emoji} {g.title}
+                      {g.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
