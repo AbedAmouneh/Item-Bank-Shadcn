@@ -243,7 +243,16 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
       if (computedGateCssY >= PLAYER_ROW_CSS && phaseRef.current === 'running') {
         bridge.gateSpawnedAt = 0; // prevent re-trigger on the next tick
         const q = dequeueQuestion();
-        const qAnswers = extractAnswers(q).slice(0, 3);
+        // Always guarantee one correct answer among the 3 tiles.
+        // Plain .slice(0, 3) after a shuffle can cut the correct answer out entirely
+        // when a question has 4+ choices — the kid would face 3 wrong-only tiles.
+        const allAnswers = extractAnswers(q);
+        const correctAnswer = allAnswers.find((a) => a.isCorrect);
+        const wrongAnswers = allAnswers.filter((a) => !a.isCorrect);
+        const pickedWrongs = wrongAnswers.slice(0, 2);
+        const qAnswers = correctAnswer
+          ? [...pickedWrongs, correctAnswer].sort(() => Math.random() - 0.5)
+          : allAnswers.slice(0, 3);
         bridge.pausedM = true;
         phaseRef.current = 'quiz_gate';
         setPhase('quiz_gate');
