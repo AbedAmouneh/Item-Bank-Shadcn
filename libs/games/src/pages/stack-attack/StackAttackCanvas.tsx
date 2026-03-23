@@ -1,13 +1,13 @@
 /**
- * StackAttackCanvas — the 700×480 game frame contents.
+ * StackAttackCanvas — the game frame contents.
  *
  * Renders purely visually: tower blocks, the live swinging block, the in-flight
  * dropping block (CSS transition or crack keyframe), HUD strip, and particle
  * effects. Contains no game logic — all state comes from useStackLogic via props.
  *
  * Layer stack (bottom → top):
- *   0  dark background (#0d0d2a) — CSS on the parent div
- *   5  pixel grid overlay (subtle depth texture)
+ *   0  dark jungle earth background (#1a3a0a) — CSS on the parent div
+ *   5  jungle undergrowth texture overlay
  *   10 tower + blocks + HUD (this component)
  *   30 CoinBurst / ScorePopup (rendered by StackAttack.tsx at z-30)
  */
@@ -47,17 +47,17 @@ interface StackAttackCanvasProps {
 
 function blockBackground(color: string, isGolden: boolean): string {
   if (isGolden) {
-    return `linear-gradient(135deg, ${GOLDEN_COLOR} 0%, #fbbf24 50%, #d97706 100%)`;
+    return `linear-gradient(135deg, #FFE066 0%, ${GOLDEN_COLOR} 45%, #B8860B 100%)`;
   }
-  // Slightly lighter top → darker bottom for a 3-D bevel look.
-  return `linear-gradient(180deg, ${color}ee 0%, ${color} 60%, ${color}aa 100%)`;
+  // Earthy bevel: slightly lighter top → mid → darker shadow bottom.
+  return `linear-gradient(180deg, ${color}ff 0%, ${color}cc 55%, ${color}77 100%)`;
 }
 
 function blockBoxShadow(isGolden: boolean): string {
   if (isGolden) {
-    return '0 0 12px rgba(251,191,36,0.6), 0 2px 4px rgba(0,0,0,0.4)';
+    return '0 0 14px rgba(255,215,0,0.7), 0 2px 5px rgba(0,0,0,0.5)';
   }
-  return '0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)';
+  return '0 3px 7px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14)';
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -83,34 +83,38 @@ export default function StackAttackCanvas({
   return (
     <div className="absolute inset-0 overflow-hidden">
 
-      {/* ── Subtle pixel-grid depth texture ─────────────────────────────── */}
+      {/* ── Jungle undergrowth texture (organic dots, leaf shadows) ───────── */}
       {isActive && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), ' +
-              'linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-            backgroundSize: '40px 40px',
+              'radial-gradient(circle, rgba(45,96,21,0.35) 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
           }}
         />
       )}
 
-      {/* ── Beaver mascot — decorative corner sprite ─────────────────────── */}
+      {/* ── Jungle vines — decorative corner detail ──────────────────────── */}
       {isActive && (
         <div
           className="absolute select-none pointer-events-none text-3xl leading-none"
-          style={{ insetInlineEnd: 12, bottom: 12, opacity: 0.35 }}
+          style={{ insetInlineEnd: 10, bottom: 10, opacity: 0.40 }}
           aria-hidden="true"
         >
-          🦫
+          🌿
         </div>
       )}
 
       {/* ── HUD strip (score · streak badge · lives) ─────────────────────── */}
       {isActive && (
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3 pb-2 text-white pointer-events-none">
-          <span className="text-lg font-black tabular-nums text-yellow-400">⭐ {score}</span>
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3 pb-2 text-white pointer-events-none bg-black/40 border-b border-amber-900/30">
+          <span
+            className="tabular-nums text-[#ffd700] text-sm leading-none"
+            style={{ fontFamily: "'Press Start 2P', monospace" }}
+          >
+            {String(score).padStart(6, '0')}
+          </span>
           <StreakFire streak={streak} visible={streakVisible} />
           <LivesBar lives={lives} maxLives={3} />
         </div>
@@ -166,15 +170,16 @@ export default function StackAttackCanvas({
             </div>
           ))}
 
-          {/* Base platform — always visible at the very bottom */}
+          {/* Base platform — stone/ruins altar at the very bottom */}
           <div
             className="absolute bottom-0 rounded-sm"
             style={{
-              insetInlineStart: centreX - BLOCK_W / 2 - 12,
-              width: BLOCK_W + 24,
-              height: 8,
-              background: 'linear-gradient(180deg, #475569 0%, #334155 100%)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.6)',
+              insetInlineStart: centreX - BLOCK_W / 2 - 16,
+              width: BLOCK_W + 32,
+              height: 10,
+              background: 'linear-gradient(180deg, #7A6040 0%, #5A3E1E 55%, #3A2208 100%)',
+              boxShadow: '0 3px 10px rgba(0,0,0,0.7), inset 0 1px 0 rgba(200,160,80,0.3)',
+              border: '1px solid #6B4A20',
             }}
           />
         </div>
@@ -192,8 +197,8 @@ export default function StackAttackCanvas({
             insetInlineStart: Math.round(canvasW / 2 - BLOCK_W / 2),
             width: BLOCK_W,
             height: BLOCK_H,
-            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-            boxShadow: '0 0 16px rgba(99,102,241,0.55), 0 2px 6px rgba(0,0,0,0.5)',
+            background: 'linear-gradient(135deg, #D4A045 0%, #A87830 55%, #7A5520 100%)',
+            boxShadow: '0 0 16px rgba(212,160,69,0.55), 0 2px 6px rgba(0,0,0,0.55)',
             border: '1px solid rgba(255,255,255,0.25)',
           }}
         />
