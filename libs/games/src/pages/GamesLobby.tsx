@@ -92,6 +92,13 @@ const GAMES: GameCardInfo[] = [
     compatibleTypes: ['multiple_choice'],
     route: '/games/stack-attack',
   },
+  {
+    id: 'meteor-catcher',
+    title: 'Meteor Catcher',
+    description: 'Steer your spaceship to catch meteors labelled with the correct answer. Dodge the wrong ones!',
+    compatibleTypes: ['multiple_choice'],
+    route: '/games/meteor-catcher',
+  },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
