@@ -326,3 +326,22 @@
   70%  { transform: translateX(4px)  translateY(26px); opacity: 0.3; }
   100% { transform: translateX(0)    translateY(48px); opacity: 0; }
 }
+
+/* ─── Meteor Catcher: wrong meteor red flash ───────────────────────────────── */
+/* Applied to the caught wrong-answer meteor div via inline style.
+   Pulses red then fades — used alongside the red screenFlash overlay. */
+@keyframes meteor-flash {
+  0%   { background: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.9); opacity: 1; }
+  40%  { background: #ef4444; box-shadow: 0 0 28px rgba(239,68,68,0.7); opacity: 0.9; }
+  100% { background: #ef4444; box-shadow: none;                          opacity: 0; }
+}
+
+/* ─── Meteor Catcher: player ship outline flash on wrong answer ────────────── */
+/* Applied directly to the ship div via DOM ref in handleCatch / submitBossAnswer.
+   Flashes a bright cyan glow to signal the ship was hit. */
+@keyframes ship-flash {
+  0%   { box-shadow: 0 0 0   6px rgba(56,189,248,0.9), 0 0 16px rgba(56,189,248,0.6); }
+  25%  { box-shadow: 0 0 0  10px rgba(239,68,68,0.9),  0 0 24px rgba(239,68,68,0.5); }
+  60%  { box-shadow: 0 0 0   8px rgba(239,68,68,0.7),  0 0 16px rgba(239,68,68,0.3); }
+  100% { box-shadow: 0 0 16px rgba(56,189,248,0.6), 0 2px 8px rgba(0,0,0,0.5); }
+}
