@@ -111,6 +111,14 @@ export interface RecordAudioQuestionDraft extends QuestionDraftBase {
   maxDurationSeconds?: number;
 }
 
+export interface SpellingDictationQuestionDraft extends QuestionDraftBase {
+  type: 'spelling_dictation';
+  audioUrl?: string | null;
+  audioName?: string | null;
+  correctAnswers?: string[];
+  hint?: string;
+}
+
 export interface TextClassificationQuestionDraft extends QuestionDraftBase {
   type: 'text_classification';
   categories?: TextClassificationCategory[];
@@ -118,6 +126,9 @@ export interface TextClassificationQuestionDraft extends QuestionDraftBase {
   autoDistribute?: boolean;
   justification?: JustificationMode;
   justificationFraction?: JustificationFraction;
+  correctFeedback?: string;
+  partialFeedback?: string;
+  incorrectFeedback?: string;
 }
 
 export interface ImageClassificationQuestionDraft extends QuestionDraftBase {
@@ -127,6 +138,11 @@ export interface ImageClassificationQuestionDraft extends QuestionDraftBase {
   autoDistribute?: boolean;
   justification?: JustificationMode;
   justificationFraction?: JustificationFraction;
+  feedbackSettings?: {
+    correctFeedback?: string;
+    incorrectFeedback?: string;
+    partialFeedback?: string;
+  };
 }
 
 export interface MatchingQuestionDraft extends QuestionDraftBase {
@@ -167,6 +183,7 @@ export type QuestionDraft =
   | FillInBlanksImageQuestionDraft
   | HighlightCorrectWordQuestionDraft
   | RecordAudioQuestionDraft
+  | SpellingDictationQuestionDraft
   | TextClassificationQuestionDraft
   | ImageClassificationQuestionDraft
   | MatchingQuestionDraft
