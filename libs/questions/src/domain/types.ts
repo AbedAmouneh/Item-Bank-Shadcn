@@ -18,7 +18,8 @@ export type QuestionType =
   | 'text_classification'
   | 'image_classification'
   | 'matching'
-  | 'crossword';
+  | 'crossword'
+  | 'spelling_dictation';
 
 export interface QuestionBase {
   type: QuestionType;
@@ -150,6 +151,13 @@ export interface CrosswordQuestionContent {
   gridLayout: 'ltr' | 'rtl';
   hintMode: 'none' | 'count' | 'percentage';
   hintValue: number;
+}
+
+export interface SpellingDictationQuestionContent {
+  audioUrl: string | null;
+  audioName: string | null;
+  correctAnswers: string[];
+  hint: string;
 }
 
 /**
