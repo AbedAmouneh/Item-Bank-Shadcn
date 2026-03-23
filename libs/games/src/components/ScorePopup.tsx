@@ -40,6 +40,8 @@ export default function ScorePopup({ value, label = '✨', x, y, onDone }: Score
 
   return (
     <div
+      aria-live="polite"
+      aria-atomic="true"
       className="absolute pointer-events-none select-none font-bold text-yellow-300 text-sm whitespace-nowrap"
       style={
         {
