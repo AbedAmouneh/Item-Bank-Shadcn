@@ -232,7 +232,7 @@ export default function StackAttack() {
               <p className="text-sm text-white/60 text-center max-w-xs">
                 Answer questions to stack blocks. Time your click for a PERFECT! landing.
               </p>
-              <Button onClick={startGame} className="mt-1">
+              <Button onClick={startGame} className="mt-1 bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">
                 Start Game
               </Button>
             </div>
