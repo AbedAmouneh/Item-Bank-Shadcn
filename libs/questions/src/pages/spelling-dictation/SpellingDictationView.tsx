@@ -14,9 +14,15 @@ function formatTime(s: number): string {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 }
 
-/** Normalise a string for case-insensitive, punctuation-stripped comparison. */
+/**
+ * Normalise a string for case-insensitive comparison.
+ *
+ * Only strips surrounding whitespace — deliberately avoids `\w`-based regexes
+ * because `\w` only matches ASCII word chars, which strips Arabic and other
+ * non-Latin scripts entirely.
+ */
 function normalise(s: string): string {
-  return s.toLowerCase().replace(/^[^\w]+|[^\w]+$/g, '').trim();
+  return s.toLowerCase().trim();
 }
 
 /** Compute the Levenshtein edit distance between two strings. */
@@ -131,8 +137,10 @@ export default function SpellingDictationView({ question }: SpellingDictationVie
   const [checked, setChecked] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
 
+  // showSolution must not count as correct — the student did not spell it themselves.
   const isCorrect =
     checked &&
+    !showSolution &&
     correctAnswers.some((a) => normalise(studentAnswer) === normalise(a));
 
   // Find the best-matching correct answer by edit distance
@@ -249,8 +257,8 @@ export default function SpellingDictationView({ question }: SpellingDictationVie
               : t('spelling_dictation_score_wrong', { mark })}
           </span>
 
-          {/* Show solution (only when wrong) */}
-          {!isCorrect && (
+          {/* Show solution (only when wrong and not already shown) */}
+          {!isCorrect && !showSolution && (
             <Button variant="outline" size="sm" onClick={handleShowSolution}>
               {t('spelling_dictation_show_solution')}
             </Button>
