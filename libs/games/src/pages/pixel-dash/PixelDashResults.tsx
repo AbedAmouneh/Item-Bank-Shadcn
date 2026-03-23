@@ -65,7 +65,7 @@ export default function PixelDashResults({
   const foxLine = didWell ? FOX_LINES.pixel_dash_win : FOX_LINES.pixel_dash_lose;
 
   return (
-    <div className="flex flex-col items-center justify-center gap-5 p-6 text-center text-white overflow-y-auto flex-1">
+    <div className="flex flex-col items-center justify-center gap-5 p-6 text-center text-white overflow-y-auto flex-1 bg-[#1a3a0a]">
       <p className="text-5xl">{didWell ? '🏆' : '💀'}</p>
 
       <p className="text-2xl font-bold">{didWell ? 'Great run!' : 'Game Over'}</p>
@@ -88,7 +88,7 @@ export default function PixelDashResults({
         </div>
         <div>
           <p className="font-bold text-xl tabular-nums">
-            {maxStreak > 0 ? `${maxStreak} 🔥` : '—'}
+            {maxStreak > 0 ? `${maxStreak} 🔥` : '0'}
           </p>
           <p className="text-white/60">Max streak</p>
         </div>
@@ -110,7 +110,7 @@ export default function PixelDashResults({
         >
           ← Back
         </Button>
-        <Button onClick={onPlayAgain}>Play Again</Button>
+        <Button onClick={onPlayAgain} className="bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">Play Again</Button>
       </div>
 
       <ScoreHistory scores={scores} />
