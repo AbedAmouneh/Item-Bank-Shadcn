@@ -25,4 +25,5 @@ export const PICKER_QUESTION_TYPES: QuestionType[] = [
   'image_classification',
   'matching',
   'crossword',
+  'spelling_dictation',
 ];
