@@ -387,6 +387,39 @@ function imageClassificationToRow(q: Question): QuestionRow {
   };
 }
 
+function spellingDictationToRow(q: Question): QuestionRow {
+  return {
+    ...base(q),
+    type: 'spelling_dictation',
+    question_text: q.text ?? '',
+    choices: [],
+    spellingAudioUrl: s(q.content, 'audioUrl') || null,
+    spellingAudioName: s(q.content, 'audioName') || null,
+    spellingCorrectAnswers: a<string>(q.content, 'correctAnswers'),
+    spellingHint: s(q.content, 'hint', ''),
+  };
+}
+
+function crosswordToRow(q: Question): QuestionRow {
+  return {
+    ...base(q),
+    type: 'crossword',
+    question_text: q.text ?? '',
+    choices: [],
+    crosswordWords: a<Content>(q.content, 'words').map((w) => ({
+      word: s(w, 'word'),
+      clue: s(w, 'clue'),
+      direction: s(w, 'direction', 'across') as 'across' | 'down',
+      row: n(w, 'row'),
+      col: n(w, 'col'),
+      clueNumber: n(w, 'clueNumber'),
+    })),
+    crosswordGridLayout: s(q.content, 'gridLayout', 'ltr') as 'ltr' | 'rtl',
+    crosswordHintMode: s(q.content, 'hintMode', 'none') as 'none' | 'count' | 'percentage',
+    crosswordHintValue: n(q.content, 'hintValue', 0),
+  };
+}
+
 function matchingToRow(q: Question): QuestionRow {
   return {
     ...base(q),
@@ -442,6 +475,8 @@ export function apiQuestionToRow(q: Question): QuestionRow | null {
     case 'text_classification':   return textClassificationToRow(q);
     case 'image_classification':  return imageClassificationToRow(q);
     case 'matching':              return matchingToRow(q);
+    case 'crossword':             return crosswordToRow(q);
+    case 'spelling_dictation':    return spellingDictationToRow(q);
     default:                      return null;
   }
 }
