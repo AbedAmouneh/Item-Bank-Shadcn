@@ -50,8 +50,8 @@ const SPEED_INCREMENT = 0.07; // rad/s added every SPEED_EVERY_N correct answers
 const SPEED_EVERY_N = 3;
 
 /** Cycle through these colours for placed blocks (golden overrides). */
-const BLOCK_COLORS = ['#4f46e5', '#0891b2', '#7c3aed', '#059669', '#b45309', '#0e7490'];
-export const GOLDEN_COLOR = '#f59e0b';
+const BLOCK_COLORS = ['#6B7A3A', '#8B5E3C', '#5A6B4A', '#C4973D', '#7A5A30', '#4A7C59'];
+export const GOLDEN_COLOR = '#FFD700';
 
 /** Duration of the CSS transform transition for a correct block drop (ms). */
 const DROP_DURATION_MS = 350;
@@ -249,10 +249,23 @@ export function useStackLogic({ tag_ids, item_bank_id }: UseStackLogicParams) {
     return questionQueueRef.current[questionIdxRef.current++];
   }
 
+  /**
+   * Pick up to 4 answers, always guaranteeing the correct one is included.
+   * Plain .slice(0, 4) can cut it out when a question has 5+ choices.
+   */
+  function pickAnswers(q: Question): GameAnswer[] {
+    const all = extractAnswers(q);
+    const correct = all.find((a) => a.isCorrect);
+    const wrongs = all.filter((a) => !a.isCorrect).slice(0, 3);
+    return correct
+      ? [...wrongs, correct].sort(() => Math.random() - 0.5)
+      : all.slice(0, 4);
+  }
+
   function advanceToNextQuestion(): void {
     const q = dequeueQuestion();
     setCurrentQuestion(q);
-    setCurrentAnswers(extractAnswers(q).slice(0, 4));
+    setCurrentAnswers(pickAnswers(q));
   }
 
   // ── Cleanup on unmount ─────────────────────────────────────────────────────
@@ -288,7 +301,7 @@ export function useStackLogic({ tag_ids, item_bank_id }: UseStackLogicParams) {
 
     // Enqueue the first question before setting phase so it renders immediately.
     const firstQ = questionQueueRef.current[questionIdxRef.current++];
-    const firstAnswers = extractAnswers(firstQ).slice(0, 4);
+    const firstAnswers = pickAnswers(firstQ);
 
     setPhase('swinging');
     setTower([]);
