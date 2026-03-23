@@ -31,7 +31,7 @@ import {
   Script,
   Camera2D,
 } from 'cubeforge';
-import type { ECSWorld, TransformComponent, ScriptUpdateFn } from 'cubeforge';
+import type { EntityId, ECSWorld, TransformComponent, ScriptUpdateFn } from 'cubeforge';
 import { bridge, entityRegistry } from './PixelDashBridge';
 import { PLAYER_ROW_CSS } from './hooks/usePixelDashLogic';
 import type { ActiveEntity } from './hooks/usePixelDashLogic';
@@ -66,7 +66,8 @@ const LERP_RATE = 840;
  * Two copies per lane ensure there is no visual gap: when copy A's top edge
  * exits the canvas bottom, it teleports back above copy B.
  */
-const stripeScript: ScriptUpdateFn = (id, world, _input, dt) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const stripeScript: ScriptUpdateFn = (id: EntityId, world: ECSWorld, _input: any, dt: number) => {
   if (bridge.pausedM) return;
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
@@ -81,7 +82,8 @@ const stripeScript: ScriptUpdateFn = (id, world, _input, dt) => {
  * Player lerp — smoothly tracks bridge.playerTargetX at LERP_RATE px/s.
  * Writes bridge.playerCssX so the React collision tick can read the current x.
  */
-const playerScript: ScriptUpdateFn = (id, world, _input, dt) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const playerScript: ScriptUpdateFn = (id: EntityId, world: ECSWorld, _input: any, dt: number) => {
   if (bridge.pausedM) return;
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
@@ -99,7 +101,8 @@ const playerScript: ScriptUpdateFn = (id, world, _input, dt) => {
  * Trigger detection is handled by the React tick using a wall-clock timestamp
  * (bridge.gateSpawnedAt), so this script only needs to animate the bar.
  */
-const gateScript: ScriptUpdateFn = (id, world, _input, dt) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const gateScript: ScriptUpdateFn = (id: EntityId, world: ECSWorld, _input: any, dt: number) => {
   if (bridge.pausedM) return;
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
@@ -111,7 +114,8 @@ const gateScript: ScriptUpdateFn = (id, world, _input, dt) => {
  * The entity's Cubeforge id is the same string as its entityRegistry key,
  * so the Script can update the registry's cssY for React collision detection.
  */
-const fallScript: ScriptUpdateFn = (id, world, _input, dt) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fallScript: ScriptUpdateFn = (id: EntityId, world: ECSWorld, _input: any, dt: number) => {
   if (bridge.pausedM) return;
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
