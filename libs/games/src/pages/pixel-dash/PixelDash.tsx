@@ -216,7 +216,7 @@ export default function PixelDash() {
                 <p className="text-sm text-white/60">
                   Dodge obstacles · collect coins · answer gate questions
                 </p>
-                <Button onClick={startGame} className="mt-1">Start Game</Button>
+                <Button onClick={startGame} className="mt-1 bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">Start Game</Button>
               </div>
             )}
 
