@@ -13,6 +13,7 @@ export { default as MemoryMatch } from './pages/memory-match/MemoryMatch';
 export { default as AnswerRunner } from './pages/answer-runner/AnswerRunner';
 export { default as PixelDash } from './pages/pixel-dash/PixelDash';
 export { default as StackAttack } from './pages/stack-attack/StackAttack';
+export { default as MeteorCatcher } from './pages/meteor-catcher/MeteorCatcher';
 
 // ── Domain hooks ───────────────────────────────────────────────────────────
 export { useGameQuestions, useGameScores, useFallbackQuestions, usePostGameSession } from './domain/hooks';
