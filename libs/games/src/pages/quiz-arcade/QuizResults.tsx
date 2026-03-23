@@ -14,6 +14,8 @@ import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
 import { Trophy } from 'lucide-react';
 import type { GameResult } from '../../domain/types';
+import { useGameScores } from '../../domain/hooks';
+import ScoreHistory from '../../components/ScoreHistory';
 
 interface QuizResultsProps {
   result: GameResult;
@@ -33,10 +35,12 @@ export default function QuizResults({
     ? Math.round((result.correct / result.total) * 100)
     : 0;
 
+  const { scores, save } = useGameScores('quiz-arcade');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
   // Fire once on mount — one component mount = one completed game session.
   useEffect(() => {
+    save({ score: result.score, correct: result.correct, total: result.total, accuracy });
     mutate({
       game: 'quiz-arcade',
       score: result.score,
@@ -89,6 +93,8 @@ export default function QuizResults({
           Play Again
         </Button>
       </div>
+
+      <ScoreHistory scores={scores} />
     </div>
   );
 }
