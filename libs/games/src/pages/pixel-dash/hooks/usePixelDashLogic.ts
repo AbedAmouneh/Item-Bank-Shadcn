@@ -246,6 +246,17 @@ export function usePixelDashLogic({ tag_ids, item_bank_id }: UsePixelDashLogicPa
         setAnswers(qAnswers);
         answersRef.current = qAnswers;
         setTotalGatesReached((t) => t + 1);
+
+        // Clear all in-flight obstacles and coins so nothing obscures the
+        // answer tiles. Any entity still falling at gate-trigger time is
+        // removed from both the registry and React state here.
+        entityRegistry.forEach((_, id) => {
+          if (id.startsWith('obs-') || id.startsWith('coin-')) {
+            entityRegistry.delete(id);
+          }
+        });
+        setActiveObstacles([]);
+        setActiveCoins([]);
       }
 
       // Collision detection — only while actively running
