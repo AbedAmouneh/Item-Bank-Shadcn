@@ -80,6 +80,35 @@ export default function PixelDash() {
   // highlightedLane: the answer tile currently focused by keyboard arrows.
   const [highlightedLane, setHighlightedLane] = useState<0 | 1 | 2>(1);
 
+  /**
+   * wrongFeedback — set to the correct answer text immediately after the player
+   * picks a wrong lane. The quiz_gate overlay swaps the tiles for a "Wrong!
+   * Correct answer was: ..." panel during the 1200ms freeze. Cleared when phase
+   * transitions back to 'running'.
+   */
+  const [wrongFeedback, setWrongFeedback] = useState<string | null>(null);
+
+  // Clear feedback when the freeze ends and the game resumes.
+  useEffect(() => {
+    if (phase === 'running') setWrongFeedback(null);
+  }, [phase]);
+
+  /**
+   * Wrapper around the hook's answerGate that:
+   *  1. Guards against double-submission during the 1200ms wrong-answer freeze.
+   *  2. Captures the correct answer text for the feedback panel before delegating.
+   */
+  function handleAnswerGate(laneIdx: 0 | 1 | 2) {
+    if (wrongFeedback !== null) return; // already answered — ignore
+    const chosen = answers[laneIdx];
+    if (!chosen) return;
+    if (!chosen.isCorrect) {
+      const correct = answers.find((a) => a.isCorrect);
+      setWrongFeedback(correct ? stripHtml(correct.text) : '—');
+    }
+    answerGate(laneIdx);
+  }
+
   // Snap highlight to the player's current lane when the gate overlay appears.
   useEffect(() => {
     if (phase === 'quiz_gate') {
@@ -105,13 +134,14 @@ export default function PixelDash() {
         }
         if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
-          answerGate(highlightedLane);
+          handleAnswerGate(highlightedLane);
         }
       }
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [phase, switchLane, answerGate, highlightedLane]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, switchLane, answerGate, highlightedLane, wrongFeedback, answers]);
 
   // ── Swipe gesture ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -199,48 +229,63 @@ export default function PixelDash() {
                   <LivesBar lives={lives} maxLives={3} />
                 </div>
 
-                {/* Quiz gate overlay — question card + 3 answer tiles */}
+                {/* Quiz gate overlay — question card + answer tiles (or wrong-answer feedback) */}
                 {phase === 'quiz_gate' && currentQuestion && (
                   <div className="absolute inset-0 z-20 pointer-events-none">
-                    {/* Centred question card */}
+                    {/* Centred question card — always visible during quiz_gate */}
                     <div className="absolute inset-x-0 top-16 flex justify-center px-6">
-                      <div className="pointer-events-auto bg-[#1e1b4b]/90 border border-indigo-500/60 rounded-xl px-6 py-4 max-w-[400px] text-center shadow-xl">
-                        <p className="text-white text-base font-semibold leading-snug">
+                      <div className="pointer-events-auto bg-indigo-900/95 border-2 border-indigo-400/70 rounded-xl px-6 py-4 max-w-[420px] text-center shadow-2xl">
+                        <p className="text-white text-base font-bold leading-snug">
                           {stripHtml(currentQuestion.text ?? currentQuestion.name ?? '')}
                         </p>
                       </div>
                     </div>
 
-                    {/* Answer tiles — absolutely positioned at lane x centres */}
-                    {answers.slice(0, 3).map((answer, idx) => {
-                      const laneIdx = idx as 0 | 1 | 2;
-                      const isHighlighted = highlightedLane === laneIdx;
-                      return (
-                        <button
-                          key={answer.id}
-                          type="button"
-                          aria-label={`Lane ${laneIdx + 1}: ${stripHtml(answer.text)}`}
-                          onClick={() => answerGate(laneIdx)}
-                          className={[
-                            'pointer-events-auto absolute w-28 h-12 rounded-lg border',
-                            'text-white text-xs font-semibold flex items-center justify-center',
-                            'px-2 text-center transition-colors',
-                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white',
-                            isHighlighted
-                              ? 'bg-indigo-500 border-2 border-white/80 shadow-lg scale-105'
-                              : 'bg-indigo-700/80 border-indigo-500/50 hover:bg-indigo-600/80',
-                          ].join(' ')}
-                          style={{
-                            // Clamp so tiles never clip the canvas edge on narrow mobile canvases.
-                            // 116 = 112px tile width (w-28) + 4px end margin.
-                            insetInlineStart: Math.max(4, Math.min(canvasDims.w - 116, laneXPositions[laneIdx] - 56)),
-                            top: PLAYER_ROW_CSS - 48,
-                          }}
-                        >
-                          {stripHtml(answer.text)}
-                        </button>
-                      );
-                    })}
+                    {wrongFeedback !== null ? (
+                      /* Wrong-answer feedback panel — shown during the 1200ms freeze.
+                         Replaces the tiles so kids see the correct answer before resuming. */
+                      <div
+                        className="absolute inset-x-0 flex flex-col items-center gap-3 pointer-events-none"
+                        style={{ top: PLAYER_ROW_CSS - 80 }}
+                      >
+                        <p className="text-2xl font-black text-red-400 drop-shadow">✗ Wrong!</p>
+                        <div className="bg-emerald-900/80 border-2 border-emerald-400/70 rounded-xl px-5 py-3 max-w-[340px] text-center shadow-xl">
+                          <p className="text-emerald-300/70 text-xs font-medium mb-1">Correct answer</p>
+                          <p className="text-emerald-200 text-base font-bold leading-snug">{wrongFeedback}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Answer tiles — absolutely positioned at lane x centres */
+                      answers.slice(0, 3).map((answer, idx) => {
+                        const laneIdx = idx as 0 | 1 | 2;
+                        const isHighlighted = highlightedLane === laneIdx;
+                        return (
+                          <button
+                            key={answer.id}
+                            type="button"
+                            aria-label={`Lane ${laneIdx + 1}: ${stripHtml(answer.text)}`}
+                            onClick={() => handleAnswerGate(laneIdx)}
+                            className={[
+                              'pointer-events-auto absolute w-32 h-14 rounded-xl border-2',
+                              'text-white text-sm font-bold flex items-center justify-center',
+                              'px-3 text-center transition-all',
+                              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white',
+                              isHighlighted
+                                ? 'bg-indigo-500 border-white/90 shadow-lg shadow-indigo-500/40 scale-105'
+                                : 'bg-indigo-700/85 border-indigo-400/60 hover:bg-indigo-600/90 hover:border-indigo-300/80',
+                            ].join(' ')}
+                            style={{
+                              // Clamp so tiles never clip the canvas edge.
+                              // 132 = 128px tile width (w-32) + 4px margin.
+                              insetInlineStart: Math.max(4, Math.min(canvasDims.w - 132, laneXPositions[laneIdx] - 64)),
+                              top: PLAYER_ROW_CSS - 56,
+                            }}
+                          >
+                            {stripHtml(answer.text)}
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
                 )}
               </>
