@@ -336,6 +336,19 @@
   100% { background: #ef4444; box-shadow: none;                          opacity: 0; }
 }
 
+/* ─── Game arcade bezel ────────────────────────────────────────────────────── */
+/* Multi-layer dark frame that makes the canvas look like a TV/arcade screen.
+   Applied via className="game-bezel" on the canvas wrapper div.
+   The three box-shadow rings alternate dark-green / slightly-lighter to create
+   depth. The outermost shadow is a large soft black drop for lift. */
+.game-bezel {
+  box-shadow:
+    0 0 0 5px #0d2204,
+    0 0 0 10px #1a3a0a,
+    0 0 0 15px #0d2204,
+    0 24px 80px rgba(0, 0, 0, 0.85);
+}
+
 /* ─── Meteor Catcher: player ship outline flash on wrong answer ────────────── */
 /* Applied directly to the ship div via DOM ref in handleCatch / submitBossAnswer.
    Flashes a bright cyan glow to signal the ship was hit. */
