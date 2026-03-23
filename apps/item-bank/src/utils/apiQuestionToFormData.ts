@@ -228,6 +228,35 @@ function matchingFromApi(q: Question): QuestionFormData {
   };
 }
 
+function spellingDictationFromApi(q: Question): QuestionFormData {
+  return {
+    ...baseFields(q),
+    type: 'spelling_dictation',
+    spellingAudioUrl: s(q.content, 'audioUrl') || null,
+    spellingAudioName: s(q.content, 'audioName') || null,
+    spellingCorrectAnswers: a<string>(q.content, 'correctAnswers'),
+    spellingHint: s(q.content, 'hint', ''),
+  };
+}
+
+function crosswordFromApi(q: Question): QuestionFormData {
+  return {
+    ...baseFields(q),
+    type: 'crossword',
+    crosswordWords: a<Content>(q.content, 'words').map((w) => ({
+      word: s(w, 'word'),
+      clue: s(w, 'clue'),
+      direction: s(w, 'direction', 'across') as 'across' | 'down',
+      row: n(w, 'row'),
+      col: n(w, 'col'),
+      clueNumber: n(w, 'clueNumber'),
+    })),
+    crosswordGridLayout: s(q.content, 'gridLayout', 'ltr') as 'ltr' | 'rtl',
+    crosswordHintMode: s(q.content, 'hintMode', 'none') as 'none' | 'count' | 'percentage',
+    crosswordHintValue: n(q.content, 'hintValue', 0),
+  };
+}
+
 function recordAudioFromApi(q: Question): QuestionFormData {
   return {
     ...baseFields(q),
@@ -423,6 +452,10 @@ export function apiQuestionToFormData(q: Question): QuestionFormData | null {
       return textClassificationFromApi(q);
     case 'matching':
       return matchingFromApi(q);
+    case 'crossword':
+      return crosswordFromApi(q);
+    case 'spelling_dictation':
+      return spellingDictationFromApi(q);
     case 'record_audio':
       return recordAudioFromApi(q);
     case 'drag_drop_text':
