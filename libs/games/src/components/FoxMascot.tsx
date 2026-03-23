@@ -111,6 +111,29 @@ export const FOX_LINES = {
     'Incredible run, explorer! Knowledge and speed combined! 🌟',
   pixel_dash_lose:
     'Every dash teaches something new. Come back stronger! 🦊',
+
+  // ── Stack Attack ──────────────────────────────────────────────────────────
+  stack_idle:
+    'Every great tower starts with one block. Ready to build, explorer? 🏗️',
+  stack_playing:
+    'Watch the swing — and time your answer! A steady hand wins.',
+  stack_correct: [
+    'A solid block! Keep building! 🏗️',
+    'Well placed, explorer! ✨',
+    'Your tower grows taller! 🌟',
+    'Precise and correct — excellent!',
+    'Knowledge stacks up! ✨',
+  ],
+  stack_wrong: [
+    'The block slipped — stay focused! 🦊',
+    'Wrong answer! You still have lives left.',
+    'Steady, explorer — keep building!',
+    "Don't let the tower topple! 🗺️",
+  ],
+  stack_win:
+    'Magnificent! Your tower reaches the sky — a true master builder! 🌟',
+  stack_topple:
+    'Every tower teaches balance. Come back and build higher! 🦊',
 } as const;
 
 /** Return a random line from an array. */
