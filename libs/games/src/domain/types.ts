@@ -52,6 +52,17 @@ export interface MemoryCard {
   isMatched: boolean;
 }
 
+/** A single entry in the persisted per-game score history. */
+export interface GameScoreEntry {
+  score: number;
+  correct: number;
+  total: number;
+  /** Accuracy as a whole-number percentage (0–100). */
+  accuracy: number;
+  /** ISO 8601 timestamp of when the game ended. */
+  date: string;
+}
+
 /** One answer entity flying across the screen in Answer Runner. */
 export interface RunnerAnswer {
   id: string;
