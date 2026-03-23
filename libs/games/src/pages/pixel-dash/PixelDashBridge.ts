@@ -11,9 +11,18 @@
  *
  * Both PixelDashCanvas (ECS Scripts) and usePixelDashLogic (React hook) import
  * the same exported reference, so they share one instance automatically.
+ *
+ * Gate trigger design:
+ * Rather than having the ECS gateScript write gateCssY every frame and relying
+ * on the React tick to read it (which can break under Vite's ES-module caching
+ * between HMR updates), the trigger uses a wall-clock timestamp approach:
+ *   - React writes `gateSpawnedAt = Date.now()` when a new gate is launched.
+ *   - The React tick computes `computedGateCssY = -4 + scrollSpeedM * elapsed`
+ *     and triggers quiz_gate when it reaches PLAYER_ROW_CSS.
+ * This is purely React → React and requires no ECS → React communication.
  */
 
-/** Scalar bridge — ECS Scripts write here; React tick reads. */
+/** Scalar bridge — React writes here; ECS Scripts read; React tick reads. */
 export const bridge = {
   /** CSS x that the player sprite is lerping toward. Written by React. */
   playerTargetX: 350,
@@ -24,11 +33,11 @@ export const bridge = {
   /** When true, all entity Scripts skip their update. Written by React. */
   pausedM: false,
   /**
-   * CSS y (from top) of the gate sprite's bottom edge.
-   * Written by the gate Script each frame; read by React tick.
-   * Initialised to -9999 so no accidental trigger fires before the first gate.
+   * Wall-clock timestamp (Date.now()) when the current gate entity was spawned.
+   * 0 means no gate is active. Written by React; read by the React tick.
+   * The tick computes: computedGateCssY = -4 + scrollSpeedM * elapsedSeconds.
    */
-  gateCssY: -9999,
+  gateSpawnedAt: 0,
 };
 
 /** Per-entity registry — Scripts write cssY each frame; React tick reads for collision. */
