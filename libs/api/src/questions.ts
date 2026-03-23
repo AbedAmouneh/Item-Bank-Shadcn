@@ -200,3 +200,35 @@ export async function reorderQuestions(questionIds: number[]): Promise<void> {
     body: JSON.stringify({ question_ids: questionIds }),
   });
 }
+
+/**
+ * Upload an audio file for a spelling dictation question.
+ *
+ * Content-Type must not be set manually — the browser adds the multipart
+ * boundary automatically when the body is a FormData instance.
+ *
+ * @param id   - The question's database ID.
+ * @param file - The audio File or Blob to upload.
+ * @returns    The stored audioUrl and audioName.
+ */
+export async function uploadQuestionAudio(
+  id: number,
+  file: File | Blob,
+): Promise<{ audioUrl: string; audioName: string }> {
+  const form = new FormData();
+  form.append('audio', file, file instanceof File ? file.name : 'recording.webm');
+  const envelope = await apiRequest<Envelope<{ audioUrl: string; audioName: string }>>(
+    `/questions/${id}/audio`,
+    { method: 'POST', body: form },
+  );
+  return envelope.data;
+}
+
+/**
+ * Delete the audio file attached to a spelling dictation question.
+ *
+ * @param id - The question's database ID.
+ */
+export async function deleteQuestionAudio(id: number): Promise<void> {
+  await apiRequest<void>(`/questions/${id}/audio`, { method: 'DELETE' });
+}

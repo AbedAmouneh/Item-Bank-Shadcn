@@ -12,6 +12,8 @@ export {
   uploadImage,
   uploadImageBase64,
   reorderQuestions,
+  uploadQuestionAudio,
+  deleteQuestionAudio,
 } from './questions';
 export type {
   Question,
