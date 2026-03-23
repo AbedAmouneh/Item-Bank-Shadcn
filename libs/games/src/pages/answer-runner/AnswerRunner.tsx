@@ -516,13 +516,13 @@ export default function AnswerRunner() {
   // ── Game canvas ───────────────────────────────────────────────────────────
 
   return (
-    <div className="flex items-start gap-6 justify-center p-6">
-      {/* How to Play sidebar — desktop only */}
+    <div className="flex w-full">
+      {/* How to Play sidebar — desktop only, aligned under the navbar brand */}
       <HowToPlaySidebar rules={RUNNER_RULES} />
 
-      {/* Game column — header + canvas + fox strip + touch controls */}
-      <div className="flex flex-col gap-4 shrink-0">
-        <div className="flex items-center justify-between">
+      {/* Game column — flex-1 so the canvas is centred in the remaining space */}
+      <div className="flex flex-col flex-1 items-center gap-4 pt-6 pb-6 min-w-0 pe-4">
+        <div className="flex items-center justify-between shrink-0" style={{ width: canvasDims.w }}>
           <h2 className="text-xl font-bold">Answer Runner</h2>
           <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
         </div>
