@@ -306,3 +306,11 @@
   80%  { transform: translateX(3px);  }
   100% { transform: translateX(0);    }
 }
+
+/* ─── Pixel Dash screen flash ──────────────────────────────────────────────── */
+/* Canvas wrapper flashes red on a wrong gate answer.
+   Consumed as Tailwind arbitrary: [animation:screen-flash_300ms_ease-out_forwards] */
+@keyframes screen-flash {
+  0%   { background-color: rgba(239, 68, 68, 0.25); }
+  100% { background-color: transparent; }
+}
