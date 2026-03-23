@@ -34,8 +34,12 @@ export default function StreakFire({ streak, visible }: StreakFireProps) {
   const multiplier = getMultiplier(streak);
 
   return (
-    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 border border-orange-400/40 text-sm font-bold text-orange-300 select-none [animation:fox-appear_0.35s_ease-out]">
-      🔥 ×{multiplier}
+    <div
+      role="img"
+      aria-label={`Streak active: ×${multiplier} score multiplier`}
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 border border-orange-400/40 text-sm font-bold text-orange-300 select-none [animation:fox-appear_0.35s_ease-out]"
+    >
+      <span aria-hidden="true">🔥 ×{multiplier}</span>
     </div>
   );
 }
