@@ -159,7 +159,7 @@ export default function StackAttack() {
         {/* ── Question card — above canvas ──────────────────────────────── */}
         {isActive && currentQuestion && (
           <div
-            className="shrink-0 rounded-xl border-2 border-indigo-400/70 bg-indigo-900/95 px-5 py-3 text-center shadow-lg"
+            className="shrink-0 rounded-xl border-2 border-amber-600/70 bg-stone-900/95 px-5 py-3 text-center shadow-lg"
             style={{ width: canvasDims.w }}
           >
             <p className="text-white text-sm font-semibold leading-snug">
@@ -170,7 +170,7 @@ export default function StackAttack() {
 
         {/* ── Game canvas frame ─────────────────────────────────────────── */}
         <div
-          className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a] shrink-0"
+          className="relative rounded-2xl overflow-hidden bg-[#1a3a0a] game-bezel shrink-0"
           style={{ width: canvasDims.w, height: canvasDims.h }}
         >
           {/* Screen flash — wrong-answer red overlay (key remount re-triggers animation) */}
@@ -297,14 +297,14 @@ export default function StackAttack() {
                   }}
                   className={[
                     'flex-1 min-w-[130px] max-w-[190px] rounded-xl border-2 px-3 py-4',
-                    'text-white text-base font-semibold text-center leading-tight',
-                    'transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400',
+                    'text-amber-100 text-base font-semibold text-center leading-tight',
+                    'transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300',
                     answersDisabled
-                      ? 'opacity-40 cursor-not-allowed bg-indigo-900/50 border-indigo-700/30'
-                      : 'bg-indigo-700/80 border-indigo-500/50 hover:bg-indigo-600 hover:border-indigo-400 active:scale-95',
+                      ? 'opacity-40 cursor-not-allowed bg-amber-900/50 border-amber-700/30'
+                      : 'bg-amber-900/85 border-amber-700/60 hover:bg-amber-800/90 hover:border-amber-600/80 active:scale-95',
                   ].join(' ')}
                 >
-                  <span className="block text-[10px] font-bold text-indigo-300/70 mb-0.5 uppercase tracking-wide">
+                  <span className="block text-[10px] font-bold text-amber-400/70 mb-0.5 uppercase tracking-wide">
                     {idx + 1}
                   </span>
                   {answer.text}
