@@ -23,7 +23,7 @@ export default function QuizHud({
   streak,
 }: QuizHudProps) {
   return (
-    <div className="flex items-center justify-between w-full px-4 py-2 bg-black/40 backdrop-blur-sm rounded-t-xl text-white text-sm font-medium">
+    <div className="flex items-center justify-between w-full px-6 py-3 bg-black/40 backdrop-blur-sm rounded-t-xl text-white text-sm font-medium">
       {/* Score */}
       <div className="flex items-center gap-1.5">
         <Star size={14} className="text-yellow-400" />
