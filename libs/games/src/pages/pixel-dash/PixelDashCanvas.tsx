@@ -95,15 +95,15 @@ const playerScript: ScriptUpdateFn = (id, world, _input, dt) => {
 };
 
 /**
- * Gate fall — drops at scrollSpeedM px/s and writes bridge.gateCssY.
- * The React tick reads gateCssY to detect when the gate reaches the player row.
+ * Gate fall — visual-only; drops at scrollSpeedM px/s.
+ * Trigger detection is handled by the React tick using a wall-clock timestamp
+ * (bridge.gateSpawnedAt), so this script only needs to animate the bar.
  */
 const gateScript: ScriptUpdateFn = (id, world, _input, dt) => {
   if (bridge.pausedM) return;
   const t = world.getComponent<TransformComponent>(id, 'Transform');
   if (!t) return;
   t.y += bridge.scrollSpeedM * dt;
-  bridge.gateCssY = t.y + mCamHalfH;
 };
 
 /**
