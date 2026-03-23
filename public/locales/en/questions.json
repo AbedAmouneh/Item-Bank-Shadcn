@@ -84,7 +84,8 @@
     "record_audio": "Record Audio",
     "text_classification": "Text classification",
     "image_classification": "Image classification",
-    "crossword": "Crossword"
+    "crossword": "Crossword",
+    "spelling_dictation": "Spelling Dictation"
   },
   "statuses": {
     "draft": "Draft",
@@ -474,6 +475,22 @@
       "try_again": "Try Again",
       "show_solution": "Show Solution"
     },
+    "spelling_dictation": {
+      "record_tab": "Record",
+      "upload_tab": "Upload",
+      "record_btn": "Start Recording",
+      "pause_btn": "Pause",
+      "resume_btn": "Resume",
+      "stop_btn": "Stop",
+      "re_record_btn": "Re-record",
+      "upload_area": "Click or drop an audio file here",
+      "correct_answers_label": "Correct Spellings",
+      "add_alternate": "+ Add alternate spelling",
+      "hint_label": "Hint (optional)",
+      "error_no_name": "Question name is required.",
+      "error_min_answers": "At least one correct spelling is required.",
+      "save_first_for_audio": "Save the question first before uploading audio."
+    },
     "answer_placeholder": "Answer {{index}}",
     "require_unique_answers": "Require unique answers",
     "enable_word_limit": "Enable word limit",
@@ -488,11 +505,13 @@
       "hint_mode_none": "None",
       "hint_mode_count": "Count",
       "hint_mode_percentage": "Percentage",
+      "error_no_name": "Question name is required.",
       "error_no_layout": "No words could be placed. Add more words with shared letters.",
       "error_min_words": "Add at least 2 words with clues.",
       "error_generate_first": "Generate the layout before saving.",
       "ltr": "LTR",
-      "rtl": "RTL"
+      "rtl": "RTL",
+      "warning_dropped_words": "The following words could not be placed and were excluded: {{words}}"
     }
   },
   "matching": {
@@ -503,6 +522,12 @@
   "crossword_check": "Check Answer",
   "crossword_hint": "Hint",
   "crossword_score": "Score: {{score}} / {{max}}",
+  "spelling_dictation_no_audio": "No audio recorded",
+  "spelling_dictation_check": "Check",
+  "spelling_dictation_try_again": "Try Again",
+  "spelling_dictation_show_solution": "Show Solution",
+  "spelling_dictation_score_correct": "{{mark}} / {{mark}}",
+  "spelling_dictation_score_wrong": "0 / {{mark}}",
   "no_questions": "No questions found",
   "preview_page": {
     "back": "Back to questions",
