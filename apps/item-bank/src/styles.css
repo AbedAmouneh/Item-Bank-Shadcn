@@ -253,6 +253,20 @@
   }
 }
 
+/* ─── Fox Mascot speech-bubble entrance ────────────────────────────────────── */
+/* Slides in from the start (left in LTR) with a gentle fade.
+   Used via Tailwind arbitrary value: [animation:fox-appear_0.35s_ease-out] */
+@keyframes fox-appear {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* ─── Quiz Arcade countdown animation ─────────────────────────────────────── */
 /* Pops each digit in with a quick scale-down + fade-in so each number feels
    distinct. Used via Tailwind arbitrary value: [animation:quiz-pop_0.35s_ease-out] */
@@ -265,4 +279,30 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* ─── Coin burst particle ──────────────────────────────────────────────────── */
+/* Each coin div sets --coin-dx and --coin-dy via its `style` prop so a single
+   keyframe can drive all 8 directions. Consumed by CoinBurst component. */
+@keyframes coin-fly {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--coin-dx, 40px), var(--coin-dy, -40px)) scale(0.5); opacity: 0; }
+}
+
+/* ─── Floating score label ─────────────────────────────────────────────────── */
+/* Used via inline style: animation: 'score-float 850ms ease-out forwards' */
+@keyframes score-float {
+  0%   { transform: translateY(0);     opacity: 1; }
+  100% { transform: translateY(-48px); opacity: 0; }
+}
+
+/* ─── Heart lose shake ─────────────────────────────────────────────────────── */
+/* Triggered on key remount in LivesBar when the player loses a life. */
+@keyframes heart-shake {
+  0%   { transform: translateX(0);    }
+  20%  { transform: translateX(-4px); }
+  40%  { transform: translateX(4px);  }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px);  }
+  100% { transform: translateX(0);    }
 }
