@@ -181,16 +181,6 @@ export default function SpellingDictationEditor({
     }
   }, []);
 
-  const reRecord = useCallback(() => {
-    setAudioUrl(null);
-    setAudioName(null);
-    setIsPlaying(false);
-    setCurrentTime(0);
-    setDuration(0);
-    setRecordingSeconds(0);
-    chunksRef.current = [];
-  }, []);
-
   // ------------------------------------------------------------------
   // Upload handler
   // ------------------------------------------------------------------
@@ -229,6 +219,16 @@ export default function SpellingDictationEditor({
     setCurrentTime(0);
     setDuration(0);
   }, [questionId]);
+
+  // reRecord is placed after handleDeleteAudio because it calls it.
+  // Calling handleDeleteAudio ensures the old server file is removed and the
+  // DB is updated before local state is cleared — prevents a "Done" click
+  // from sending audioUrl: null and silently orphaning the server file.
+  const reRecord = useCallback(() => {
+    void handleDeleteAudio();
+    setRecordingSeconds(0);
+    chunksRef.current = [];
+  }, [handleDeleteAudio]);
 
   // ------------------------------------------------------------------
   // Audio player handlers
