@@ -165,11 +165,21 @@ export default function PixelDashCanvas({
   // Camera y for the player sprite row.
   const playerRowCamY = toCamY(PLAYER_ROW_CSS);
 
-  const playerColor = streakFire ? '#FB923C' : '#F9A8D4';
+  // Jungle palette: amber explorer normally, fiery orange during streak.
+  const playerColor = streakFire ? '#ff8c00' : '#f8b84a';
 
   return (
     <Game key={gameKey} width={width} height={height} gravity={0}>
-      <World background="#0d0d2a">
+      {/*
+       * JUNGLE palette — looks down at a jungle floor from above.
+       *   background    : dark jungle earth  (#1a3a0a)
+       *   lane dividers : dense foliage edge (#0d2204, 5 px wide)
+       *   player        : amber explorer     (#f8b84a) / fire orange on streak (#ff8c00)
+       *   gate          : wooden bamboo beam (#6b3a08, 10 px tall)
+       *   obstacles     : bark-brown log     (#5a3210) / mossy boulder (#6a5a4a)
+       *   coins         : gold artifact      (#ffd700, 14 px)
+       */}
+      <World background="#1a3a0a">
         <Camera2D />
 
         {/* ── Lane stripes — 3 lanes × 2 copies for seamless vertical scroll ── */}
@@ -178,7 +188,7 @@ export default function PixelDashCanvas({
         {laneXArr.map((cssX, i) => (
           <Entity key={`stripeA-${i}`} id={`stripeA-${i}`}>
             <Transform x={toCamX(cssX)} y={0} />
-            <Sprite width={2} height={height} color="#1e1b4b" />
+            <Sprite width={5} height={height} color="#0d2204" />
             <Script update={stripeScript} />
           </Entity>
         ))}
@@ -187,12 +197,12 @@ export default function PixelDashCanvas({
         {laneXArr.map((cssX, i) => (
           <Entity key={`stripeB-${i}`} id={`stripeB-${i}`}>
             <Transform x={toCamX(cssX)} y={-height} />
-            <Sprite width={2} height={height} color="#1e1b4b" />
+            <Sprite width={5} height={height} color="#0d2204" />
             <Script update={stripeScript} />
           </Entity>
         ))}
 
-        {/* ── Player — 28×28 rounded-rect rabbit sprite ─────────────────────── */}
+        {/* ── Player — 28×28 rounded-rect explorer sprite ───────────────────── */}
         <Entity key="player" id="pixel-dash-player">
           <Transform x={toCamX(laneXArr[1])} y={playerRowCamY} />
           <Sprite
@@ -205,35 +215,35 @@ export default function PixelDashCanvas({
           <Script update={playerScript} />
         </Entity>
 
-        {/* ── Gate — full-width 8px bar, remounted via gateKey ─────────────── */}
+        {/* ── Gate — full-width wooden bamboo beam, remounted via gateKey ───── */}
         <Entity key={`gate-${gateKey}`} id="pixel-dash-gate">
           {/* Initial position: top edge just above canvas (CSS y = -4) */}
           <Transform x={0} y={toCamY(-4)} />
-          <Sprite width={width} height={8} color="#6366f1" />
+          <Sprite width={width} height={10} color="#6b3a08" />
           <Script update={gateScript} />
         </Entity>
 
-        {/* ── Obstacles — rock or barrel sprites ───────────────────────────── */}
+        {/* ── Obstacles — log or boulder sprites ───────────────────────────── */}
         {activeObstacles.map((ent) => (
           <Entity key={ent.id} id={ent.id}>
             {/* Start above the canvas so they fall in from the top */}
             <Transform x={toCamX(laneXArr[ent.lane])} y={toCamY(-30)} />
             <Sprite
-              width={24}
-              height={24}
-              color={ent.variant === 'barrel' ? '#92400e' : '#6b7280'}
+              width={26}
+              height={26}
+              color={ent.variant === 'barrel' ? '#5a3210' : '#6a5a4a'}
               shape="roundedRect"
-              borderRadius={4}
+              borderRadius={5}
             />
             <Script update={fallScript} />
           </Entity>
         ))}
 
-        {/* ── Coins — small gold squares ────────────────────────────────────── */}
+        {/* ── Coins — gold jungle artifact squares ──────────────────────────── */}
         {activeCoins.map((ent) => (
           <Entity key={ent.id} id={ent.id}>
             <Transform x={toCamX(laneXArr[ent.lane])} y={toCamY(-30)} />
-            <Sprite width={12} height={12} color="#fbbf24" />
+            <Sprite width={14} height={14} color="#ffd700" />
             <Script update={fallScript} />
           </Entity>
         ))}
