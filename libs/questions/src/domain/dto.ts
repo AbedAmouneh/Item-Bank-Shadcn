@@ -1,3 +1,5 @@
+import { JustificationFraction } from './types';
+
 export interface QuestionDTOBase {
   id?: string;
   type: string;
@@ -119,6 +121,66 @@ export interface RecordAudioQuestionDTO extends QuestionDTOBase {
   max_duration_seconds: number;
 }
 
+export interface TextClassificationAnswerDTO {
+  id: string;
+  text: string;
+  feedback?: string;
+  mark_percent: number;
+}
+
+export interface TextClassificationCategoryDTO {
+  id: string;
+  name: string;
+  color: string;
+  answers: TextClassificationAnswerDTO[];
+}
+
+export interface TextClassificationQuestionDTO extends QuestionDTOBase {
+  type: 'text_classification';
+  categories: TextClassificationCategoryDTO[];
+  layout: 'columns' | 'rows';
+  auto_distribute: boolean;
+  justification: 'disabled' | 'optional' | 'required';
+  justification_fraction: JustificationFraction;
+  correct_feedback?: string;
+  partial_feedback?: string;
+  incorrect_feedback?: string;
+}
+
+export interface ImageClassificationAnswerDTO {
+  id: string;
+  image_url: string;
+  feedback?: string;
+  mark_percent: number;
+}
+
+export interface ImageClassificationCategoryDTO {
+  id: string;
+  name: string;
+  color: string;
+  answers: ImageClassificationAnswerDTO[];
+}
+
+export interface ImageClassificationQuestionDTO extends QuestionDTOBase {
+  type: 'image_classification';
+  categories: ImageClassificationCategoryDTO[];
+  layout: 'columns' | 'rows';
+  auto_distribute: boolean;
+  justification: 'disabled' | 'optional' | 'required';
+  justification_fraction: JustificationFraction;
+  correct_feedback?: string;
+  partial_feedback?: string;
+  incorrect_feedback?: string;
+}
+
+export interface SpellingDictationQuestionDTO extends QuestionDTOBase {
+  type: 'spelling_dictation';
+  audio_url: string | null;
+  audio_name: string | null;
+  correct_answers: string[];
+  hint: string;
+}
+
 export interface MatchingLeftItemDTO {
   id: string;
   text: string;
@@ -144,7 +206,7 @@ export interface MatchingQuestionDTO extends QuestionDTOBase {
   auto_distribute: boolean;
   penalty_per_wrong_pair: number;
   justification: 'disabled' | 'optional' | 'required';
-  justification_fraction: number;
+  justification_fraction: JustificationFraction;
   correct_feedback?: string;
   partial_feedback?: string;
   incorrect_feedback?: string;
@@ -184,5 +246,8 @@ export type QuestionDTO =
   | FillInBlanksImageQuestionDTO
   | HighlightCorrectWordQuestionDTO
   | RecordAudioQuestionDTO
+  | TextClassificationQuestionDTO
+  | ImageClassificationQuestionDTO
+  | SpellingDictationQuestionDTO
   | MatchingQuestionDTO
   | CrosswordQuestionDTO;
