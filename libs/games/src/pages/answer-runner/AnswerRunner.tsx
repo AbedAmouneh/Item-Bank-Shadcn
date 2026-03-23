@@ -35,6 +35,17 @@ import { useGameQuestions } from '../../domain/hooks';
 import { extractAnswers } from '../../domain/extractAnswers';
 import type { RunnerAnswer } from '../../domain/types';
 import AnswerRunnerResults from './AnswerRunnerResults';
+import FoxMascot, { FOX_LINES, pickLine } from '../../components/FoxMascot';
+import HowToPlaySidebar from '../../components/HowToPlaySidebar';
+
+const RUNNER_RULES = [
+  'Move with arrow keys ↑ ↓ ← →',
+  'Steer into a tile to give your answer',
+  'Correct answer scores +10 points',
+  'Wrong answer costs 1 life — you start with 3',
+  'Losing all 3 lives ends the run early',
+  'Tiles speed up every 3 questions',
+];
 
 // ─── Fixed constants ──────────────────────────────────────────────────────────
 
@@ -269,6 +280,28 @@ export default function AnswerRunner() {
   const [hitFeedback, setHitFeedback] = useState<HitFeedback | null>(null);
   const hitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ── Fox mascot dialogue ────────────────────────────────────────────────
+  const [foxLine, setFoxLine] = useState<string>(FOX_LINES.runner_idle);
+
+  // Update the fox's speech when a tile is hit.
+  useEffect(() => {
+    if (!hitFeedback) return;
+    setFoxLine(
+      hitFeedback.correct
+        ? pickLine(FOX_LINES.runner_correct)
+        : pickLine(FOX_LINES.runner_wrong),
+    );
+  }, [hitFeedback]);
+
+  // Reset fox line when the game phase changes.
+  useEffect(() => {
+    if (phase === 'idle') setFoxLine(FOX_LINES.runner_idle);
+    if (phase === 'playing') setFoxLine(FOX_LINES.runner_playing);
+    if (phase === 'results') {
+      setFoxLine(lives > 0 ? FOX_LINES.runner_win : FOX_LINES.runner_lose);
+    }
+  }, [phase, lives]);
+
   // ── Touch controls ────────────────────────────────────────────────────────
   // Detect touch support once on mount — drives whether the D-pad is shown.
   // navigator.maxTouchPoints > 0 covers both iOS/Android and hybrid laptops.
@@ -282,6 +315,19 @@ export default function AnswerRunner() {
   // doesn't start the next game with a direction already held down.
   useEffect(() => {
     if (phase !== 'playing') touchKeys.clear();
+  }, [phase]);
+
+  // Prevent arrow keys from scrolling the page while playing.
+  // Without this, pressing ↑ / ↓ scrolls the viewport instead of moving the player.
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    function blockScroll(e: KeyboardEvent) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener('keydown', blockScroll, { passive: false });
+    return () => window.removeEventListener('keydown', blockScroll);
   }, [phase]);
 
   // ── Responsive canvas dimensions ──────────────────────────────────────
@@ -447,7 +493,10 @@ export default function AnswerRunner() {
     return (
       <div className="flex flex-col items-center gap-6 p-6">
         <div className="flex items-center justify-between w-full max-w-[700px]">
-          <h2 className="text-xl font-bold">🏃 Answer Runner</h2>
+          <h2 className="text-xl font-bold">Answer Runner</h2>
+        </div>
+        <div className="flex justify-start px-2">
+          <FoxMascot line={foxLine} />
         </div>
         <div className="w-full max-w-[700px] mx-auto rounded-xl border border-border bg-[#0d0d2a]">
           <AnswerRunnerResults
@@ -467,19 +516,22 @@ export default function AnswerRunner() {
   // ── Game canvas ───────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between w-full max-w-[700px]">
-        <h2 className="text-xl font-bold">🏃 Answer Runner</h2>
-        <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
-      </div>
+    <div className="flex items-start gap-6 justify-center p-6">
+      {/* How to Play sidebar — desktop only */}
+      <HowToPlaySidebar rules={RUNNER_RULES} />
 
-      {/* Game frame — physically sized to fill the screen on any viewport */}
-      <div className="w-full">
-      <div
-        className="relative rounded-xl overflow-hidden border border-border mx-auto"
-        style={{ width: canvasDims.w, height: canvasDims.h }}
-      >
+      {/* Game column — header + canvas + fox strip + touch controls */}
+      <div className="flex flex-col gap-4 shrink-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Answer Runner</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+        </div>
+
+        {/* Game frame — physically sized to fill the screen on any viewport */}
+        <div
+          className="relative rounded-xl overflow-hidden border border-border bg-[#0d0d2a]"
+          style={{ width: canvasDims.w, height: canvasDims.h }}
+        >
         {isLoading && (
           /* Loading spinner centred inside the dark game frame */
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0d0d2a]">
@@ -490,25 +542,43 @@ export default function AnswerRunner() {
             />
           </div>
         )}
-        {/* Cubeforge canvas — player sprite + dark background only */}
-        <Game width={canvasDims.w} height={canvasDims.h} gravity={0}>
-          <World background="#0d0d2a">
-            <Camera2D />
-            {/* key={gameKey} forces a remount on every new game, resetting Transform to y=0.
-                y=0 is the Camera2D canvas centre; CSS collision coords use mCamHalfH. */}
-            <Entity key={gameKey} id="player">
-              <Transform x={mCamPlayerX} y={0} />
-              <Sprite
-                width={mPlayerSize}
-                height={mPlayerSize}
-                color="#4fc3f7"
-                shape="roundedRect"
-                borderRadius={Math.round(mPlayerSize * 0.2)}
-              />
-              <Script update={playerScript} />
-            </Entity>
-          </World>
-        </Game>
+        {/* Cubeforge canvas — only rendered during active gameplay, not on idle.
+            Hiding it on idle prevents the player sprite from showing through the
+            idle overlay and polluting the start screen. */}
+        {phase !== 'idle' && (
+          <Game width={canvasDims.w} height={canvasDims.h} gravity={0}>
+            <World background="#0d0d2a">
+              <Camera2D />
+              {/* key={gameKey} forces a remount on every new game, resetting Transform to y=0.
+                  y=0 is the Camera2D canvas centre; CSS collision coords use mCamHalfH. */}
+              <Entity key={gameKey} id="player">
+                <Transform x={mCamPlayerX} y={0} />
+                <Sprite
+                  width={mPlayerSize}
+                  height={mPlayerSize}
+                  color="#4fc3f7"
+                  shape="roundedRect"
+                  borderRadius={Math.round(mPlayerSize * 0.2)}
+                />
+                <Script update={playerScript} />
+              </Entity>
+            </World>
+          </Game>
+        )}
+
+        {/* Pixel grid overlay — sits between the canvas (z=0) and the game HUD (z=10).
+            Adds depth to the dark background without interfering with tile/player rendering. */}
+        {phase === 'playing' && (
+          <div
+            className="absolute inset-0 z-[5] pointer-events-none"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), ' +
+                'linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
+        )}
 
         {/* HTML overlay — z-index 10, pointer-events managed per child */}
         <div className="absolute inset-0 z-10 flex flex-col pointer-events-none">
@@ -572,22 +642,28 @@ export default function AnswerRunner() {
 
           {/* Idle screen */}
           {phase === 'idle' && (
-            <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white pointer-events-auto">
-              <p className="text-3xl">🏃</p>
+            <div className="flex flex-col items-center justify-center flex-1 gap-5 text-white pointer-events-auto px-6">
+              <FoxMascot line={foxLine} />
               <p className="text-xl font-bold">Answer Runner</p>
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-white/60 text-center">
                 {showTouchControls
                   ? 'Use the on-screen D-pad to move · hit the correct answer · dodge the wrong ones'
                   : 'Use ↑ ↓ ← → to move · hit the correct answer · dodge the wrong ones'}
               </p>
-              <Button onClick={handleStart} className="mt-2">
+              <Button onClick={handleStart} className="mt-1">
                 Start!
               </Button>
             </div>
           )}
         </div>
-      </div>
-      </div>
+        </div>
+
+        {/* ── Fox mascot strip — below the canvas, above controls ───────── */}
+        {phase === 'playing' && (
+          <div className="flex justify-start">
+            <FoxMascot line={foxLine} />
+          </div>
+        )}
 
       {/* ── Touch D-pad — below the canvas ──────────────────────────────── */}
       {/* Rendered outside the scaled game frame so buttons stay 56×56px  */}
@@ -652,26 +728,6 @@ export default function AnswerRunner() {
         </div>
       )}
 
-      {/* ── How to Play ─────────────────────────────────────────────────── */}
-      <div className="w-full max-w-[700px] rounded-xl border border-white/10 bg-[#0a0a1f] px-5 py-4">
-        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
-          How to Play
-        </p>
-        <div className="flex flex-col gap-2">
-          {[
-            'Move with arrow keys ↑ ↓ ← →',
-            'Steer into a tile to give your answer',
-            'Correct answer scores +10 points',
-            'Wrong answer costs 1 life — you start with 3',
-            'Losing all 3 lives ends the run early',
-            'Tiles speed up every 3 questions',
-          ].map((rule) => (
-            <div key={rule} className="flex items-start gap-3">
-              <span className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400" />
-              <span className="text-white/65 text-xs leading-snug">{rule}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
