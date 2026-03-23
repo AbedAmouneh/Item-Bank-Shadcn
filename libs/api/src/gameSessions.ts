@@ -17,7 +17,7 @@ interface Envelope<T> {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Identifies a game in API calls. Matches the backend's accepted values. */
-export type GameId = 'quiz-arcade' | 'memory-match' | 'answer-runner' | 'pixel-dash';
+export type GameId = 'quiz-arcade' | 'memory-match' | 'answer-runner' | 'pixel-dash' | 'stack-attack';
 
 /** Payload sent to POST /game-sessions to record a completed game. */
 export interface GameSessionData {
