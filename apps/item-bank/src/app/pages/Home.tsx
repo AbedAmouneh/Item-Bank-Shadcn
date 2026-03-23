@@ -74,6 +74,8 @@ const API_MIGRATED_TYPES = new Set<string>([
   'text_sequencing',
   'text_classification',
   'matching',
+  'crossword',
+  'spelling_dictation',
   'record_audio',
   'drag_drop_text',
   'fill_in_blanks_image',
@@ -290,6 +292,7 @@ const Home = () => {
               onSave={handleSave}
               onCancel={closeEditor}
               initialData={initialFormData}
+              questionId={questionToEdit ? Number(questionToEdit.id) : undefined}
             />
           )}
         </DialogContent>
