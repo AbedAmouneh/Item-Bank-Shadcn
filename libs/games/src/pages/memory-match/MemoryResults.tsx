@@ -13,6 +13,8 @@ import { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
+import { useGameScores } from '../../domain/hooks';
+import ScoreHistory from '../../components/ScoreHistory';
 
 interface MemoryResultsProps {
   matchCount: number;
@@ -38,10 +40,12 @@ export default function MemoryResults({
   // Score: 10 pts per matched pair, as defined in the game spec.
   const score = matchCount * 10;
 
+  const { scores, save } = useGameScores('memory-match');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
   // Fire once on mount — one component mount = one completed game session.
   useEffect(() => {
+    save({ score, correct: matchCount, total: totalPairs, accuracy: efficiency });
     mutate({
       game: 'memory-match',
       score,
@@ -90,6 +94,8 @@ export default function MemoryResults({
         </Button>
         <Button onClick={onPlayAgain}>Play Again</Button>
       </div>
+
+      <ScoreHistory scores={scores} />
     </div>
   );
 }
