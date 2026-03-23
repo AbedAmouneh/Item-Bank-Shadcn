@@ -36,3 +36,4 @@ export { default as ImageClassificationEditor } from './pages/image-classificati
 export { default as ImageClassificationView } from './pages/image-classification/ImageClassificationView';
 export { MatchingWizard, MatchingView } from './pages/matching';
 export { CrosswordWizard, CrosswordView } from './pages/crossword';
+export { SpellingDictationEditor, SpellingDictationView } from './pages/spelling-dictation';
