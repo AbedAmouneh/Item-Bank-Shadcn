@@ -89,6 +89,28 @@ export const FOX_LINES = {
     'A solid quiz! Wisdom grows with every attempt. 🦊',
   quiz_low:
     'Keep exploring — every question is a new adventure! 🗺️',
+
+  // ── Pixel Dash ───────────────────────────────────────────────────────────
+  pixel_dash_idle:
+    "Three lanes, endless adventure. Ready to dash, explorer? 🐇",
+  pixel_dash_playing:
+    'Keep moving! Dodge the obstacles and collect those coins!',
+  pixel_dash_gate_correct: [
+    'Correct! Well answered, explorer! ✨',
+    'Right lane, right answer! 🌟',
+    'Knowledge speeds you up! ✨',
+    'Sharp! Keep that streak going!',
+  ],
+  pixel_dash_gate_wrong: [
+    'Wrong lane — stay sharp, explorer! 🦊',
+    'Not quite — you still have lives left!',
+    'Tricky gate! Keep dashing!',
+    "Don't stop now, explorer! 🗺️",
+  ],
+  pixel_dash_win:
+    'Incredible run, explorer! Knowledge and speed combined! 🌟',
+  pixel_dash_lose:
+    'Every dash teaches something new. Come back stronger! 🦊',
 } as const;
 
 /** Return a random line from an array. */
