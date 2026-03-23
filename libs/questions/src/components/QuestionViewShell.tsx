@@ -19,6 +19,7 @@ import TextClassificationView from '../pages/text-classification/TextClassificat
 import ImageClassificationView from '../pages/image-classification/ImageClassificationView';
 import { MatchingView } from '../pages/matching';
 import { CrosswordView } from '../pages/crossword';
+import { SpellingDictationView } from '../pages/spelling-dictation';
 import DOMPurify from 'dompurify';
 
 type QuestionViewShellProps = {
@@ -79,6 +80,9 @@ const QuestionViewShell = ({ question }: QuestionViewShellProps) => {
       ) :
       question?.type === 'crossword' ? (
         <CrosswordView question={question} />
+      ) :
+      question?.type === 'spelling_dictation' ? (
+        <SpellingDictationView question={question} />
       ) : null
       }
     </div>
