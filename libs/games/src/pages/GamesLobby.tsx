@@ -85,6 +85,13 @@ const GAMES: GameCardInfo[] = [
     compatibleTypes: ['multiple_choice'],
     route: '/games/pixel-dash',
   },
+  {
+    id: 'stack-attack',
+    title: 'Stack Attack',
+    description: 'Answer questions to stack blocks — time your click for a PERFECT! golden landing.',
+    compatibleTypes: ['multiple_choice'],
+    route: '/games/stack-attack',
+  },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
