@@ -25,11 +25,24 @@ import type { Question } from '@item-bank/api';
 import MemoryCanvas from './MemoryCanvas';
 import MemoryCardTile from './MemoryCardTile';
 import MemoryResults from './MemoryResults';
+import FoxMascot, { FOX_LINES, pickLine } from '../../components/FoxMascot';
+import HowToPlaySidebar from '../../components/HowToPlaySidebar';
+
+const MEMORY_RULES = [
+  'All cards start face-down in a grid',
+  'Click any card to flip it over',
+  'Click a second card to look for its matching pair',
+  'A matched pair stays revealed',
+  'No match — both cards flip back after a short delay',
+  'Match all pairs in as few moves as possible to win',
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CANVAS_W = 672;
-const CANVAS_H = 460;
+// 540px gives the fox speech bubble enough room below the 4×4 card grid
+// without clipping. (4 rows × 80px cards + HUD + padding ≈ 510px needed.)
+const CANVAS_H = 540;
 /** Maximum card pairs (16 cards) per session. */
 const MAX_PAIRS = 8;
 /** Minimum pairs needed to start a game. */
@@ -134,7 +147,62 @@ export default function MemoryMatch() {
   const [matchCount, setMatchCount] = useState(0);
   const [showBurst, setShowBurst] = useState(false);
 
+  // ── Fox mascot dialogue ──────────────────────────────────────────────────
+  const [foxLine, setFoxLine] = useState<string>(FOX_LINES.memory_idle);
+
+  useEffect(() => {
+    if (screen === 'idle') setFoxLine(FOX_LINES.memory_idle);
+    if (screen === 'playing') setFoxLine(FOX_LINES.memory_playing);
+    if (screen === 'results') {
+      const totalP = cards.length / 2;
+      // Celebrate especially efficient runs (moves close to optimal = totalPairs).
+      setFoxLine(
+        moves <= totalP + 2
+          ? FOX_LINES.memory_few_moves
+          : FOX_LINES.memory_win,
+      );
+    }
+  }, [screen, cards.length, moves]);
+
   const totalPairs = cards.length / 2;
+
+  // ── Cycling question display ──────────────────────────────────────────────
+  // Shows every question in the game session, cycling every 3 s.
+  // Derived from the raw `questions` array so we always get proper question
+  // sentences — not card content (card content for matching questions is just
+  // individual items like "Jupiter" or "Brazil", which are not questions).
+  //   multiple_choice → q.text (the actual question sentence)
+  //   matching        → q.name (the matching question's title)
+  const questionTexts = useMemo(() => {
+    const usedIds = new Set(candidateCards.map((c) => {
+      // Extract the question id from the card id: Q-<qId>, A-<qId>, L-<qId>-<itemId>
+      const parts = c.id.split('-');
+      return parts[1];
+    }));
+    return questions
+      .filter((q) => usedIds.has(String(q.id)) && (q.type === 'multiple_choice' || q.type === 'matching'))
+      .map((q) => stripHtml(q.type === 'multiple_choice' ? (q.text ?? q.name) : q.name))
+      .filter(Boolean) as string[];
+  }, [questions, candidateCards]);
+
+  // displayedIndex drives what text is shown; questionVisible controls the
+  // fade transition so the swap happens while the text is invisible.
+  const [displayedIndex, setDisplayedIndex] = useState(0);
+  const [questionVisible, setQuestionVisible] = useState(true);
+
+  // Rotate the displayed question every 6 s while the game is active.
+  // Sequence: fade out (400 ms) → swap text → fade in.
+  useEffect(() => {
+    if (screen !== 'playing' || questionTexts.length === 0) return;
+    const id = setInterval(() => {
+      setQuestionVisible(false);
+      setTimeout(() => {
+        setDisplayedIndex((i) => (i + 1) % questionTexts.length);
+        setQuestionVisible(true);
+      }, 400);
+    }, 6000);
+    return () => clearInterval(id);
+  }, [screen, questionTexts.length]);
 
   // ── Completion detection ─────────────────────────────────────────────────
 
@@ -190,8 +258,10 @@ export default function MemoryMatch() {
         setShowBurst(true);
         setTimeout(() => setShowBurst(false), 1000);
         setFlipped([]);
+        setFoxLine(pickLine(FOX_LINES.memory_match));
       } else {
         // Mismatch — both cards are face-up (player can see them), then flip back.
+        setFoxLine(pickLine(FOX_LINES.memory_mismatch));
         setTimeout(() => {
           setCards((prev) =>
             prev.map((c) => (next.includes(c.id) ? { ...c, isFlipped: false } : c)),
@@ -226,18 +296,20 @@ export default function MemoryMatch() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between w-full max-w-[672px]">
-        <h2 className="text-xl font-bold">🃏 Memory Match</h2>
-        <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
-      </div>
+    <div className="flex items-start gap-6 justify-center p-6">
+      {/* How to Play sidebar — desktop only */}
+      <HowToPlaySidebar rules={MEMORY_RULES} />
 
-      {/* Responsive wrapper — allows horizontal scroll on narrow viewports */}
-      <div className="w-full overflow-x-auto">
+      {/* Game column — header sits directly above the canvas */}
+      <div className="flex flex-col gap-4 shrink-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Memory Match</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+        </div>
+
         {/* Game frame — fixed canvas behind, HTML overlay in front */}
         <div
-          className="relative rounded-xl overflow-hidden border border-border mx-auto"
+          className="relative rounded-xl overflow-hidden border border-border"
           style={{ width: CANVAS_W, height: CANVAS_H }}
         >
           {isLoading && (
@@ -260,13 +332,13 @@ export default function MemoryMatch() {
           <div className="absolute inset-0 z-10 flex flex-col">
 
           {screen === 'idle' && (
-            <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white p-6">
-              <p className="text-4xl">🃏</p>
+            <div className="flex flex-col items-center justify-center flex-1 gap-5 text-white p-6">
+              <FoxMascot line={foxLine} />
               <p className="text-xl font-bold">Memory Match</p>
               <p className="text-sm text-white/60">
                 {candidateCards.length / 2} pairs · flip cards to find matches
               </p>
-              <Button onClick={startGame} className="mt-2">Start Game</Button>
+              <Button onClick={startGame} className="mt-1">Start Game</Button>
             </div>
           )}
 
@@ -274,8 +346,20 @@ export default function MemoryMatch() {
             <div className="flex flex-col gap-3 p-4">
               {/* HUD */}
               <div className="flex items-center justify-between text-white text-sm font-semibold px-1">
-                <span>Pairs: {matchCount} / {totalPairs}</span>
-                <span>Moves: {moves}</span>
+                <span className="shrink-0">Pairs: {matchCount} / {totalPairs}</span>
+                {/* Cycling question — shows each question in the game, rotating every 6 s */}
+                <span
+                  className="min-w-0 flex-1 text-center text-[11px] px-3 truncate"
+                  style={{ opacity: questionVisible ? 1 : 0, transition: 'opacity 0.4s ease-in-out' }}
+                >
+                  {questionTexts.length > 0 && (
+                    <>
+                      <span className="me-1.5 align-middle">⭐</span>
+                      <span className="text-yellow-200 font-semibold">{questionTexts[displayedIndex]}</span>
+                    </>
+                  )}
+                </span>
+                <span className="shrink-0">Moves: {moves}</span>
               </div>
 
               {/* 4 × 4 card grid */}
@@ -288,11 +372,17 @@ export default function MemoryMatch() {
                   />
                 ))}
               </div>
+
+              {/* Fox mascot — reacts to matches and mismatches */}
+              <div className="px-1 pt-1">
+                <FoxMascot line={foxLine} />
+              </div>
             </div>
           )}
 
           {screen === 'results' && (
-            <div className="flex flex-col items-center justify-center flex-1">
+            <div className="flex flex-col items-center justify-center flex-1 gap-4 p-4">
+              <FoxMascot line={foxLine} />
               <MemoryResults
                 matchCount={matchCount}
                 totalPairs={totalPairs}
@@ -305,28 +395,6 @@ export default function MemoryMatch() {
           )}
 
           </div>
-        </div>
-      </div>
-
-      {/* ── How to Play ─────────────────────────────────────────────────── */}
-      <div className="w-full max-w-[672px] rounded-xl border border-white/10 bg-[#0a0a1f] px-5 py-4">
-        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
-          How to Play
-        </p>
-        <div className="flex flex-col gap-2">
-          {[
-            'All cards start face-down in a grid',
-            'Click any card to flip it over',
-            'Click a second card to look for its matching pair',
-            'A matched pair stays revealed',
-            'No match — both cards flip back after a short delay',
-            'Match all pairs in as few moves as possible to win',
-          ].map((rule) => (
-            <div key={rule} className="flex items-start gap-3">
-              <span className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400" />
-              <span className="text-white/65 text-xs leading-snug">{rule}</span>
-            </div>
-          ))}
         </div>
       </div>
     </div>

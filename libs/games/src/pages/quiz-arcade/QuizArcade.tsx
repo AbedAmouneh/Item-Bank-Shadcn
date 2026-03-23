@@ -19,6 +19,17 @@ import QuizHud from './QuizHud';
 import QuizQuestionDisplay from './QuizQuestionDisplay';
 import QuizAnswerGrid from './QuizAnswerGrid';
 import QuizResults from './QuizResults';
+import FoxMascot, { FOX_LINES, pickLine } from '../../components/FoxMascot';
+import HowToPlaySidebar from '../../components/HowToPlaySidebar';
+
+const QUIZ_RULES = [
+  'A question appears — pick the correct answer before time runs out',
+  'Each question has a 15-second timer',
+  'Faster answers earn more points, up to 100 per question',
+  '3 correct answers in a row doubles your score multiplier',
+  'Press A, B, C, or D to answer using the keyboard',
+  'A wrong answer or timeout resets your streak',
+];
 
 const CANVAS_W = 700;
 const CANVAS_H = 480;
@@ -75,6 +86,23 @@ export default function QuizArcade() {
   const [showBurst, setShowBurst] = useState(false);
   const [shouldShake, setShouldShake] = useState(false);
   const [result, setResult] = useState<GameResult | null>(null);
+
+  // ── Fox mascot dialogue ────────────────────────────────────────────────
+  const [foxLine, setFoxLine] = useState<string>(FOX_LINES.quiz_idle);
+
+  useEffect(() => {
+    if (screen === 'idle') setFoxLine(FOX_LINES.quiz_idle);
+    if (screen === 'countdown') setFoxLine(FOX_LINES.quiz_countdown);
+    if (screen === 'question') setFoxLine(pickLine(FOX_LINES.quiz_thinking));
+  }, [screen, currentIndex]);
+
+  useEffect(() => {
+    if (screen !== 'results' || !result) return;
+    const pct = result.total > 0 ? result.correct / result.total : 0;
+    if (pct >= 0.8) setFoxLine(FOX_LINES.quiz_win);
+    else if (pct >= 0.5) setFoxLine(FOX_LINES.quiz_ok);
+    else setFoxLine(FOX_LINES.quiz_low);
+  }, [screen, result]);
 
   // Ref forwarded to answer button A so we can focus it on every new question.
   const firstAnswerRef = useRef<HTMLButtonElement>(null);
@@ -152,9 +180,11 @@ export default function QuizArcade() {
       setStreak((k) => k + 1);
       setShowBurst(true);
       setTimeout(() => setShowBurst(false), 1200);
+      setFoxLine(pickLine(FOX_LINES.quiz_correct));
     } else {
       setStreak(0);
       setShouldShake(true);
+      setFoxLine(pickLine(FOX_LINES.quiz_wrong));
     }
 
     setTimeout(advance, REVEAL_DELAY);
@@ -188,18 +218,20 @@ export default function QuizArcade() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between w-full max-w-[700px]">
-        <h2 className="text-xl font-bold">🎯 Quiz Arcade</h2>
-        <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
-      </div>
+    <div className="flex items-start gap-6 justify-center p-6">
+      {/* How to Play sidebar — desktop only */}
+      <HowToPlaySidebar rules={QUIZ_RULES} />
 
-      {/* Responsive wrapper — allows horizontal scroll on narrow viewports */}
-      <div className="w-full overflow-x-auto">
+      {/* Game column — header sits directly above the canvas */}
+      <div className="flex flex-col gap-4 shrink-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Quiz Arcade</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+        </div>
+
         {/* Game frame */}
         <div
-          className="relative rounded-xl overflow-hidden border border-border mx-auto"
+          className="relative rounded-xl overflow-hidden border border-border"
           style={{ width: CANVAS_W, height: CANVAS_H }}
         >
           {isLoading ? (
@@ -218,11 +250,6 @@ export default function QuizArcade() {
                 <QuizCanvas
                   width={CANVAS_W}
                   height={CANVAS_H}
-                  timerFraction={
-                    screen === 'question' || screen === 'answer_reveal'
-                      ? timeLeft / QUESTION_TIME
-                      : 0
-                  }
                   showBurst={showBurst}
                   shouldShake={shouldShake}
                   onShakeDone={() => setShouldShake(false)}
@@ -232,22 +259,23 @@ export default function QuizArcade() {
               {/* HTML overlay — interactive game layer */}
               <div className="absolute inset-0 z-10 flex flex-col">
                 {screen === 'idle' && (
-                  <div className="flex flex-col items-center justify-center flex-1 gap-4 text-white">
-                    <p className="text-4xl">🎯</p>
+                  <div className="flex flex-col items-center justify-center flex-1 gap-5 text-white px-6">
+                    <FoxMascot line={foxLine} />
                     <p className="text-xl font-bold">Quiz Arcade</p>
                     <p className="text-sm text-white/60">
                       {allQuestions.length} questions • {QUESTION_TIME}s each
                     </p>
-                    <Button onClick={startGame} className="mt-2">Start Game</Button>
+                    <Button onClick={startGame} className="mt-1">Start Game</Button>
                   </div>
                 )}
 
                 {screen === 'countdown' && (
-                  <div className="flex items-center justify-center flex-1 text-white">
+                  <div className="flex flex-col items-center justify-center flex-1 gap-6 text-white px-6">
                     {/* key remounts the element each second, re-triggering the CSS animation */}
                     <p key={countdown} className="text-8xl font-black [animation:quiz-pop_0.35s_ease-out]">
                       {countdown > 0 ? countdown : 'GO!'}
                     </p>
+                    <FoxMascot line={foxLine} />
                   </div>
                 )}
 
@@ -260,6 +288,24 @@ export default function QuizArcade() {
                       timeLeft={timeLeft}
                       streak={streak}
                     />
+                    {/* Timer bar — HTML element so it sits precisely below the HUD.
+                        Colour shifts green → yellow → red as time runs out.
+                        1s linear transition matches the 1-second tick interval. */}
+                    <div className="h-1.5 w-full bg-white/10">
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${(timeLeft / QUESTION_TIME) * 100}%`,
+                          backgroundColor:
+                            timeLeft / QUESTION_TIME > 0.5
+                              ? '#22c55e'
+                              : timeLeft / QUESTION_TIME > 0.25
+                                ? '#eab308'
+                                : '#ef4444',
+                          transition: 'width 1s linear, background-color 0.3s ease',
+                        }}
+                      />
+                    </div>
                     <div className="flex flex-col justify-between flex-1">
                       <QuizQuestionDisplay
                         question={{
@@ -276,6 +322,11 @@ export default function QuizArcade() {
                         disabled={screen === 'answer_reveal'}
                         firstButtonRef={firstAnswerRef}
                       />
+                      {/* Fox — always visible. Shows a thinking line during the question
+                          phase and switches to correct/wrong feedback on answer reveal. */}
+                      <div className="px-4 pb-6 h-20 flex items-start">
+                        <FoxMascot line={foxLine} />
+                      </div>
                     </div>
                   </>
                 )}
@@ -292,28 +343,13 @@ export default function QuizArcade() {
             </>
           )}
         </div>
-      </div>
 
-      {/* ── How to Play ─────────────────────────────────────────────────── */}
-      <div className="w-full max-w-[700px] rounded-xl border border-white/10 bg-[#0a0a1f] px-5 py-4">
-        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-3">
-          How to Play
-        </p>
-        <div className="flex flex-col gap-2">
-          {[
-            'A question appears — pick the correct answer before time runs out',
-            'Each question has a 15-second timer',
-            'Faster answers earn more points, up to 100 per question',
-            '3 correct answers in a row doubles your score multiplier',
-            'Press A, B, C, or D to answer using the keyboard',
-            'A wrong answer or timeout resets your streak',
-          ].map((rule) => (
-            <div key={rule} className="flex items-start gap-3">
-              <span className="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400" />
-              <span className="text-white/65 text-xs leading-snug">{rule}</span>
-            </div>
-          ))}
-        </div>
+        {/* ── Fox mascot results strip ─────────────────────────────────── */}
+        {screen === 'results' && (
+          <div className="flex justify-start px-2">
+            <FoxMascot line={foxLine} />
+          </div>
+        )}
       </div>
     </div>
   );
