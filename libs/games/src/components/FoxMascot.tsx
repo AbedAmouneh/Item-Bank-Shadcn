@@ -112,6 +112,29 @@ export const FOX_LINES = {
   pixel_dash_lose:
     'Every dash teaches something new. Come back stronger! 🦊',
 
+  // ── Meteor Catcher ────────────────────────────────────────────────────────
+  meteor_idle:
+    'Meteors incoming, explorer! Steer your ship and catch the right answers! ☄️',
+  meteor_playing:
+    'Dodge the wrong ones — only the correct meteor is safe to catch!',
+  meteor_correct: [
+    'Direct hit! ☄️ Sharp thinking!',
+    'Bullseye! ✨ Right answer caught!',
+    'Excellent aim, explorer! 🌟',
+    'You knew that one! Keep flying!',
+    'Streak activated! 🔥 Brilliant!',
+  ],
+  meteor_wrong: [
+    'Wrong meteor! Stay sharp, explorer! 🦊',
+    'Tricky one — watch the labels!',
+    'Not quite — you still have lives left!',
+    "Don't give up, explorer! ☄️",
+  ],
+  meteor_win:
+    'Stellar performance, explorer! You mastered the meteor shower! 🌟',
+  meteor_lose:
+    'The meteors got you — but every explorer learns from the stars! 🦊',
+
   // ── Stack Attack ──────────────────────────────────────────────────────────
   stack_idle:
     'Every great tower starts with one block. Ready to build, explorer? 🏗️',
