@@ -22,15 +22,10 @@ import StreakFire from '../../components/StreakFire';
 import LivesBar from '../../components/LivesBar';
 import PixelDashCanvas from './PixelDashCanvas';
 import PixelDashResults from './PixelDashResults';
-import { usePixelDashLogic } from './hooks/usePixelDashLogic';
+import { usePixelDashLogic, PLAYER_ROW_CSS } from './hooks/usePixelDashLogic';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/**
- * CSS y from canvas top where the player sprite sits.
- * Must match PLAYER_ROW_CSS in usePixelDashLogic and PixelDashCanvas.
- */
-const PLAYER_ROW_CSS = 360;
 
 const DASH_RULES = [
   'Use ← → arrow keys (or swipe) to switch between 3 lanes',
@@ -236,7 +231,9 @@ export default function PixelDash() {
                               : 'bg-indigo-700/80 border-indigo-500/50 hover:bg-indigo-600/80',
                           ].join(' ')}
                           style={{
-                            insetInlineStart: laneXPositions[laneIdx] - 56,
+                            // Clamp so tiles never clip the canvas edge on narrow mobile canvases.
+                            // 116 = 112px tile width (w-28) + 4px end margin.
+                            insetInlineStart: Math.max(4, Math.min(canvasDims.w - 116, laneXPositions[laneIdx] - 56)),
                             top: PLAYER_ROW_CSS - 48,
                           }}
                         >

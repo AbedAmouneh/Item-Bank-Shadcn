@@ -33,6 +33,7 @@ import {
 } from 'cubeforge';
 import type { ECSWorld, TransformComponent, ScriptUpdateFn } from 'cubeforge';
 import { bridge, entityRegistry } from './PixelDashBridge';
+import { PLAYER_ROW_CSS } from './hooks/usePixelDashLogic';
 import type { ActiveEntity } from './hooks/usePixelDashLogic';
 
 // ─── Module-level geometry ─────────────────────────────────────────────────────
@@ -158,7 +159,7 @@ export default function PixelDashCanvas({
   if (gameKey === 0) return null;
 
   // Camera y for the player sprite row.
-  const playerRowCamY = toCamY(360); // PLAYER_ROW_CSS = 360
+  const playerRowCamY = toCamY(PLAYER_ROW_CSS);
 
   const playerColor = streakFire ? '#FB923C' : '#F9A8D4';
 

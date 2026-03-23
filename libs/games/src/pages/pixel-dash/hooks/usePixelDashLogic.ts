@@ -35,7 +35,7 @@ const CANVAS_H = 480;
  * Gate triggers when bridge.gateCssY >= this value.
  * Must match PLAYER_ROW_CSS in PixelDashCanvas and PixelDash.
  */
-export const PLAYER_ROW_CSS = 360;
+export const PLAYER_ROW_CSS = 390;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
