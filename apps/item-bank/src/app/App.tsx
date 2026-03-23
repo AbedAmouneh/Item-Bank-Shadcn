@@ -11,7 +11,7 @@ import {
 import { ThemeModeProvider, useThemeMode, type ThemeMode } from '@item-bank/ui';
 import { ProfileSidebar } from '@item-bank/profile';
 import i18n from '@item-bank/i18n';
-import GamesLobby, { QuizArcade, MemoryMatch, AnswerRunner, PixelDash } from '@item-bank/games';
+import GamesLobby, { QuizArcade, MemoryMatch, AnswerRunner, PixelDash, StackAttack } from '@item-bank/games';
 import Home from './pages/Home';
 import QuestionPreview from './pages/QuestionPreview';
 import ProfileGeneral from './pages/profile/General';
@@ -55,6 +55,7 @@ export default function App() {
                 <Route path='/games/memory-match' element={<MemoryMatch />} />
                 <Route path='/games/answer-runner' element={<AnswerRunner />} />
                 <Route path='/games/pixel-dash' element={<PixelDash />} />
+                <Route path='/games/stack-attack' element={<StackAttack />} />
               </Route>
             </Route>
 
