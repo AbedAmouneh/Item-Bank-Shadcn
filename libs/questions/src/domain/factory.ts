@@ -174,6 +174,16 @@ export function createDefaultQuestion(type: QuestionType): QuestionDraft {
         hintValue: 0,
       };
 
+    case 'spelling_dictation':
+      return {
+        ...baseDefaults,
+        type: 'spelling_dictation',
+        audioUrl: null,
+        audioName: null,
+        correctAnswers: [],
+        hint: '',
+      };
+
     case 'matching':
       return {
         ...baseDefaults,
