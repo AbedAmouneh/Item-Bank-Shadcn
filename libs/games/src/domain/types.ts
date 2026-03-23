@@ -5,6 +5,8 @@
  * a shape each game engine can work with directly.
  */
 
+import type { GetQuestionsParams, Question } from '@item-bank/api';
+
 /** The phases a quiz game moves through — used as a state-machine enum. */
 export type GameScreen =
   | 'idle'
@@ -71,3 +73,17 @@ export interface RunnerAnswer {
   text: string;
   isCorrect: boolean;
 }
+
+/**
+ * Alias for the API question-filter params, scoped to the games domain.
+ * Using this name instead of `GetQuestionsParams` directly keeps game code
+ * readable without re-importing from `@item-bank/api` everywhere.
+ */
+export type GameQuestionsParams = GetQuestionsParams;
+
+/**
+ * A hardcoded demo question used when the API returns zero results.
+ * Identical shape to `Question` from `@item-bank/api` except `id` is a
+ * string so fallback packs can use readable IDs like `'fallback-q1'`.
+ */
+export type FallbackQuestion = Omit<Question, 'id'> & { id: string };
