@@ -63,12 +63,11 @@ function buildCellMap(words: CrosswordWord[]): Map<string, { letter: string; clu
 function CrosswordView({ question }: CrosswordViewProps) {
   const { t } = useTranslation('questions');
 
-  // Read crossword-specific data from question (stored as flat fields)
-  const crosswordWords = ((question as unknown as Record<string, unknown>).crosswordWords as CrosswordWord[]) ?? [];
-  const gridLayout = ((question as unknown as Record<string, unknown>).crosswordGridLayout as 'ltr' | 'rtl') ?? 'ltr';
-  const hintMode = ((question as unknown as Record<string, unknown>).crosswordHintMode as 'none' | 'count' | 'percentage') ?? 'none';
-  const hintValue = ((question as unknown as Record<string, unknown>).crosswordHintValue as number) ?? 0;
-  const mark = (question as unknown as Record<string, unknown>).mark as number ?? 10;
+  const crosswordWords: CrosswordWord[] = question.crosswordWords ?? [];
+  const gridLayout = question.crosswordGridLayout ?? 'ltr';
+  const hintMode = question.crosswordHintMode ?? 'none';
+  const hintValue = question.crosswordHintValue ?? 0;
+  const mark = question.mark;
 
   const { rows: gridRows, cols: gridCols } = useMemo(
     () => computeDimensions(crosswordWords),
@@ -242,6 +241,13 @@ function CrosswordView({ question }: CrosswordViewProps) {
   // ─── Show solution ────────────────────────────────────────────────────────────
 
   const handleShowSolution = useCallback(() => {
+    // Count how many cells the student had correct before revealing
+    let correctBeforeReveal = 0;
+    for (const [k, cell] of cellMap.entries()) {
+      const typed = userInput.get(k)?.toUpperCase();
+      if (typed === cell.letter) correctBeforeReveal++;
+    }
+
     const filled = new Map<string, string>();
     for (const [k, cell] of cellMap.entries()) {
       filled.set(k, cell.letter);
@@ -252,8 +258,10 @@ function CrosswordView({ question }: CrosswordViewProps) {
     for (const k of cellMap.keys()) allCorrect.set(k, 'correct');
     setCheckState(allCorrect);
     setSolved(true);
-    setScore(mark);
-  }, [cellMap, mark]);
+    // Score based on what the student had right, not the revealed answer
+    const proportional = Math.round((correctBeforeReveal / totalCells) * mark * 10) / 10;
+    setScore(proportional);
+  }, [cellMap, userInput, totalCells, mark]);
 
   // ─── Hint ─────────────────────────────────────────────────────────────────────
 
