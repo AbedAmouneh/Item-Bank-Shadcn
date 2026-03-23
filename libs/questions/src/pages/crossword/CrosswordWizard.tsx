@@ -97,6 +97,7 @@ function CrosswordWizard({ onSave, onCancel, initialData }: CrosswordWizardProps
     initialData?.crosswordWords ?? []
   );
   const [layoutError, setLayoutError] = useState<string | null>(null);
+  const [droppedWords, setDroppedWords] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
 
   // ─── Word row handlers ──────────────────────────────────────────────────────
@@ -120,14 +121,27 @@ function CrosswordWizard({ onSave, onCancel, initialData }: CrosswordWizardProps
   // ─── Layout generation ──────────────────────────────────────────────────────
 
   const handleGenerate = useCallback(() => {
-    const result = generateCrosswordLayout(wordRows);
+    const validInputs = wordRows.filter(
+      (r) => r.word.trim() !== '' && r.clue.trim() !== ''
+    );
+    const result = generateCrosswordLayout(validInputs);
+
     if (result.length === 0) {
       setLayoutError(t('editor.crossword.error_no_layout'));
       setPlacedWords([]);
-    } else {
-      setLayoutError(null);
-      setPlacedWords(result);
+      setDroppedWords([]);
+      return;
     }
+
+    // Words the algorithm could not fit (compare by uppercased word string)
+    const placedSet = new Set(result.map((w) => w.word.toUpperCase()));
+    const dropped = validInputs
+      .map((r) => r.word.toUpperCase())
+      .filter((w) => !placedSet.has(w));
+
+    setLayoutError(null);
+    setPlacedWords(result);
+    setDroppedWords(dropped);
   }, [wordRows, t]);
 
   // ─── Grid preview ───────────────────────────────────────────────────────────
@@ -144,7 +158,7 @@ function CrosswordWizard({ onSave, onCancel, initialData }: CrosswordWizardProps
   const handleSave = useCallback(() => {
     const errs: string[] = [];
 
-    if (!name.trim()) errs.push(t('editor.crossword.error_min_words'));
+    if (!name.trim()) errs.push(t('editor.crossword.error_no_name'));
 
     const validRows = wordRows.filter((r) => r.word.trim() !== '' && r.clue.trim() !== '');
     if (validRows.length < 2) errs.push(t('editor.crossword.error_min_words'));
@@ -319,6 +333,13 @@ function CrosswordWizard({ onSave, onCancel, initialData }: CrosswordWizardProps
               })
             )}
           </div>
+        </div>
+      )}
+
+      {/* Dropped words warning */}
+      {droppedWords.length > 0 && (
+        <div className="rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300">
+          {t('editor.crossword.warning_dropped_words', { words: droppedWords.join(', ') })}
         </div>
       )}
 
