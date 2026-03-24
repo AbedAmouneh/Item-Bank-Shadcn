@@ -14,6 +14,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { cn, navIconBtnClass } from '../lib/utils';
 import { useSwitchTheme, useThemeMode } from '../hooks/theme';
+import { useLanguage } from '../hooks/UseLanguage';
 import type { Notification } from '../types/Notification';
 import { NotificationPanel } from './NotificationPanel';
 
@@ -78,9 +79,10 @@ function NavBar({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { t, i18n } = useTranslation('common');
+  const { t } = useTranslation('common');
   const { switchTheme } = useSwitchTheme();
   const { mode } = useThemeMode();
+  const { language, setLanguage } = useLanguage();
 
   const navItems = [
     ...baseNavItems,
@@ -98,10 +100,8 @@ function NavBar({
       : location.pathname.startsWith(path);
 
   const handleLanguageToggle = useCallback(() => {
-    const newLang = i18n.language === 'en' ? 'ar' : 'en';
-    i18n.changeLanguage(newLang);
-    localStorage.setItem('lang', newLang);
-  }, [i18n]);
+    setLanguage(language === 'en' ? 'ar' : 'en');
+  }, [language, setLanguage]);
 
 
   const toggleFullscreen = useCallback(() => {
