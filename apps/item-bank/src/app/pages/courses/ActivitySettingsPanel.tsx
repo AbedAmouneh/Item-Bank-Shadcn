@@ -67,7 +67,7 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
   const [isUploading, setIsUploading] = useState(false);
 
   const { mutate: saveActivity, isPending } = useUpdateActivity();
-  const { data: itemBanksPage } = useItemBanks({ limit: 200 });
+  const { data: itemBanksPage } = useItemBanks({ limit: 100 });
   const itemBanks = itemBanksPage?.items ?? [];
 
   const {
