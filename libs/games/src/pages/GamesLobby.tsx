@@ -315,7 +315,14 @@ export default function GamesLobby() {
             </Select>
           </div>
 
-          <GameCardGrid games={GAMES} onPlay={handlePlay} />
+          <GameCardGrid
+            games={
+              selectedType === 'all'
+                ? GAMES
+                : GAMES.filter((g) => g.compatibleTypes.includes(selectedType))
+            }
+            onPlay={handlePlay}
+          />
         </>
       )}
     </div>
