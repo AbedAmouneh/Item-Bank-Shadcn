@@ -74,18 +74,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser({
           id: apiUser.id,
           email: apiUser.email,
-          role: apiUser.role as 'admin' | 'user',
+          role: apiUser.role,
           roles: apiUser.roles ?? [],
-          tenant_id: apiUser.tenant_id ?? '',
+          tenant_id: apiUser.tenant_id,
           is_active: apiUser.is_active,
         });
         try {
           await refreshToken();
-        } catch (err) {
-          // CSRF refresh failed, but the user is still authenticated via the
-          // cookie. Log the failure; mutating requests may fail until the user
-          // logs in again, but we don't force a logout here.
-          console.error('Failed to refresh CSRF token after session restore:', err);
+        } catch {
+          // CSRF refresh failed — the user is still authenticated via the
+          // cookie. Mutating requests may fail until the next login, but
+          // we do not force a logout here.
         }
         if (cancelled) return;
         setIsLoading(false);
