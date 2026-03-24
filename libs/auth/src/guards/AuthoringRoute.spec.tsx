@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
-import AuthoringRoute from './ProtectedRoute';
+import AuthoringRoute from './AuthoringRoute';
 
 jest.mock('../hooks/useAuth');
 const mockUseAuth = jest.mocked(useAuth);

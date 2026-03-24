@@ -1,4 +1,4 @@
-export { default as ProtectedRoute } from './guards/ProtectedRoute';
+export { default as ProtectedRoute } from './guards/AuthoringRoute';
 export { default as GuestRoute } from './guards/GuestRoute';
 export { default as NotFoundRedirect } from './guards/NotFoundRedirect';
 export { default as Login } from './pages/Login';
