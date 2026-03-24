@@ -33,6 +33,13 @@ export interface GameSessionData {
   item_bank_id?: number;
 }
 
+/** Personal game-session statistics returned by GET /game-sessions/my-stats. */
+export interface MyStats {
+  games_played: number;
+  best_score: number;
+  average_score: number;
+}
+
 /** One row in the leaderboard returned by GET /leaderboard. */
 export interface LeaderboardEntry {
   rank: number;
@@ -59,6 +66,16 @@ export async function saveGameSession(data: GameSessionData): Promise<void> {
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+/**
+ * Fetch the current user's personal game-session statistics.
+ *
+ * @returns Games played, best score, and average score across all sessions.
+ */
+export async function getMyStats(): Promise<MyStats> {
+  const envelope = await apiRequest<Envelope<MyStats>>('/game-sessions/my-stats');
+  return envelope.data;
 }
 
 /**
