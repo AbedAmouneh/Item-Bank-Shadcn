@@ -13,6 +13,17 @@ import { ProfileSidebar } from '@item-bank/profile';
 import i18n from '@item-bank/i18n';
 import GamesLobby, { QuizArcade, MemoryMatch, AnswerRunner, PixelDash, StackAttack, MeteorCatcher } from '@item-bank/games';
 import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
+import Analytics from './pages/Analytics';
+import ItemBanksList from './pages/ItemBanksList';
+import ItemBankDetail from './pages/ItemBankDetail';
+import CoursesList from './pages/courses/CoursesList';
+import CourseDetail from './pages/courses/CourseDetail';
+import CourseEditor from './pages/courses/CourseEditor';
+import AdminTags from './pages/AdminTags';
+import AdminReview from './pages/AdminReview';
+import AdminAuditLog from './pages/AdminAuditLog';
 import QuestionPreview from './pages/QuestionPreview';
 import ProfileGeneral from './pages/profile/General';
 import ChangePassword from './pages/profile/ChangePassword';
@@ -52,6 +63,17 @@ export default function App() {
             <Route element={<ErrorBoundary><ProtectedRoute /></ErrorBoundary>}>
               <Route element={<AuthenticatedLayout />}>
                 <Route path="/home" element={<Home />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/item-banks" element={<ItemBanksList />} />
+                <Route path="/item-banks/:id" element={<ItemBankDetail />} />
+                <Route path="/projects" element={<CoursesList />} />
+                <Route path="/projects/:id" element={<CourseDetail />} />
+                <Route path="/projects/:id/edit" element={<CourseEditor />} />
+                <Route path="/admin/tags" element={<AdminTags />} />
+                <Route path="/admin/review" element={<AdminReview />} />
+                <Route path="/admin/audit-log" element={<AdminAuditLog />} />
                 <Route path="/questions/:id/preview" element={<QuestionPreview />} />
                 <Route path='/profile' element={<ProfileSidebar />}>
                   <Route path='edit' element={<ProfileGeneral />} />
