@@ -13,4 +13,9 @@ export {
   useDuplicateQuestion,
   useSubmitForReview,
   useReorderQuestions,
+  useItemBanks,
+  useItemBank,
+  useCreateItemBank,
+  useUpdateItemBank,
+  useDeleteItemBank,
 } from './hooks';

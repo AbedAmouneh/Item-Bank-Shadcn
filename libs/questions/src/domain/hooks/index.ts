@@ -7,3 +7,8 @@ export { useDuplicateQuestion } from './useDuplicateQuestion';
 export { useSubmitForReview } from './useSubmitForReview';
 export { useImageUpload } from './useImageUpload';
 export { useReorderQuestions } from './useReorderQuestions';
+export { useItemBanks } from './useItemBanks';
+export { useItemBank } from './useItemBank';
+export { useCreateItemBank } from './useCreateItemBank';
+export { useUpdateItemBank } from './useUpdateItemBank';
+export { useDeleteItemBank } from './useDeleteItemBank';
