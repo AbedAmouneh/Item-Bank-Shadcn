@@ -23,6 +23,14 @@ import ErrorBoundary from './ErrorBoundary';
 const STORAGE_KEY_THEME = 'theme-mode';
 
 function getStoredThemeMode(): ThemeMode {
+  // Check the new preference key first (written by useTheme / Settings page).
+  // 'system' is resolved against the OS preference at startup.
+  const ibTheme = localStorage.getItem('ib-theme');
+  if (ibTheme === 'light' || ibTheme === 'dark') return ibTheme;
+  if (ibTheme === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  // Legacy fallback for users who set theme before the Settings page existed.
   const stored = localStorage.getItem(STORAGE_KEY_THEME);
   if (stored === 'dark' || stored === 'light') return stored;
   return 'light';
