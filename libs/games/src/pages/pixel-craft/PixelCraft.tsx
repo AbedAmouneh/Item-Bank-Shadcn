@@ -16,6 +16,7 @@ import PixelCraftPalette from './PixelCraftPalette';
 import PixelCraftResults from './PixelCraftResults';
 import {
   usePixelCraftLogic,
+  SCORE_PER_CRAFT,
   type PixelCraftRevealOffset,
 } from './hooks/usePixelCraftLogic';
 
@@ -252,7 +253,7 @@ export default function PixelCraft() {
                     <Button
                       onClick={startGame}
                       disabled={!canStart}
-                      className="bg-blue-600 text-white hover:bg-blue-500"
+                      className="bg-amber-700 text-white hover:bg-amber-600"
                     >
                       Start Crafting
                     </Button>
@@ -308,7 +309,7 @@ export default function PixelCraft() {
 
         {showScorePopup && popupPosition && (
           <ScorePopup
-            value={80}
+            value={SCORE_PER_CRAFT}
             x={popupPosition.x}
             y={popupPosition.y}
             onDone={handlePopupDone}
