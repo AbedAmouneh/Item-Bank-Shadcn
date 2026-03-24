@@ -21,13 +21,18 @@ import { NotificationPanel } from './NotificationPanel';
 const baseNavItems = [
   { labelKey: 'nav.dashboard', path: '/dashboard' },
   { labelKey: 'nav.projects', path: '/projects' },
-  { labelKey: 'nav.itemBank', path: '/home' },
+  { labelKey: 'nav.itemBanks', path: '/item-banks' },
   { labelKey: 'nav.analytics', path: '/analytics' },
   { labelKey: 'nav.games', path: '/games' },
   { labelKey: 'nav.settings', path: '/settings' },
 ];
 
-const adminNavItem = { labelKey: 'nav.adminUsers', path: '/admin/users' };
+const adminNavItems = [
+  { labelKey: 'nav.adminUsers', path: '/admin/users' },
+  { labelKey: 'nav.reviewQueue', path: '/admin/review' },
+  { labelKey: 'nav.adminTags', path: '/admin/tags' },
+  { labelKey: 'nav.auditLog', path: '/admin/audit-log' },
+];
 
 function IconTooltip({
   label,
@@ -53,6 +58,8 @@ function IconTooltip({
 
 export interface NavBarProps {
   notifications?: Notification[];
+  /** Live unread count for the badge on the bell icon. Polled every 30 s by ProtectedRoute. */
+  unreadCount?: number;
   onMarkNotificationAsRead?: (id: string) => void;
   onMarkAllNotificationsAsRead?: () => void;
   /** Called when the user clicks the logout button. Owned by the caller so
@@ -68,6 +75,7 @@ export interface NavBarProps {
 
 function NavBar({
   notifications = [],
+  unreadCount = 0,
   onMarkNotificationAsRead = (_id: string) => {},
   onMarkAllNotificationsAsRead = () => {},
   onLogout = () => {},
@@ -86,7 +94,7 @@ function NavBar({
 
   const navItems = [
     ...baseNavItems,
-    ...(userRole === 'admin' ? [adminNavItem] : []),
+    ...(userRole === 'admin' ? adminNavItems : []),
   ];
 
   const handleNavItemClick = (path: string) => {
@@ -190,6 +198,7 @@ function NavBar({
           {/* Notifications */}
           <NotificationPanel
             notifications={notifications}
+            unreadCount={unreadCount}
             onMarkAsRead={onMarkNotificationAsRead}
             onMarkAllAsRead={onMarkAllNotificationsAsRead}
           />
