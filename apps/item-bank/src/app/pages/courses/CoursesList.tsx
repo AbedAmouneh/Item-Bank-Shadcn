@@ -34,7 +34,7 @@ import {
 } from '@item-bank/ui';
 
 import { useCourses, useCreateCourse, useDeleteCourse } from '../../../features/courses/hooks';
-import type { Course } from '@item-bank/api/courses';
+import type { CourseSummary } from '@item-bank/api/courses';
 
 // ─── Validation ─────────────────────────────────────────────────────────────
 
@@ -153,8 +153,8 @@ function LoadingCard() {
 // ─── Course card ──────────────────────────────────────────────────────────────
 
 interface CourseCardProps {
-  course: Course;
-  onDelete: (course: Course) => void;
+  course: CourseSummary;
+  onDelete: (course: CourseSummary) => void;
 }
 
 function CourseCard({ course, onDelete }: CourseCardProps) {
@@ -211,11 +211,9 @@ const CoursesList = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const [createOpen, setCreateOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CourseSummary | null>(null);
 
-  // useCourses returns a CoursesPage envelope; extract the items array.
-  const { data, isLoading, isError } = useCourses();
-  const courses = data?.items ?? [];
+  const { data: courses = [], isLoading, isError } = useCourses();
 
   const { mutate: createCourse, isPending: isCreating } = useCreateCourse();
   const { mutate: deleteCourse } = useDeleteCourse();

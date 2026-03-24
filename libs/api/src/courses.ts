@@ -44,18 +44,20 @@ export interface CourseWithActivities extends Course {
   activities: Activity[];
 }
 
-export interface CoursesPage {
-  items: Course[];
-  total: number;
-  page: number;
-  limit: number;
+/** Lightweight course summary used in list responses. */
+export interface CourseSummary {
+  id: number;
+  title: string;
+  description?: string;
+  status: CourseStatus;
+  activity_count: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export interface GetCoursesParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: CourseStatus;
+export interface CreateCourseData {
+  title: string;
+  description?: string;
 }
 
 export interface CourseAssignment {
@@ -69,15 +71,9 @@ export interface CourseAssignment {
 
 // ── Course functions ───────────────────────────────────────────────────────────
 
-export async function getCourses(params?: GetCoursesParams): Promise<CoursesPage> {
-  const query = new URLSearchParams();
-  if (params?.page !== undefined) query.set('page', String(params.page));
-  if (params?.limit !== undefined) query.set('limit', String(params.limit));
-  if (params?.search !== undefined) query.set('search', params.search);
-  if (params?.status !== undefined) query.set('status', params.status);
-
-  const qs = query.toString() ? `?${query.toString()}` : '';
-  const envelope = await apiRequest<Envelope<CoursesPage>>(`/courses${qs}`);
+/** Fetch all courses (flat list, no pagination for now). */
+export async function getCourses(): Promise<CourseSummary[]> {
+  const envelope = await apiRequest<Envelope<CourseSummary[]>>('/courses');
   return envelope.data;
 }
 
