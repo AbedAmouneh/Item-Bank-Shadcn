@@ -103,9 +103,10 @@ interface ApproveDialogProps {
   onClose: () => void;
   onSubmit: (notes?: string) => void;
   isPending: boolean;
+  error?: Error | null;
 }
 
-function ApproveDialog({ open, onClose, onSubmit, isPending }: ApproveDialogProps) {
+function ApproveDialog({ open, onClose, onSubmit, isPending, error }: ApproveDialogProps) {
   const { register, handleSubmit, reset } = useForm<ApproveFields>({
     resolver: zodResolver(approveSchema),
   });
@@ -144,6 +145,11 @@ function ApproveDialog({ open, onClose, onSubmit, isPending }: ApproveDialogProp
               rows={3}
             />
           </div>
+          {error && (
+            <p className="text-sm text-destructive">
+              {error.message || 'Failed to approve question. Please try again.'}
+            </p>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               Cancel
@@ -168,9 +174,10 @@ interface RejectDialogProps {
   onClose: () => void;
   onSubmit: (reason: string) => void;
   isPending: boolean;
+  error?: Error | null;
 }
 
-function RejectDialog({ open, title, onClose, onSubmit, isPending }: RejectDialogProps) {
+function RejectDialog({ open, title, onClose, onSubmit, isPending, error }: RejectDialogProps) {
   const {
     register,
     handleSubmit,
@@ -208,6 +215,11 @@ function RejectDialog({ open, title, onClose, onSubmit, isPending }: RejectDialo
               <p className="text-xs text-destructive">{errors.reason.message}</p>
             )}
           </div>
+          {error && (
+            <p className="text-sm text-destructive">
+              {error.message || 'Failed to reject question. Please try again.'}
+            </p>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               Cancel
@@ -258,8 +270,8 @@ const AdminReview = () => {
   // Use the server's total count for the badge; fall back to local length.
   const pendingCount = data?.total ?? questions.length;
 
-  const { mutate: approve, isPending: isApproving } = useApprove();
-  const { mutate: reject, isPending: isRejecting } = useReject();
+  const { mutate: approve, isPending: isApproving, error: approveError } = useApprove();
+  const { mutate: reject, isPending: isRejecting, error: rejectError } = useReject();
 
   // ── Selection helpers ────────────────────────────────────────────────────
 
@@ -525,6 +537,7 @@ const AdminReview = () => {
         onClose={() => setDialog({ type: 'idle' })}
         onSubmit={handleApproveSubmit}
         isPending={isApproving}
+        error={approveError}
       />
 
       {/* Single reject dialog */}
@@ -534,6 +547,7 @@ const AdminReview = () => {
         onClose={() => setDialog({ type: 'idle' })}
         onSubmit={handleRejectSubmit}
         isPending={isRejecting}
+        error={rejectError}
       />
 
       {/* Bulk reject dialog — same component, dynamic title */}
@@ -543,6 +557,7 @@ const AdminReview = () => {
         onClose={() => setDialog({ type: 'idle' })}
         onSubmit={handleBulkRejectSubmit}
         isPending={isRejecting}
+        error={rejectError}
       />
     </div>
   );
