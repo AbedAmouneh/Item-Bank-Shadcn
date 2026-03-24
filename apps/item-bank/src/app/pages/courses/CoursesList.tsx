@@ -201,6 +201,11 @@ function CourseCard({ course, onDelete }: CourseCardProps) {
           <p className="text-sm italic text-muted-foreground/50">No description</p>
         )}
       </CardContent>
+      <CardFooter>
+        <span className="text-xs text-muted-foreground">
+          {t('courses.activity_count', { count: course.activity_count })}
+        </span>
+      </CardFooter>
     </Card>
   );
 }
