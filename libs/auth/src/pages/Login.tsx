@@ -34,20 +34,46 @@ const Login = () => {
   const { mutate, isPending, error } = useMutation({
     mutationFn: ({ email, password }: LoginFields) => login(email, password),
     onSuccess: (data) => {
+      const roles = data.user.roles ?? [];
+
+      // 1. Store the verified session — must happen before navigate().
       setSession(
         {
           id: data.user.id,
           email: data.user.email,
-          // The API layer types role as string; the server contract guarantees
+          // The API types role as string; the server contract guarantees
           // these two values, so we assert the union here at the boundary.
           role: data.user.role as 'admin' | 'user',
-          roles: data.user.roles ?? [],
+          roles,
           tenant_id: data.user.tenant_id ?? '',
           is_active: data.user.is_active,
         },
         data.csrf_token,
       );
-      navigate('/home', { replace: true });
+
+      // 2. Navigate based on the roles value from the API response.
+      //    Reading from useAuth() here would give stale pre-login state.
+      const isPlatform = roles.some(
+        (r) => r === 'super_admin' || r === 'sales',
+      );
+      const isLearner = roles.includes('learner');
+      const isAuthor = roles.some((r) =>
+        ['org_admin', 'author', 'reviewer', 'admin', 'user'].includes(r),
+      );
+
+      if (isPlatform) {
+        navigate('/platform/dashboard', { replace: true });
+      } else if (isAuthor && isLearner) {
+        const lastMode = localStorage.getItem('last-mode');
+        if (lastMode === 'learn') navigate('/learn/dashboard', { replace: true });
+        else if (lastMode === 'author') navigate('/dashboard', { replace: true });
+        else navigate('/role-select', { replace: true });
+      } else if (isLearner) {
+        navigate('/learn/dashboard', { replace: true });
+      } else {
+        // Default: authoring roles or legacy single-role accounts.
+        navigate('/dashboard', { replace: true });
+      }
     },
   });
 
