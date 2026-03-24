@@ -9,6 +9,8 @@ import {
 } from '@dnd-kit/core';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
+import FoxMascot, { FOX_LINES } from '../../components/FoxMascot';
+import HowToPlaySidebar from '../../components/HowToPlaySidebar';
 import ScorePopup from '../../components/ScorePopup';
 import StreakFire from '../../components/StreakFire';
 import PixelCraftGrid from './PixelCraftGrid';
@@ -19,6 +21,16 @@ import {
   SCORE_PER_CRAFT,
   type PixelCraftRevealOffset,
 } from './hooks/usePixelCraftLogic';
+
+const CRAFT_RULES = [
+  'Drag fragments from the palette into the correct grid cells',
+  'Each puzzle has 4 or 5 fragments — wrong drops flash the cell red',
+  'Only correct placements are accepted — fragments stay in the palette otherwise',
+  'Fill all required cells to unlock the Submit Craft button',
+  'Submit to forge a reward item and earn 80 points per craft',
+  '3 correct crafts in a row activates Streak Fire 🔥',
+  'Complete all 10 crafts to see your final score',
+];
 
 interface PopupPosition {
   x: number;
@@ -174,15 +186,18 @@ export default function PixelCraft() {
   );
 
   return (
-    <div className="flex w-full justify-center px-4 py-6">
-      <div
-        ref={panelRef}
-        className="relative w-full max-w-[700px] rounded-lg border-2 p-5"
-        style={{
-          backgroundColor: '#0f172a',
-          borderColor: '#334155',
-        }}
-      >
+    <div className="flex w-full">
+      <HowToPlaySidebar rules={CRAFT_RULES} />
+
+      <div className="flex flex-1 justify-center px-4 py-6 min-w-0">
+        <div
+          ref={panelRef}
+          className="relative w-full max-w-[700px] rounded-lg border-2 p-5"
+          style={{
+            backgroundColor: '#0f172a',
+            borderColor: '#334155',
+          }}
+        >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-black text-white">Pixel Craft</h2>
@@ -243,13 +258,10 @@ export default function PixelCraft() {
                   />
                 ) : (
                   <>
-                    <div className="text-6xl" aria-hidden="true">
-                      🧱
-                    </div>
-                    <div className="max-w-md text-sm leading-6 text-slate-300">
-                      Fit the right fragments into the right squares, then
-                      submit the finished pattern to craft a reward item.
-                    </div>
+                    <FoxMascot line={FOX_LINES.pixel_craft_idle} />
+                    <p className="text-sm text-slate-400">
+                      10 crafts · drag fragments · forge the answer
+                    </p>
                     <Button
                       onClick={startGame}
                       disabled={!canStart}
@@ -315,6 +327,7 @@ export default function PixelCraft() {
             onDone={handlePopupDone}
           />
         )}
+        </div>
       </div>
     </div>
   );
