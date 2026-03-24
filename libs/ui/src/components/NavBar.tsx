@@ -139,8 +139,8 @@ function NavBar({
         </div>
 
         {/* Center — Nav pills (desktop) */}
-        <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 p-1 rounded-full bg-muted">
+        <nav className="hidden md:flex items-center justify-center flex-1 min-w-0">
+          <div className="flex items-center gap-1 p-1 rounded-full bg-muted overflow-x-auto scrollbar-none">
             {navItems.map((item) => (
               <button
                 key={item.path}
