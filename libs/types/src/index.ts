@@ -13,6 +13,14 @@ export {
 } from './roles';
 export type { PlatformRole, AuthoringRole, LearnerRole, AppRole } from './roles';
 
+export type {
+  LearnerCourse,
+  LearnerExam,
+  LearnerAssignment,
+  MyLearningData,
+  CourseModule,
+} from './learn';
+
 /** The authenticated user shape used throughout the app. */
 export interface AuthUser {
   id: string;
