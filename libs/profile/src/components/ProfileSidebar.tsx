@@ -1,5 +1,5 @@
 // libs/profile/src/components/ProfileSidebar.tsx
-import { UserCircle, Lock, Folder, FileEdit } from 'lucide-react';
+import { UserCircle, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@item-bank/auth';
@@ -26,20 +26,6 @@ export default function ProfileSidebar() {
       icon: Lock,
       selected: selectedId === 'change-password',
       onClick: () => navigate('/profile/change-password'),
-    },
-    {
-      id: 'file-manager',
-      label: t('profile.file_manager'),
-      icon: Folder,
-      selected: selectedId === 'file-manager',
-      onClick: () => navigate('/profile/file-manager'),
-    },
-    {
-      id: 'my-annotations',
-      label: t('profile.my_annotations'),
-      icon: FileEdit,
-      selected: selectedId === 'my-annotations',
-      onClick: () => navigate('/profile/my-annotations'),
     },
   ];
 
