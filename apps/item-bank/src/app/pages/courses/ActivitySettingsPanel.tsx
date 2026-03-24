@@ -34,11 +34,13 @@ import { useUpdateActivity } from '../../../features/courses/hooks';
 const settingsSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   description: z.string().max(500).optional(),
-  item_bank_id: z.coerce.number().optional(),
-  time_limit_minutes: z.coerce.number().min(1).max(600).optional().or(z.literal('')),
+  // item_bank_id is always set via setValue(…, Number(v)) — no coerce needed.
+  item_bank_id: z.number().optional(),
+  // The <input type="number"> registers as a string; we convert to number in onSubmit.
+  time_limit_minutes: z.string().optional(),
   pass_score_percent: z.number().min(0).max(100).optional(),
   shuffle: z.boolean().optional(),
-  file_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  file_url: z.string().optional(),
 });
 
 type SettingsFields = z.infer<typeof settingsSchema>;
@@ -85,7 +87,7 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
       title: activity.title,
       description: activity.description ?? '',
       item_bank_id: activity.item_bank_id,
-      time_limit_minutes: activity.time_limit_minutes ?? '',
+      time_limit_minutes: activity.time_limit_minutes != null ? String(activity.time_limit_minutes) : '',
       pass_score_percent: activity.pass_score_percent ?? 0,
       shuffle: activity.shuffle ?? false,
       file_url: activity.file_url ?? '',

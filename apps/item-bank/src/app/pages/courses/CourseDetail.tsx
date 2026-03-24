@@ -144,14 +144,15 @@ const CourseDetail = () => {
             {t('courses.activities')}
           </h2>
 
-          {course.activities.length === 0 ? (
+          {/* activities may be absent on older API responses — default to empty array */}
+          {(course.activities ?? []).length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <BookOpen size={40} className="text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">No activities yet.</p>
             </div>
           ) : (
             <ol className="flex flex-col gap-2">
-              {course.activities.map((activity) => (
+              {(course.activities ?? []).map((activity) => (
                 <ActivityRow key={activity.id} activity={activity} />
               ))}
             </ol>

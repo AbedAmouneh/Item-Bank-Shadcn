@@ -9,6 +9,7 @@ import { getCourses } from '@item-bank/api/courses';
 export function useCourses() {
   return useQuery({
     queryKey: ['courses'],
-    queryFn: getCourses,
+    queryFn: () => getCourses(),
+    select: (page) => page.items,
   });
 }

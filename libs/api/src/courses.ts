@@ -67,12 +67,42 @@ export interface Course {
   updated_at?: string;
 }
 
+/** Course item as returned in list responses — includes activity_count but not the full activity array. */
+export interface CourseSummary extends Omit<Course, 'activities'> {
+  activity_count: number;
+}
+
 /** Paginated list returned by GET /courses. */
 export interface CoursesPage {
-  items: Course[];
+  items: CourseSummary[];
   total: number;
   page: number;
   limit: number;
+}
+
+/** Payload for POST /courses. */
+export interface CreateCourseData {
+  title: string;
+  description?: string;
+  status?: CourseStatus;
+  thumbnail_url?: string;
+}
+
+/** Payload for PUT /courses/:id — all fields optional. */
+export interface UpdateCourseData {
+  title?: string;
+  description?: string;
+  status?: CourseStatus;
+  thumbnail_url?: string;
+}
+
+/** Payload for POST /courses/:id/activities. */
+export interface CreateActivityData {
+  type: ActivityType;
+  title: string;
+  description?: string;
+  position?: number;
+  settings?: Record<string, unknown>;
 }
 
 /** Query parameters accepted by GET /courses. */
@@ -87,9 +117,21 @@ export interface CourseAssignment {
   id: number;
   course_id: number;
   user_id: number;
+  /** Denormalised user details returned by the server for display. */
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
   assigned_by: number | null;
   assigned_at: string;
-  due_at: string | null;
+  due_date: string | null;
+}
+
+/** Payload sent to POST /courses/:id/assignments. */
+export interface AssignUserData {
+  user_id: number;
+  due_date?: string;
 }
 
 // ── Course functions ───────────────────────────────────────────────────────────
@@ -106,12 +148,7 @@ export async function getCourses(params?: GetCoursesParams): Promise<CoursesPage
   return envelope.data;
 }
 
-export async function createCourse(data: {
-  title: string;
-  description?: string;
-  status?: CourseStatus;
-  thumbnail_url?: string;
-}): Promise<Course> {
+export async function createCourse(data: CreateCourseData): Promise<Course> {
   const envelope = await apiRequest<Envelope<Course>>('/courses', {
     method: 'POST',
     body: JSON.stringify(data),
@@ -124,15 +161,7 @@ export async function getCourse(id: number): Promise<Course> {
   return envelope.data;
 }
 
-export async function updateCourse(
-  id: number,
-  data: {
-    title?: string;
-    description?: string;
-    status?: CourseStatus;
-    thumbnail_url?: string;
-  },
-): Promise<Course> {
+export async function updateCourse(id: number, data: UpdateCourseData): Promise<Course> {
   const envelope = await apiRequest<Envelope<Course>>(`/courses/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -146,16 +175,7 @@ export async function deleteCourse(id: number): Promise<void> {
 
 // ── Activity functions ─────────────────────────────────────────────────────────
 
-export async function createActivity(
-  courseId: number,
-  data: {
-    type: ActivityType;
-    title: string;
-    description?: string;
-    position?: number;
-    settings: Record<string, unknown>;
-  },
-): Promise<Activity> {
+export async function createActivity(courseId: number, data: CreateActivityData): Promise<Activity> {
   const envelope = await apiRequest<Envelope<Activity>>(
     `/courses/${courseId}/activities`,
     { method: 'POST', body: JSON.stringify(data) }
@@ -200,18 +220,11 @@ export async function getCourseAssignments(courseId: number): Promise<CourseAssi
 
 export async function assignUser(
   courseId: number,
-  userId: number,
-  dueAt?: string,
+  data: AssignUserData,
 ): Promise<CourseAssignment> {
-  // Conditional spread avoids exactOptionalPropertyTypes error: never assign `undefined`
-  // to an optional field — either include the key with a value or omit it entirely.
-  const body: { user_id: number; due_at?: string } = {
-    user_id: userId,
-    ...(dueAt !== undefined ? { due_at: dueAt } : {}),
-  };
   const envelope = await apiRequest<Envelope<CourseAssignment>>(
     `/courses/${courseId}/assignments`,
-    { method: 'POST', body: JSON.stringify(body) }
+    { method: 'POST', body: JSON.stringify(data) },
   );
   return envelope.data;
 }
