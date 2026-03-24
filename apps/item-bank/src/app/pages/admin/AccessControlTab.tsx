@@ -97,7 +97,7 @@ function ItemBankCombobox({ assignedIds, onSelect, disabled = false }: ItemBankC
 
   const { data: page } = useQuery({
     queryKey: ['item-banks', 'all'],
-    queryFn: () => getItemBanks({ limit: 200 }),
+    queryFn: () => getItemBanks({ limit: 100 }),
     enabled: open,
   });
 
