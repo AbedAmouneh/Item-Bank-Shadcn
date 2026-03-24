@@ -284,9 +284,9 @@ export default function AdminAuditLog() {
                         </span>
                       </TableCell>
 
-                      {/* User — fall back to "#<id>" when user_name is absent */}
+                      {/* User — fall back to "#<id>" when user_name is absent, or "—" when user_id is also null */}
                       <TableCell className="text-sm">
-                        {entry.user_name ?? `#${entry.user_id}`}
+                        {entry.user_name ?? (entry.user_id != null ? `#${entry.user_id}` : '—')}
                       </TableCell>
 
                       {/* Action — monospace badge so verbs stand out */}
