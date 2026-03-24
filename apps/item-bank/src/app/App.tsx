@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import {
   Login,
   ForgotPassword,
+  SignUp,
   AuthoringRoute,
   PlatformRoute,
   LearnerRoute,
@@ -41,6 +42,8 @@ import ChangePassword from './pages/profile/ChangePassword';
 import AdminUsers from './pages/admin/Users';
 import RoleSelectPage from './pages/RoleSelectPage';
 import MyLearningPage from './pages/learn/MyLearningPage';
+import CoursePlayerPage from './pages/learn/CoursePlayerPage';
+import ModulePage from './pages/learn/ModulePage';
 import PlatformDashboardPage from './pages/platform/PlatformDashboardPage';
 import AuthoringShell from './shells/AuthoringShell';
 import LearnerShell from './shells/LearnerShell';
@@ -118,6 +121,8 @@ export default function App() {
             >
               <Route element={<LearnerShell />}>
                 <Route path="/learn/dashboard" element={<MyLearningPage />} />
+                <Route path="/learn/courses/:courseId" element={<CoursePlayerPage />} />
+                <Route path="/learn/courses/:courseId/module/:moduleId" element={<ModulePage />} />
               </Route>
             </Route>
 
@@ -199,6 +204,7 @@ export default function App() {
               }
             >
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
 
