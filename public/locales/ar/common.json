@@ -124,5 +124,28 @@
         "progress": "جارٍ ترحيل السؤال {{current}} من {{total}}",
         "error_title": "فشل الترحيل",
         "retry": "إعادة المحاولة"
+    },
+    "settings": {
+        "title": "الإعدادات",
+        "subtitle": "إدارة تفضيلاتك",
+        "tab_appearance": "المظهر",
+        "tab_account": "الحساب",
+        "tab_notifications": "الإشعارات",
+        "theme_label": "المظهر",
+        "theme_description": "اختر كيف تبدو الواجهة لك.",
+        "theme_light": "فاتح",
+        "theme_dark": "داكن",
+        "theme_system": "النظام",
+        "language_label": "اللغة",
+        "language_description": "اختر اللغة المستخدمة في الواجهة.",
+        "language_en": "English",
+        "language_ar": "العربية",
+        "edit_profile_desc": "تحديث اسمك وصورتك وبياناتك الشخصية.",
+        "change_password_desc": "تغيير كلمة مرور حسابك.",
+        "notif_email": "إشعارات البريد الإلكتروني",
+        "notif_email_desc": "استلام التحديثات والتنبيهات عبر البريد الإلكتروني.",
+        "notif_push": "إشعارات الدفع",
+        "notif_push_desc": "احصل على إشعارات فورية في متصفحك.",
+        "coming_soon": "قريباً"
     }
 }
