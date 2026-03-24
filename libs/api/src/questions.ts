@@ -24,6 +24,7 @@ export interface Question {
   item_bank_id?: number;
   tag_ids?: number[];
   content: Record<string, unknown>;
+  reviewer_notes?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -231,4 +232,30 @@ export async function uploadQuestionAudio(
  */
 export async function deleteQuestionAudio(id: number): Promise<void> {
   await apiRequest<void>(`/questions/${id}/audio`, { method: 'DELETE' });
+}
+
+/**
+ * Publish a question, transitioning its status from In Review to Published.
+ *
+ * @param id    - The question's database ID.
+ * @param notes - Optional reviewer notes to store alongside the decision.
+ */
+export async function publishQuestion(id: number, notes?: string): Promise<void> {
+  await apiRequest<void>(`/questions/${id}/publish`, {
+    method: 'POST',
+    body: JSON.stringify({ reviewer_notes: notes }),
+  });
+}
+
+/**
+ * Reject a question, transitioning its status back from In Review to Draft.
+ *
+ * @param id     - The question's database ID.
+ * @param reason - Reviewer notes explaining the rejection (min 10, max 500 characters).
+ */
+export async function rejectQuestion(id: number, reason: string): Promise<void> {
+  await apiRequest<void>(`/questions/${id}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ reviewer_notes: reason, rejection_note: reason }),
+  });
 }
