@@ -37,7 +37,7 @@ function DraggableFragmentTile({
         width: 72,
         minHeight: 72,
         paddingInline: 8,
-        backgroundColor: '#1d4ed8',
+        backgroundColor: '#b45309',
         color: '#ffffff',
         borderRadius: 4,
         fontFamily: 'monospace',
