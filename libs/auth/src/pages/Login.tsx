@@ -41,6 +41,8 @@ const Login = () => {
           // The API layer types role as string; the server contract guarantees
           // these two values, so we assert the union here at the boundary.
           role: data.user.role as 'admin' | 'user',
+          roles: data.user.roles ?? [],
+          tenant_id: data.user.tenant_id ?? '',
           is_active: data.user.is_active,
         },
         data.csrf_token,
