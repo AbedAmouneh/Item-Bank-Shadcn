@@ -1,7 +1,7 @@
 // libs/api/src/index.ts
 export { apiRequest, setCsrfToken, clearCsrfToken } from './client';
-export { login, getMe, logout, refreshToken } from './auth';
-export type { ApiUser, LoginResponse } from './auth';
+export { login, getMe, logout, refreshToken, register } from './auth';
+export type { ApiUser, LoginResponse, RegisterResponse } from './auth';
 export {
   getQuestions,
   getQuestion,
@@ -99,3 +99,4 @@ export type {
   CourseAssignment,
   AssignUserData,
 } from './courses';
+export { getMyLearning, getLearnerCourse, completeModule } from './learn';
