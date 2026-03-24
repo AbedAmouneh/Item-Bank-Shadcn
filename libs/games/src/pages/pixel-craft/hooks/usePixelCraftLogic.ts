@@ -7,7 +7,7 @@ import { FALLBACK_QUESTIONS } from '../fallback/questions';
 
 const GRID_CELL_COUNT = 9;
 const MAX_CRAFTS_PER_SESSION = 10;
-const SCORE_PER_CRAFT = 80;
+export const SCORE_PER_CRAFT = 80;
 const CORRECT_FLASH_MS = 400;
 const WRONG_FLASH_MS = 300;
 const REVEAL_MS = 1400;
