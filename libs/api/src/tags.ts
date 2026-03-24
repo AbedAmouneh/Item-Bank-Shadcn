@@ -18,6 +18,7 @@ export interface Tag {
   id: number;
   name: string;
   slug: string;
+  question_count: number;
 }
 
 /** Paginated list wrapper returned by list endpoints. */
@@ -52,4 +53,16 @@ export async function createTag(data: { name: string; slug: string }): Promise<T
     body: JSON.stringify(data),
   });
   return envelope.data;
+}
+
+/**
+ * Delete a tag by ID.
+ *
+ * The server returns 409 if the tag is still referenced by one or more
+ * questions. That error will be thrown as a plain Error by apiRequest.
+ *
+ * @param id - The numeric ID of the tag to delete.
+ */
+export async function deleteTag(id: number): Promise<void> {
+  await apiRequest<void>(`/tags/${id}`, { method: 'DELETE' });
 }

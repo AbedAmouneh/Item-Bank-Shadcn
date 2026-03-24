@@ -30,7 +30,7 @@ export {
   deleteItemBank,
 } from './itemBanks';
 export type { ItemBank, ItemBanksPage, GetItemBanksParams } from './itemBanks';
-export { getTags, createTag } from './tags';
+export { getTags, createTag, deleteTag } from './tags';
 export type { Tag } from './tags';
 export { getProfile, updateProfile, changePassword } from './profile';
 export type { UserProfile, UpdateProfileData, ChangePasswordData } from './profile';
