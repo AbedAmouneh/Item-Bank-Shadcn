@@ -14,6 +14,8 @@ export {
   reorderQuestions,
   uploadQuestionAudio,
   deleteQuestionAudio,
+  publishQuestion,
+  rejectQuestion,
 } from './questions';
 export type {
   Question,
