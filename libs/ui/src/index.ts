@@ -107,3 +107,4 @@ export {
   DropdownMenuGroup,
 } from './components/ui/dropdown-menu';
 export { Slider } from './components/ui/slider';
+export { Switch } from './components/ui/switch';
