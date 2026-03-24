@@ -79,7 +79,9 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
     formState: { errors },
   } = useForm<SettingsFields>({ resolver: zodResolver(settingsSchema) });
 
-  // Sync the form fields whenever a different activity is selected in the sidebar.
+  // Sync the form fields whenever a different activity is selected in the sidebar,
+  // or when the item banks list finishes loading (so the Select can resolve the
+  // saved item_bank_id to the correct option label).
   // `reset` replaces all values at once, which is safer than calling `setValue`
   // for each field individually.
   // All type-specific values live inside `activity.settings` — we extract them here.
@@ -94,7 +96,8 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
       shuffle: typeof s.shuffle === 'boolean' ? s.shuffle : false,
       file_url: typeof s.file_url === 'string' ? s.file_url : '',
     });
-  }, [activity, reset]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activity, itemBanks, reset]);
 
   const shuffleValue = watch('shuffle') ?? false;
   const passScore = watch('pass_score_percent') ?? 0;
