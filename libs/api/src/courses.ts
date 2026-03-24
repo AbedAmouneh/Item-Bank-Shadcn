@@ -28,8 +28,32 @@ export interface Activity {
   item_bank_id?: number;
   /** Denormalised name returned by the server for display. */
   item_bank_name?: string;
+  /** Minutes allowed for quiz/practice_quiz activities. */
+  time_limit_minutes?: number;
+  /** Minimum percentage score to pass a quiz. */
+  pass_score_percent?: number;
+  /** Whether quiz questions are shuffled. */
+  shuffle?: boolean;
+  /** Storage URL for pdf_book activities. */
+  file_url?: string;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * Fields that may be sent to PATCH/PUT an existing activity.
+ * All fields are optional — only send what changed.
+ */
+export interface UpdateActivityData {
+  title?: string;
+  description?: string;
+  position?: number;
+  settings?: Record<string, unknown>;
+  item_bank_id?: number;
+  time_limit_minutes?: number;
+  pass_score_percent?: number;
+  shuffle?: boolean;
+  file_url?: string;
 }
 
 /** A course object. `activities` is only populated on single-course fetches. */
@@ -142,12 +166,7 @@ export async function createActivity(
 export async function updateActivity(
   courseId: number,
   actId: number,
-  data: {
-    title?: string;
-    description?: string;
-    position?: number;
-    settings?: Record<string, unknown>;
-  },
+  data: UpdateActivityData,
 ): Promise<Activity> {
   const envelope = await apiRequest<Envelope<Activity>>(
     `/courses/${courseId}/activities/${actId}`,
@@ -199,4 +218,25 @@ export async function assignUser(
 
 export async function unassignUser(courseId: number, userId: number): Promise<void> {
   await apiRequest<void>(`/courses/${courseId}/assignments/${userId}`, { method: 'DELETE' });
+}
+
+// ── Media upload ───────────────────────────────────────────────────────────────
+
+/**
+ * Upload a file to the media endpoint and return the public URL.
+ *
+ * Used by ActivitySettingsPanel to let editors attach a PDF to a pdf_book activity.
+ */
+export async function uploadMedia(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+  // uploadMedia sends multipart/form-data, so we call apiRequest without a
+  // Content-Type header and let the browser set the boundary automatically.
+  // The client's fetchRaw automatically strips Content-Type when body is FormData,
+  // allowing the browser to set the multipart boundary itself.
+  const envelope = await apiRequest<Envelope<{ url: string }>>('/media/upload', {
+    method: 'POST',
+    body: formData,
+  });
+  return envelope.data.url;
 }
