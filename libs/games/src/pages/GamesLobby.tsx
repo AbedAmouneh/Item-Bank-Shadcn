@@ -60,7 +60,8 @@ const GAMES: GameCardInfo[] = [
   {
     id: 'quiz-arcade',
     title: 'Quiz Arcade',
-    description: 'Answer multiple-choice, true/false and numerical questions against the clock.',
+    description:
+      'Answer multiple-choice, true/false and numerical questions against the clock.',
     compatibleTypes: ['multiple_choice', 'true_false', 'numerical'],
     route: '/games/quiz-arcade',
   },
@@ -74,28 +75,40 @@ const GAMES: GameCardInfo[] = [
   {
     id: 'answer-runner',
     title: 'Answer Runner',
-    description: 'Dodge wrong answers and collect correct ones as they fly toward you.',
+    description:
+      'Dodge wrong answers and collect correct ones as they fly toward you.',
     compatibleTypes: ['multiple_choice', 'true_false'],
     route: '/games/answer-runner',
   },
   {
+    id: 'pixel-craft',
+    title: 'Pixel Craft',
+    description:
+      'Drag word and equation fragments into a 3×3 grid to forge the right answer.',
+    compatibleTypes: ['multiple_choice', 'numerical'],
+    route: '/games/pixel-craft',
+  },
+  {
     id: 'pixel-dash',
     title: 'Pixel Dash',
-    description: 'Switch lanes to dodge obstacles, collect coins, and answer quiz gates in an endless runner.',
+    description:
+      'Switch lanes to dodge obstacles, collect coins, and answer quiz gates in an endless runner.',
     compatibleTypes: ['multiple_choice'],
     route: '/games/pixel-dash',
   },
   {
     id: 'stack-attack',
     title: 'Stack Attack',
-    description: 'Answer questions to stack blocks — time your click for a PERFECT! golden landing.',
+    description:
+      'Answer questions to stack blocks — time your click for a PERFECT! golden landing.',
     compatibleTypes: ['multiple_choice'],
     route: '/games/stack-attack',
   },
   {
     id: 'meteor-catcher',
     title: 'Meteor Catcher',
-    description: 'Steer your spaceship to catch meteors labelled with the correct answer. Dodge the wrong ones!',
+    description:
+      'Steer your spaceship to catch meteors labelled with the correct answer. Dodge the wrong ones!',
     compatibleTypes: ['multiple_choice'],
     route: '/games/meteor-catcher',
   },
@@ -111,7 +124,13 @@ const TYPE_LABELS: Record<string, string> = {
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 /** Game card grid — shared between full bank mode and the "Games" tab. */
-function GameCardGrid({ games, onPlay }: { games: GameCardInfo[]; onPlay: (g: GameCardInfo) => void }) {
+function GameCardGrid({
+  games,
+  onPlay,
+}: {
+  games: GameCardInfo[];
+  onPlay: (g: GameCardInfo) => void;
+}) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {games.map((game) => (
@@ -194,8 +213,10 @@ export default function GamesLobby() {
       params.set('item_bank_id', String(itemBankId));
     } else {
       // Full bank mode: forward whichever filters the player chose.
-      if (selectedType && selectedType !== 'all') params.set('type', selectedType);
-      if (selectedTagId && selectedTagId !== 'all') params.set('tag_ids', selectedTagId);
+      if (selectedType && selectedType !== 'all')
+        params.set('type', selectedType);
+      if (selectedTagId && selectedTagId !== 'all')
+        params.set('tag_ids', selectedTagId);
     }
     const qs = params.toString() ? `?${params.toString()}` : '';
     navigate(`${game.route}${qs}`);
@@ -208,7 +229,9 @@ export default function GamesLobby() {
         <h1 className="text-3xl font-bold text-foreground">
           {isItemBankMode ? (itemBank?.name ?? '…') : '🎮 Games'}
         </h1>
-        <p className="text-muted-foreground mt-1">Play with your question bank</p>
+        <p className="text-muted-foreground mt-1">
+          Play with your question bank
+        </p>
       </div>
 
       {isItemBankMode ? (
@@ -226,12 +249,17 @@ export default function GamesLobby() {
           <TabsContent value="leaderboard">
             {/* Game selector for the leaderboard */}
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-sm font-medium text-muted-foreground">Game</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Game
+              </span>
               <Select
                 value={leaderboardGame}
                 onValueChange={(v) => setLeaderboardGame(v as GameId)}
               >
-                <SelectTrigger className="w-48" aria-label="Select game for leaderboard">
+                <SelectTrigger
+                  className="w-48"
+                  aria-label="Select game for leaderboard"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -271,11 +299,21 @@ export default function GamesLobby() {
                   {leaderboard.map((entry) => (
                     <TableRow key={entry.rank}>
                       <TableCell className="font-medium text-muted-foreground">
-                        {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : entry.rank}
+                        {entry.rank === 1
+                          ? '🥇'
+                          : entry.rank === 2
+                            ? '🥈'
+                            : entry.rank === 3
+                              ? '🥉'
+                              : entry.rank}
                       </TableCell>
                       <TableCell>{entry.username}</TableCell>
-                      <TableCell className="text-end font-semibold">{entry.score}</TableCell>
-                      <TableCell className="text-end text-muted-foreground">{entry.accuracy}%</TableCell>
+                      <TableCell className="text-end font-semibold">
+                        {entry.score}
+                      </TableCell>
+                      <TableCell className="text-end text-muted-foreground">
+                        {entry.accuracy}%
+                      </TableCell>
                       <TableCell className="text-end text-muted-foreground">
                         {entry.correct_qs}/{entry.total_qs}
                       </TableCell>
@@ -291,13 +329,18 @@ export default function GamesLobby() {
         <>
           <div className="flex flex-wrap gap-3 mb-8">
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-48" aria-label="Filter by question type">
+              <SelectTrigger
+                className="w-48"
+                aria-label="Filter by question type"
+              >
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All types</SelectItem>
                 {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -309,7 +352,9 @@ export default function GamesLobby() {
               <SelectContent>
                 <SelectItem value="all">All tags</SelectItem>
                 {tags.map((tag) => (
-                  <SelectItem key={tag.id} value={String(tag.id)}>{tag.name}</SelectItem>
+                  <SelectItem key={tag.id} value={String(tag.id)}>
+                    {tag.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
