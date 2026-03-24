@@ -27,8 +27,7 @@ const SignUp = () => {
   const {register, handleSubmit, formState: {errors}} = useForm({resolver: zodResolver(signUpSchema)});
   const navigate = useNavigate();
 
-  const signUp = handleSubmit(async (data) => {
-    console.log(data)
+  const signUp = handleSubmit(async (_data) => {
     localStorage.setItem("token", "test");
     navigate("/home", {replace: true})
   })

@@ -18,8 +18,7 @@ const ForgotPassword = () => {
   const {register, handleSubmit, formState: {errors}} = useForm({resolver: zodResolver(forgotPasswordSchema)});
   const { t } = useTranslation('auth');
 
-  const resetPassword = handleSubmit(async (data) => {
-    console.log(data)
+  const resetPassword = handleSubmit(async () => {
     setSubmitted(true);
   })
 
