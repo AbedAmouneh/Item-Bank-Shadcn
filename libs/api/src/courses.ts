@@ -25,23 +25,22 @@ export interface Activity {
   description: string | null;
   position: number;
   settings: Record<string, unknown>;
+  item_bank_id?: number;
+  /** Denormalised name returned by the server for display. */
+  item_bank_name?: string;
   created_at: string;
   updated_at: string;
 }
 
+/** A full course including its ordered activities. */
 export interface Course {
   id: number;
   title: string;
-  description: string | null;
+  description?: string;
   status: CourseStatus;
-  thumbnail_url: string | null;
-  created_by: number | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CourseWithActivities extends Course {
   activities: Activity[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 /** Lightweight course summary used in list responses. */
@@ -90,8 +89,8 @@ export async function createCourse(data: {
   return envelope.data;
 }
 
-export async function getCourse(id: number): Promise<CourseWithActivities> {
-  const envelope = await apiRequest<Envelope<CourseWithActivities>>(`/courses/${id}`);
+export async function getCourse(id: number): Promise<Course> {
+  const envelope = await apiRequest<Envelope<Course>>(`/courses/${id}`);
   return envelope.data;
 }
 
