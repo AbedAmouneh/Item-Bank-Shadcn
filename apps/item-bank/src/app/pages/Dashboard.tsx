@@ -182,8 +182,8 @@ export default function Dashboard() {
   });
 
   const pendingQuery = useQuery({
-    queryKey: ['questions', 'count', 'submitted_for_review'],
-    queryFn: () => getQuestions({ limit: 1, status: 'submitted_for_review' }),
+    queryKey: ['questions', 'count', 'in_review'],
+    queryFn: () => getQuestions({ limit: 1, status: 'in_review' }),
   });
 
   const publishedQuery = useQuery({
