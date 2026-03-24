@@ -107,8 +107,8 @@ export interface CourseAssignment {
   id: number;
   course_id: number;
   user_id: number;
-  /** Denormalised user details returned by the server for display. */
-  user: {
+  /** Denormalised user details joined by the server. */
+  user?: {
     id: number;
     name: string;
     email: string;
