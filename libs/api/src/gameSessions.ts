@@ -17,7 +17,14 @@ interface Envelope<T> {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Identifies a game in API calls. Matches the backend's accepted values. */
-export type GameId = 'quiz-arcade' | 'memory-match' | 'answer-runner' | 'pixel-dash' | 'stack-attack' | 'meteor-catcher';
+export type GameId =
+  | 'quiz-arcade'
+  | 'memory-match'
+  | 'answer-runner'
+  | 'pixel-craft'
+  | 'pixel-dash'
+  | 'stack-attack'
+  | 'meteor-catcher';
 
 /** Payload sent to POST /game-sessions to record a completed game. */
 export interface GameSessionData {
@@ -74,7 +81,9 @@ export async function saveGameSession(data: GameSessionData): Promise<void> {
  * @returns Games played, best score, and average score across all sessions.
  */
 export async function getMyStats(): Promise<MyStats> {
-  const envelope = await apiRequest<Envelope<MyStats>>('/game-sessions/my-stats');
+  const envelope = await apiRequest<Envelope<MyStats>>(
+    '/game-sessions/my-stats',
+  );
   return envelope.data;
 }
 
@@ -90,6 +99,8 @@ export async function getLeaderboard(
   itemBankId: number,
 ): Promise<LeaderboardEntry[]> {
   const qs = `?game=${encodeURIComponent(game)}&item_bank_id=${itemBankId}`;
-  const envelope = await apiRequest<Envelope<LeaderboardEntry[]>>(`/leaderboard${qs}`);
+  const envelope = await apiRequest<Envelope<LeaderboardEntry[]>>(
+    `/leaderboard${qs}`,
+  );
   return envelope.data;
 }
