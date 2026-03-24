@@ -1,6 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent } from '@item-bank/ui';
+import { Download } from 'lucide-react';
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@item-bank/ui';
 import {
   QuestionEditorShell,
   QuestionCardList,
@@ -11,7 +21,7 @@ import {
   useCreateQuestion,
   useUpdateQuestion,
 } from '@item-bank/questions';
-import { getQuestion } from '@item-bank/api';
+import { getQuestion, exportQuestions } from '@item-bank/api';
 import { normalizeStatus, formatLastModified } from '../../utils/questionUtils';
 import { formDataToApiPayload } from '../../utils/questionToApiPayload';
 import { apiQuestionToFormData } from '../../utils/apiQuestionToFormData';
@@ -55,6 +65,54 @@ function SnackbarNotification({ message, severity, onClose }: SnackbarNotificati
   );
 }
 
+interface ExportDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  format: 'json' | 'csv';
+  onFormatChange: (format: 'json' | 'csv') => void;
+  onDownload: () => void;
+}
+
+/** Modal that lets the user pick an export format and trigger a download. */
+function ExportDialog({ open, onOpenChange, format, onFormatChange, onDownload }: ExportDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Export Questions</DialogTitle>
+          <DialogDescription>Choose a format to download all questions.</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-3 py-2">
+          {(['json', 'csv'] as const).map((f) => (
+            <label key={f} className="flex cursor-pointer items-center gap-3">
+              <input
+                type="radio"
+                name="export-format"
+                value={f}
+                checked={format === f}
+                onChange={() => onFormatChange(f)}
+                className="h-4 w-4 accent-primary"
+              />
+              <span className="text-sm font-medium">{f.toUpperCase()}</span>
+            </label>
+          ))}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button onClick={onDownload}>
+            <Download className="me-2 h-4 w-4" />
+            Download
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /** Convert an API Question to the QuestionRow shape expected by QuestionsTable. */
 function apiToRow(q: {
   id: number;
@@ -85,6 +143,8 @@ const Home = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<SnackbarSeverity>('success');
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
   const selectedQuestionType = useRef<QuestionType | null>(null);
   const questionToEditId = useRef<string | number | null>(null);
 
@@ -182,16 +242,54 @@ const Home = () => {
     if (row) navigate(`/questions/${row.id}/preview`);
   }, [navigate]);
 
+  const handleExport = useCallback(async () => {
+    try {
+      const blob = await exportQuestions(exportFormat);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `questions.${exportFormat}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setIsExportOpen(false);
+      setSnackbarSeverity('success');
+      setSnackbarMessage('Questions exported successfully.');
+      setSnackbarOpen(true);
+    } catch {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Failed to export questions.');
+      setSnackbarOpen(true);
+    }
+  }, [exportFormat]);
+
   return (
     <div className="w-full px-8 py-8">
       {isError && (
         <p className="text-destructive mb-4">Failed to load questions</p>
       )}
+
+      {/* Toolbar */}
+      <div className="mb-4 flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setIsExportOpen(true)}>
+          <Download className="me-2 h-4 w-4" />
+          Export
+        </Button>
+      </div>
+
       <QuestionCardList
         questions={questions}
         onEditQuestion={handleEditQuestion}
         onPreviewQuestion={handleQuestionViewOpen}
         onQuestionTypeChange={handleQuestionTypeChange}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={isExportOpen}
+        onOpenChange={setIsExportOpen}
+        format={exportFormat}
+        onFormatChange={setExportFormat}
+        onDownload={handleExport}
       />
 
       {/* Editor Dialog */}
