@@ -18,6 +18,7 @@ import GamesLobby, {
   QuizArcade,
   MemoryMatch,
   AnswerRunner,
+  PixelCraft,
   PixelDash,
   StackAttack,
   MeteorCatcher,
@@ -78,16 +79,27 @@ export default function App() {
       <AppShell>
         <BrowserRouter>
           <Routes>
-
             {/* /role-select: inside AuthoringRoute (no shell) so unauthenticated
                 users are redirected to /login and learner-only users are
                 redirected to /learn/dashboard. Full-screen — no nav bar. */}
-            <Route element={<ErrorBoundary><AuthoringRoute /></ErrorBoundary>}>
+            <Route
+              element={
+                <ErrorBoundary>
+                  <AuthoringRoute />
+                </ErrorBoundary>
+              }
+            >
               <Route path="/role-select" element={<RoleSelectPage />} />
             </Route>
 
             {/* Platform world — super_admin and sales only */}
-            <Route element={<ErrorBoundary><PlatformRoute /></ErrorBoundary>}>
+            <Route
+              element={
+                <ErrorBoundary>
+                  <PlatformRoute />
+                </ErrorBoundary>
+              }
+            >
               <Route element={<PlatformShell />}>
                 <Route
                   path="/platform/dashboard"
@@ -97,50 +109,66 @@ export default function App() {
             </Route>
 
             {/* Learner world — learner role required */}
-            <Route element={<ErrorBoundary><LearnerRoute /></ErrorBoundary>}>
+            <Route
+              element={
+                <ErrorBoundary>
+                  <LearnerRoute />
+                </ErrorBoundary>
+              }
+            >
               <Route element={<LearnerShell />}>
-                <Route
-                  path="/learn/dashboard"
-                  element={<MyLearningPage />}
-                />
+                <Route path="/learn/dashboard" element={<MyLearningPage />} />
               </Route>
             </Route>
 
             {/* Authoring world — org_admin, author, reviewer, admin, user */}
-            <Route element={<ErrorBoundary><AuthoringRoute /></ErrorBoundary>}>
+            <Route
+              element={
+                <ErrorBoundary>
+                  <AuthoringRoute />
+                </ErrorBoundary>
+              }
+            >
               <Route element={<AuthoringShell />}>
                 {/* AuthenticatedLayout runs MigrateToApi (one-time DB→API data
                     migration). Must be preserved here. */}
                 <Route element={<AuthenticatedLayout />}>
-                  <Route path="/home"              element={<Home />} />
-                  <Route path="/dashboard"         element={<Dashboard />} />
-                  <Route path="/settings"          element={<Settings />} />
-                  <Route path="/analytics"         element={<Analytics />} />
-                  <Route path="/item-banks"        element={<ItemBanksList />} />
-                  <Route path="/item-banks/:id"    element={<ItemBankDetail />} />
-                  <Route path="/projects"          element={<CoursesList />} />
-                  <Route path="/projects/:id"      element={<CourseDetail />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/item-banks" element={<ItemBanksList />} />
+                  <Route path="/item-banks/:id" element={<ItemBankDetail />} />
+                  <Route path="/projects" element={<CoursesList />} />
+                  <Route path="/projects/:id" element={<CourseDetail />} />
                   <Route path="/projects/:id/edit" element={<CourseEditor />} />
-                  <Route path="/admin/tags"        element={<AdminTags />} />
-                  <Route path="/admin/audit-log"   element={<AdminAuditLog />} />
+                  <Route path="/admin/tags" element={<AdminTags />} />
+                  <Route path="/admin/audit-log" element={<AdminAuditLog />} />
                   <Route
                     path="/questions/:id/preview"
                     element={<QuestionPreview />}
                   />
                   <Route path="/profile" element={<ProfileSidebar />}>
-                    <Route path="edit"            element={<ProfileGeneral />} />
+                    <Route path="edit" element={<ProfileGeneral />} />
                     <Route
                       path="change-password"
                       element={<ChangePassword />}
                     />
                   </Route>
-                  <Route path="/games"                  element={<GamesLobby />} />
-                  <Route path="/games/quiz-arcade"      element={<QuizArcade />} />
-                  <Route path="/games/memory-match"     element={<MemoryMatch />} />
-                  <Route path="/games/answer-runner"    element={<AnswerRunner />} />
-                  <Route path="/games/pixel-dash"       element={<PixelDash />} />
-                  <Route path="/games/stack-attack"     element={<StackAttack />} />
-                  <Route path="/games/meteor-catcher"   element={<MeteorCatcher />} />
+                  <Route path="/games" element={<GamesLobby />} />
+                  <Route path="/games/quiz-arcade" element={<QuizArcade />} />
+                  <Route path="/games/memory-match" element={<MemoryMatch />} />
+                  <Route
+                    path="/games/answer-runner"
+                    element={<AnswerRunner />}
+                  />
+                  <Route path="/games/pixel-craft" element={<PixelCraft />} />
+                  <Route path="/games/pixel-dash" element={<PixelDash />} />
+                  <Route path="/games/stack-attack" element={<StackAttack />} />
+                  <Route
+                    path="/games/meteor-catcher"
+                    element={<MeteorCatcher />}
+                  />
                   {/* Fine-grained role gates within the authoring world */}
                   <Route
                     path="/admin/users"
@@ -163,8 +191,14 @@ export default function App() {
             </Route>
 
             {/* Guest routes — redirect to /dashboard if already logged in */}
-            <Route element={<ErrorBoundary><GuestRoute /></ErrorBoundary>}>
-              <Route path="/login"           element={<Login />} />
+            <Route
+              element={
+                <ErrorBoundary>
+                  <GuestRoute />
+                </ErrorBoundary>
+              }
+            >
+              <Route path="/login" element={<Login />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
 
