@@ -117,16 +117,21 @@ function ApproveDialog({ open, onClose, onSubmit, isPending }: ApproveDialogProp
     }
   };
 
+  // React 19 delegates events to the #root container, but Radix renders this
+  // dialog in a portal appended to document.body (outside #root). The native
+  // form "submit" event therefore never bubbles through the React root, so
+  // react-hook-form's handleSubmit is never called. Using onClick on a
+  // type="button" instead routes the action through React's click delegation,
+  // which Radix already supports for portal containers.
+  const handleApproveClick = handleSubmit(({ notes }) => onSubmit(notes || undefined));
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Approve this question?</DialogTitle>
         </DialogHeader>
-        <form
-          onSubmit={handleSubmit(({ notes }) => onSubmit(notes || undefined))}
-          className="flex flex-col gap-4 pt-2"
-        >
+        <div className="flex flex-col gap-4 pt-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="approve-notes">
               Reviewer Notes{' '}
@@ -143,11 +148,11 @@ function ApproveDialog({ open, onClose, onSubmit, isPending }: ApproveDialogProp
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="button" onClick={handleApproveClick} disabled={isPending}>
               {isPending ? 'Approving…' : 'Approve'}
             </Button>
           </DialogFooter>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -180,16 +185,16 @@ function RejectDialog({ open, title, onClose, onSubmit, isPending }: RejectDialo
     }
   };
 
+  // Same portal/root event delegation issue as ApproveDialog — use onClick.
+  const handleRejectClick = handleSubmit(({ reason }) => onSubmit(reason));
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <form
-          onSubmit={handleSubmit(({ reason }) => onSubmit(reason))}
-          className="flex flex-col gap-4 pt-2"
-        >
+        <div className="flex flex-col gap-4 pt-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="reject-reason">Reason</Label>
             <Textarea
@@ -207,11 +212,11 @@ function RejectDialog({ open, title, onClose, onSubmit, isPending }: RejectDialo
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               Cancel
             </Button>
-            <Button type="submit" variant="destructive" disabled={isPending}>
+            <Button type="button" variant="destructive" onClick={handleRejectClick} disabled={isPending}>
               {isPending ? 'Rejecting…' : 'Reject'}
             </Button>
           </DialogFooter>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
