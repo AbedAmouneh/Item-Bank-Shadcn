@@ -40,6 +40,7 @@ function PixelCraftCell({
 }: PixelCraftCellProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: `pixel-craft-cell-${cellIndex}`,
+    disabled: !isRequired,
   });
 
   const handleRef = useCallback(
@@ -50,6 +51,26 @@ function PixelCraftCell({
     [cellIndex, registerCellRef, setNodeRef],
   );
 
+  // Non-required cells are visually inactive and not droppable.
+  if (!isRequired) {
+    return (
+      <div
+        ref={handleRef}
+        style={{
+          width: 72,
+          height: 72,
+          backgroundColor: '#0f172a',
+          border: '2px solid #1e293b',
+          borderRadius: 4,
+          opacity: 0.35,
+        }}
+        className="relative flex items-center justify-center"
+        aria-label={`Optional craft cell ${cellIndex + 1}`}
+        aria-hidden="true"
+      />
+    );
+  }
+
   const cellStyle: CSSProperties = {
     width: 72,
     height: 72,
@@ -59,18 +80,26 @@ function PixelCraftCell({
         : feedback === 'wrong' || showError
           ? '#dc2626'
           : isOver
-            ? '#334155'
+            ? '#292524'
             : '#1e293b',
     border: `2px solid ${
       feedback === 'correct'
         ? '#22c55e'
         : feedback === 'wrong' || showError
           ? '#f87171'
-          : '#475569'
+          : isOver
+            ? '#f59e0b'
+            : '#d97706'
     }`,
+    boxShadow:
+      feedback === 'correct' || feedback === 'wrong' || showError
+        ? 'none'
+        : isOver
+          ? '0 0 0 3px rgba(245, 158, 11, 0.5)'
+          : '0 0 0 2px rgba(217, 119, 6, 0.25)',
     borderRadius: 4,
     transition:
-      'background-color 180ms ease, border-color 180ms ease, transform 180ms ease',
+      'background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
   };
 
   const fragmentStyle: CSSProperties = {
@@ -105,11 +134,7 @@ function PixelCraftCell({
       ref={handleRef}
       style={cellStyle}
       className="relative flex items-center justify-center overflow-visible"
-      aria-label={
-        isRequired
-          ? `Craft cell ${cellIndex + 1}`
-          : `Optional craft cell ${cellIndex + 1}`
-      }
+      aria-label={`Craft cell ${cellIndex + 1}`}
     >
       {placedFragment ? (
         <div style={fragmentStyle}>{placedFragment.text}</div>
@@ -117,7 +142,7 @@ function PixelCraftCell({
         <span
           aria-hidden="true"
           className="select-none text-2xl font-black"
-          style={{ color: 'rgba(255, 255, 255, 0.18)' }}
+          style={{ color: 'rgba(217, 119, 6, 0.45)' }}
         >
           ?
         </span>
@@ -127,7 +152,9 @@ function PixelCraftCell({
 }
 
 /**
- * Pixel Craft drop board.
+ * Pixel Craft drop board — renders the 3×3 grid and a live placement counter.
+ * Required cells glow amber so players know exactly where to drop fragments.
+ * Non-required cells are visually dimmed and disabled as drop targets.
  */
 export default function PixelCraftGrid({
   phase,
@@ -139,29 +166,50 @@ export default function PixelCraftGrid({
   revealOffsets,
   registerCellRef,
 }: PixelCraftGridProps) {
+  const requiredCount = solution.filter((s) => s !== null).length;
+  const placedCount = solution.filter(
+    (s, i) => s !== null && placedFragments[i] !== null,
+  ).length;
+
+  const allPlaced = placedCount === requiredCount;
+
+  const countLabel = allPlaced
+    ? `✓ All ${requiredCount} placed`
+    : `${placedCount} / ${requiredCount} fragments placed`;
+
   return (
-    <div
-      key={gridShakeKey}
-      className="grid grid-cols-3 gap-3"
-      style={
-        errorCells.length > 0
-          ? ({ animation: 'heart-shake 400ms ease-in-out' } as CSSProperties)
-          : undefined
-      }
-    >
-      {solution.map((expectedFragmentId, cellIndex) => (
-        <PixelCraftCell
-          key={cellIndex}
-          cellIndex={cellIndex}
-          isRequired={expectedFragmentId !== null}
-          placedFragment={placedFragments[cellIndex]}
-          feedback={cellFeedback[cellIndex]}
-          showError={errorCells.includes(cellIndex)}
-          phase={phase}
-          revealOffset={revealOffsets[cellIndex]}
-          registerCellRef={registerCellRef}
-        />
-      ))}
+    <div className="flex flex-col items-center gap-3">
+      <div
+        key={gridShakeKey}
+        className="grid grid-cols-3 gap-3"
+        style={
+          errorCells.length > 0
+            ? ({ animation: 'heart-shake 400ms ease-in-out' } as CSSProperties)
+            : undefined
+        }
+      >
+        {solution.map((expectedFragmentId, cellIndex) => (
+          <PixelCraftCell
+            key={cellIndex}
+            cellIndex={cellIndex}
+            isRequired={expectedFragmentId !== null}
+            placedFragment={placedFragments[cellIndex]}
+            feedback={cellFeedback[cellIndex]}
+            showError={errorCells.includes(cellIndex)}
+            phase={phase}
+            revealOffset={revealOffsets[cellIndex]}
+            registerCellRef={registerCellRef}
+          />
+        ))}
+      </div>
+
+      <p
+        className="text-xs font-semibold tracking-wide"
+        style={{ color: allPlaced ? '#22c55e' : '#78716c' }}
+        aria-live="polite"
+      >
+        {countLabel}
+      </p>
     </div>
   );
 }
