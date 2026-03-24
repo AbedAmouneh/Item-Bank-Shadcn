@@ -12,9 +12,6 @@ import {
   useUpdateQuestion,
 } from '@item-bank/questions';
 import { getQuestion } from '@item-bank/api';
-import { putQuestion, getQuestionById } from '../../db/db';
-import { createStoredQuestion } from '../../utils/questionFactory';
-import { storedToFormData } from '../../utils/questionToFormData';
 import { normalizeStatus, formatLastModified } from '../../utils/questionUtils';
 import { formDataToApiPayload } from '../../utils/questionToApiPayload';
 import { apiQuestionToFormData } from '../../utils/apiQuestionToFormData';
@@ -57,34 +54,6 @@ function SnackbarNotification({ message, severity, onClose }: SnackbarNotificati
     </div>
   );
 }
-
-/**
- * Question types wired to the REST API for both read and write.
- * Image-bearing types (fill_in_blanks_image, image_sequencing, etc.) are not
- * yet migrated — they still use IndexedDB until the image upload step.
- */
-const API_MIGRATED_TYPES = new Set<string>([
-  'true_false',
-  'short_answer',
-  'multiple_choice',
-  'essay',
-  'numerical',
-  'highlight_correct_word',
-  'select_correct_word',
-  'text_sequencing',
-  'text_classification',
-  'matching',
-  'crossword',
-  'spelling_dictation',
-  'record_audio',
-  'drag_drop_text',
-  'fill_in_blanks_image',
-  'image_sequencing',
-  'free_hand_drawing',
-  'multiple_hotspots',
-  'drag_drop_image',
-  'image_classification',
-]);
 
 /** Convert an API Question to the QuestionRow shape expected by QuestionsTable. */
 function apiToRow(q: {
@@ -136,45 +105,22 @@ const Home = () => {
   }, []);
 
   const handleEditQuestion = useCallback((row: QuestionRow) => {
-    if (API_MIGRATED_TYPES.has(row.type)) {
-      // Fetch from REST API for migrated types.
-      getQuestion(row.id as number)
-        .then((question) => {
-          const formData = apiQuestionToFormData(question);
-          if (!formData) {
-            console.error('Unsupported type returned from API for editing:', question.type);
-            return;
-          }
-          selectedQuestionType.current = formData.type;
-          questionToEditId.current = row.id;
-          setInitialFormData(formData);
-          setEditorMode('edit');
-          setQuestionToEdit(row);
-          setIsEditorOpen(true);
-        })
-        .catch((err) => console.error('Failed to load question for editing', err));
-    } else {
-      // Non-migrated (image-bearing) types still read from IndexedDB.
-      getQuestionById(String(row.id))
-        .then((storedQuestion) => {
-          if (!storedQuestion) {
-            console.error('Question not found in IndexedDB:', row.id);
-            return;
-          }
-          if (storedQuestion.type === 'fill_in_blanks') {
-            const formData = storedToFormData(storedQuestion);
-            selectedQuestionType.current = formData.type;
-            questionToEditId.current = row.id;
-            setInitialFormData(formData);
-            setEditorMode('edit');
-            setQuestionToEdit(row);
-            setIsEditorOpen(true);
-          } else {
-            console.error('Edit not supported for this question type yet');
-          }
-        })
-        .catch((err) => console.error('Failed to load question for editing', err));
-    }
+    getQuestion(row.id as number)
+      .then((question) => {
+        const formData = apiQuestionToFormData(question);
+        if (!formData) return;
+        selectedQuestionType.current = formData.type;
+        questionToEditId.current = row.id;
+        setInitialFormData(formData);
+        setEditorMode('edit');
+        setQuestionToEdit(row);
+        setIsEditorOpen(true);
+      })
+      .catch(() => {
+        setSnackbarSeverity('error');
+        setSnackbarMessage('Failed to load question for editing.');
+        setSnackbarOpen(true);
+      });
   }, []);
 
   const closeEditor = useCallback(() => {
@@ -190,32 +136,16 @@ const Home = () => {
       const successMsg =
         editorMode === 'edit' ? 'Question updated successfully.' : 'Question created successfully.';
 
-      if (API_MIGRATED_TYPES.has(questionData.type)) {
-        const payload = formDataToApiPayload(questionData);
-        if (!payload) {
-          // Validation failed for this type — keep the editor open.
-          return;
-        }
+      const payload = formDataToApiPayload(questionData);
+      if (!payload) {
+        // Validation failed for this type — keep the editor open.
+        return;
+      }
 
-        if (editorMode === 'edit' && questionToEditId.current) {
-          updateQuestionMutate(
-            { id: Number(questionToEditId.current), data: payload },
-            {
-              onSuccess: () => {
-                closeEditor();
-                setSnackbarSeverity('success');
-                setSnackbarMessage(successMsg);
-                setSnackbarOpen(true);
-              },
-              onError: () => {
-                setSnackbarSeverity('error');
-                setSnackbarMessage('Failed to save question.');
-                setSnackbarOpen(true);
-              },
-            }
-          );
-        } else {
-          createQuestionMutate(payload, {
+      if (editorMode === 'edit' && questionToEditId.current) {
+        updateQuestionMutate(
+          { id: Number(questionToEditId.current), data: payload },
+          {
             onSuccess: () => {
               closeEditor();
               setSnackbarSeverity('success');
@@ -227,40 +157,22 @@ const Home = () => {
               setSnackbarMessage('Failed to save question.');
               setSnackbarOpen(true);
             },
-          });
-        }
-        return;
-      }
-
-      // Non-migrated (image-bearing) types still write to IndexedDB.
-      const storedQuestion = createStoredQuestion(questionData);
-
-      if (storedQuestion) {
-        if (editorMode === 'edit' && questionToEditId.current) {
-          storedQuestion.id = String(questionToEditId.current);
-          storedQuestion.lastModified = new Date().toISOString();
-        }
-
-        putQuestion(storedQuestion)
-          .then(() => {
+          }
+        );
+      } else {
+        createQuestionMutate(payload, {
+          onSuccess: () => {
             closeEditor();
             setSnackbarSeverity('success');
             setSnackbarMessage(successMsg);
             setSnackbarOpen(true);
-          })
-          .catch((err) => {
-            console.error('Failed to save question to IndexedDB', err);
+          },
+          onError: () => {
             setSnackbarSeverity('error');
             setSnackbarMessage('Failed to save question.');
             setSnackbarOpen(true);
-          });
-      } else if (questionData.type === 'image_sequencing') {
-        console.error('Image sequencing factory validation failed — keeping editor open');
-      } else if (questionData.type === 'drag_drop_image') {
-        console.error('Drag drop image factory validation failed — keeping editor open');
-      } else {
-        console.error('Unsupported question type or validation failed:', questionData.type);
-        closeEditor();
+          },
+        });
       }
     },
     [editorMode, closeEditor, createQuestionMutate, updateQuestionMutate]
