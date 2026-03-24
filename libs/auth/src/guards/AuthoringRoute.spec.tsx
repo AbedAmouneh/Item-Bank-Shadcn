@@ -93,4 +93,40 @@ describe('AuthoringRoute', () => {
     renderGuard(['org_admin']);
     expect(screen.getByText('Authoring Content')).toBeInTheDocument();
   });
+
+  it('renders outlet for authenticated user with no roles yet', () => {
+    mockUseAuth.mockReturnValue(
+      makeAuth({
+        user: { id: '1', email: 'a@b.com', role: 'user' as const, roles: [], tenant_id: '', is_active: true },
+      }),
+    );
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <Routes>
+          <Route element={<AuthoringRoute />}>
+            <Route path="/dashboard" element={<div>Authoring Content</div>} />
+          </Route>
+          <Route path="/login" element={<div>Login</div>} />
+          <Route path="/learn/dashboard" element={<div>Learn Dashboard</div>} />
+          <Route path="/platform/dashboard" element={<div>Platform Dashboard</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Authoring Content')).toBeInTheDocument();
+  });
+
+  it('redirects to /login when isAuthenticated is false directly', () => {
+    mockUseAuth.mockReturnValue(makeAuth({ isAuthenticated: false, user: null }));
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <Routes>
+          <Route element={<AuthoringRoute />}>
+            <Route path="/dashboard" element={<div>Authoring Content</div>} />
+          </Route>
+          <Route path="/login" element={<div>Login</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Login')).toBeInTheDocument();
+  });
 });
