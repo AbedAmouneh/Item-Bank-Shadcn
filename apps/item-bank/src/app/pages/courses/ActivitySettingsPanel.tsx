@@ -21,9 +21,10 @@ import {
 } from '@item-bank/ui';
 import { useItemBanks } from '@item-bank/questions';
 
-import { useUpdateActivity } from '../../../features/courses/hooks';
 import { uploadMedia } from '@item-bank/api/courses';
 import type { Activity, UpdateActivityData } from '@item-bank/api/courses';
+
+import { useUpdateActivity } from '../../../features/courses/hooks';
 
 // ─── Zod schema ───────────────────────────────────────────────────────────────
 // Zod is a validation library — think of it as a rulebook for your form.
@@ -250,7 +251,7 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload size={13} className="me-1.5" />
-              {isUploading ? t('courses.uploading') : 'Browse'}
+              {isUploading ? t('courses.uploading') : t('courses.browse')}
             </Button>
             <input
               ref={fileInputRef}
