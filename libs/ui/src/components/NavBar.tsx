@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  GraduationCap,
   Maximize,
   Minimize,
   Moon,
@@ -71,6 +72,11 @@ export interface NavBarProps {
   userName?: string;
   /** Two-letter initials shown inside the avatar circle. Falls back to '??' if not provided. */
   userInitials?: string;
+  /**
+   * When provided, a "Switch to Learning" icon button is rendered in the right
+   * action strip. Pass undefined to hide the button (for authoring-only users).
+   */
+  onSwitchToLearn?: () => void;
 }
 
 function NavBar({
@@ -82,6 +88,7 @@ function NavBar({
   userRole,
   userName,
   userInitials,
+  onSwitchToLearn = undefined,
 }: NavBarProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -223,6 +230,19 @@ function NavBar({
               <Languages size={18} />
             </button>
           </IconTooltip>
+
+          {/* Switch to Learning — only shown for dual-role users */}
+          {onSwitchToLearn && (
+            <IconTooltip label="Switch to Learning">
+              <button
+                className={navIconBtnClass}
+                aria-label="Switch to Learning"
+                onClick={onSwitchToLearn}
+              >
+                <GraduationCap size={18} />
+              </button>
+            </IconTooltip>
+          )}
 
           {/* Logout */}
           <IconTooltip label={t('table_actions.logout')}>
