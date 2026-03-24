@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
-import { useAuth } from '../hooks/useAuth';
+import { PLATFORM_ROLES } from '@item-bank/types';
 
-const PLATFORM_ROLES = ['super_admin', 'sales'];
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * Route guard for the platform world.
@@ -19,7 +19,8 @@ const PlatformRoute = () => {
   if (isLoading) return null;
   if (!isAuthenticated) return <Navigate replace to="/login" />;
 
-  const hasPlatformRole = user?.roles.some((r) => PLATFORM_ROLES.includes(r)) ?? false;
+  const hasPlatformRole =
+    user?.roles.some((r) => (PLATFORM_ROLES as readonly string[]).includes(r)) ?? false;
   if (!hasPlatformRole) return <Navigate replace to="/dashboard" />;
 
   return <Outlet />;

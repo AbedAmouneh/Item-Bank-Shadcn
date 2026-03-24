@@ -1,9 +1,17 @@
 /**
- * Shared TypeScript interfaces and DTOs.
+ * Shared TypeScript interfaces, DTOs, and constants.
  *
  * This library sits at the bottom of the dependency order — every other lib
  * may import from it, but it may not import from any other @item-bank/* lib.
  */
+
+export {
+  PLATFORM_ROLES,
+  AUTHORING_ROLES,
+  ALL_AUTHORING_ROLES,
+  LEARNER_ROLE,
+} from './roles';
+export type { PlatformRole, AuthoringRole, LearnerRole, AppRole } from './roles';
 
 /** The authenticated user shape used throughout the app. */
 export interface AuthUser {

@@ -1,9 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
-import { useAuth } from '../hooks/useAuth';
+import { ALL_AUTHORING_ROLES, LEARNER_ROLE, PLATFORM_ROLES } from '@item-bank/types';
 
-const AUTHORING_ROLES = ['org_admin', 'author', 'reviewer', 'admin', 'user'] as const;
-const PLATFORM_ROLES = ['super_admin', 'sales'] as const;
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * Route guard for the authoring world.
@@ -23,10 +22,10 @@ const AuthoringRoute = () => {
 
   const roles = user?.roles ?? [];
   const isLearnerOnly =
-    roles.length > 0 && roles.every((r) => r === 'learner');
+    roles.length > 0 && roles.every((r) => r === LEARNER_ROLE);
   const isPlatformOnly =
     roles.some((r) => (PLATFORM_ROLES as readonly string[]).includes(r)) &&
-    !roles.some((r) => (AUTHORING_ROLES as readonly string[]).includes(r));
+    !roles.some((r) => (ALL_AUTHORING_ROLES as readonly string[]).includes(r));
 
   if (isLearnerOnly) return <Navigate replace to="/learn/dashboard" />;
   if (isPlatformOnly) return <Navigate replace to="/platform/dashboard" />;

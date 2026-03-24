@@ -9,6 +9,7 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 
 import { login } from '@item-bank/api';
+import { ALL_AUTHORING_ROLES, LEARNER_ROLE, PLATFORM_ROLES } from '@item-bank/types';
 
 import { useAuth } from '../hooks/useAuth';
 import AuthPageWrapper from '../components/AuthPageWrapper';
@@ -41,11 +42,9 @@ const Login = () => {
         {
           id: data.user.id,
           email: data.user.email,
-          // The API types role as string; the server contract guarantees
-          // these two values, so we assert the union here at the boundary.
-          role: data.user.role as 'admin' | 'user',
+          role: data.user.role,
           roles,
-          tenant_id: data.user.tenant_id ?? '',
+          tenant_id: data.user.tenant_id,
           is_active: data.user.is_active,
         },
         data.csrf_token,
@@ -53,12 +52,12 @@ const Login = () => {
 
       // 2. Navigate based on the roles value from the API response.
       //    Reading from useAuth() here would give stale pre-login state.
-      const isPlatform = roles.some(
-        (r) => r === 'super_admin' || r === 'sales',
+      const isPlatform = roles.some((r) =>
+        (PLATFORM_ROLES as readonly string[]).includes(r),
       );
-      const isLearner = roles.includes('learner');
+      const isLearner = roles.includes(LEARNER_ROLE);
       const isAuthor = roles.some((r) =>
-        ['org_admin', 'author', 'reviewer', 'admin', 'user'].includes(r),
+        (ALL_AUTHORING_ROLES as readonly string[]).includes(r),
       );
 
       if (isPlatform) {

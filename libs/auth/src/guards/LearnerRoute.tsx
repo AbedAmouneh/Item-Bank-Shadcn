@@ -1,5 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
+import { LEARNER_ROLE } from '@item-bank/types';
+
 import { useAuth } from '../hooks/useAuth';
 
 /**
@@ -17,7 +19,7 @@ const LearnerRoute = () => {
   if (isLoading) return null;
   if (!isAuthenticated) return <Navigate replace to="/login" />;
 
-  const hasLearnerRole = user?.roles.includes('learner') ?? false;
+  const hasLearnerRole = user?.roles.includes(LEARNER_ROLE) ?? false;
   if (!hasLearnerRole) return <Navigate replace to="/dashboard" />;
 
   return <Outlet />;
