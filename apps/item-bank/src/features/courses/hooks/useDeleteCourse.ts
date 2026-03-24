@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { deleteCourse } from '@item-bank/api/courses';
+import { deleteCourse } from '@item-bank/api';
 
 /**
  * Mutation to permanently delete a course.

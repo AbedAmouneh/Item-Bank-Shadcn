@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { updateCourse } from '@item-bank/api/courses';
-import type { UpdateCourseData } from '@item-bank/api/courses';
+import { updateCourse } from '@item-bank/api';
+import type { UpdateCourseData } from '@item-bank/api';
 
 /**
  * Mutation to update a course's title, description, or status.

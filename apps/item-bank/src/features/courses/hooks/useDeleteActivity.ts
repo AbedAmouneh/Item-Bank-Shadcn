@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { deleteActivity } from '@item-bank/api/courses';
+import { deleteActivity } from '@item-bank/api';
 
 /**
  * Mutation to delete an activity from a course.

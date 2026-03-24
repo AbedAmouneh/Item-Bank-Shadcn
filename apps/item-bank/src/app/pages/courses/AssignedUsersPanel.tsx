@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@item-bank/ui';
 import { getUsers } from '@item-bank/api';
-import type { CourseAssignment } from '@item-bank/api/courses';
+import type { CourseAssignment } from '@item-bank/api';
 
 import {
   useCourseAssignments,

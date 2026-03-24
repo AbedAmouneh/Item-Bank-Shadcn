@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { createActivity } from '@item-bank/api/courses';
-import type { CreateActivityData } from '@item-bank/api/courses';
+import { createActivity } from '@item-bank/api';
+import type { CreateActivityData } from '@item-bank/api';
 
 /**
  * Mutation to append a new activity to a course.

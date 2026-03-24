@@ -21,8 +21,8 @@ import {
 } from '@item-bank/ui';
 import { useItemBanks } from '@item-bank/questions';
 
-import { uploadMedia } from '@item-bank/api/courses';
-import type { Activity, UpdateActivityData } from '@item-bank/api/courses';
+import { uploadMedia } from '@item-bank/api';
+import type { Activity, UpdateActivityData } from '@item-bank/api';
 
 import { useUpdateActivity } from '../../../features/courses/hooks';
 

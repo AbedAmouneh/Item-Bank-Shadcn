@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { updateActivity } from '@item-bank/api/courses';
-import type { UpdateActivityData } from '@item-bank/api/courses';
+import { updateActivity } from '@item-bank/api';
+import type { UpdateActivityData } from '@item-bank/api';
 
 /**
  * Mutation to update fields on an existing activity.

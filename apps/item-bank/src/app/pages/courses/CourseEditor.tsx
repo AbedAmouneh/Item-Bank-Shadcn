@@ -20,7 +20,7 @@ import {
   Separator,
 } from '@item-bank/ui';
 
-import type { Activity, ActivityType } from '@item-bank/api/courses';
+import type { Activity, ActivityType } from '@item-bank/api';
 
 import {
   useCourse,

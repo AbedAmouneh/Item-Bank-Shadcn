@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { reorderActivities } from '@item-bank/api/courses';
+import { reorderActivities } from '@item-bank/api';
 
 /**
  * Mutation to persist a new activity order.

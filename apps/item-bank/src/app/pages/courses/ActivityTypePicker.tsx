@@ -11,7 +11,7 @@ import {
   cn,
 } from '@item-bank/ui';
 
-import type { ActivityType } from '@item-bank/api/courses';
+import type { ActivityType } from '@item-bank/api';
 
 // ─── Type card data ──────────────────────────────────────────────────────────
 

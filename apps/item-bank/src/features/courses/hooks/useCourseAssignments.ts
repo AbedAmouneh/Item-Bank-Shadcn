@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getCourseAssignments } from '@item-bank/api/courses';
+import { getCourseAssignments } from '@item-bank/api';
 
 /**
  * Fetch all users assigned to a course.

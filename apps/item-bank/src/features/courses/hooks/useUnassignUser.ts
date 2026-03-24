@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { unassignUser } from '@item-bank/api/courses';
+import { unassignUser } from '@item-bank/api';
 
 /**
  * Mutation to remove a user assignment from a course.

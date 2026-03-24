@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getCourses } from '@item-bank/api/courses';
+import { getCourses } from '@item-bank/api';
 
 /**
  * Fetch the full list of courses.

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getCourse } from '@item-bank/api/courses';
+import { getCourse } from '@item-bank/api';
 
 /**
  * Fetch a single course by id.

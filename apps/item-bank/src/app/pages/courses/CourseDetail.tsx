@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Badge } from '@item-bank/ui';
 
 import { useCourse } from '../../../features/courses/hooks';
-import type { Activity, ActivityType } from '@item-bank/api/courses';
+import type { Activity, ActivityType } from '@item-bank/api';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

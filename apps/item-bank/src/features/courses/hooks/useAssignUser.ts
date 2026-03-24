@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { assignUser } from '@item-bank/api/courses';
-import type { AssignUserData } from '@item-bank/api/courses';
+import { assignUser } from '@item-bank/api';
+import type { AssignUserData } from '@item-bank/api';
 
 /**
  * Mutation to assign a user to a course.

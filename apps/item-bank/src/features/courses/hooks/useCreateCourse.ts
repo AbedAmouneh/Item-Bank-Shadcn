@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { createCourse } from '@item-bank/api/courses';
-import type { CreateCourseData } from '@item-bank/api/courses';
+import { createCourse } from '@item-bank/api';
+import type { CreateCourseData } from '@item-bank/api';
 
 /**
  * Mutation to create a new course.

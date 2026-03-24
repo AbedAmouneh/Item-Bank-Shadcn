@@ -34,7 +34,7 @@ import {
 } from '@item-bank/ui';
 
 import { useCourses, useCreateCourse, useDeleteCourse } from '../../../features/courses/hooks';
-import type { CourseSummary } from '@item-bank/api/courses';
+import type { CourseSummary } from '@item-bank/api';
 
 // ─── Validation ─────────────────────────────────────────────────────────────
 
