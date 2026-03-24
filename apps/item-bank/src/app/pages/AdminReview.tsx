@@ -364,6 +364,14 @@ const AdminReview = () => {
   const formatDate = (iso?: string) =>
     iso ? new Date(iso).toLocaleDateString() : '—';
 
+  // Converts snake_case question type values (e.g. "select_correct_word") into
+  // readable Title Case ("Select Correct Word") for display in the Type column.
+  const formatQuestionType = (type: string) =>
+    type
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -461,7 +469,7 @@ const AdminReview = () => {
                     />
                   </TableCell>
                   <TableCell className="font-medium">{q.name}</TableCell>
-                  <TableCell className="text-muted-foreground capitalize">{q.type}</TableCell>
+                  <TableCell className="text-muted-foreground">{formatQuestionType(q.type)}</TableCell>
                   {/* submitted_by not yet on Question type */}
                   <TableCell className="text-muted-foreground">—</TableCell>
                   <TableCell className="text-muted-foreground">
