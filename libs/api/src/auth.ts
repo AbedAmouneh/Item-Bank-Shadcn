@@ -12,6 +12,10 @@ export interface ApiUser {
   id: string;
   email: string;
   role: string;
+  /** Multi-role array. Defaults to [] if the backend has not yet returned it. */
+  roles: string[];
+  /** Organisation tenant. Defaults to '' if the backend has not yet returned it. */
+  tenant_id: string;
   is_active: boolean;
 }
 
