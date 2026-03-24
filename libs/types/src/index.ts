@@ -17,6 +17,7 @@ export interface AuthUser {
   role: 'admin' | 'user';
   /** Multi-role array — the primary source of truth for all guard and UI logic. */
   roles: string[];
-  tenant_id: string;
+  /** Organisation tenant identifier (integer). */
+  tenant_id: number;
   is_active: boolean;
 }

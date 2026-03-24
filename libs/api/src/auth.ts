@@ -11,11 +11,11 @@ import { apiRequest, clearCsrfToken, setCsrfToken } from './client';
 export interface ApiUser {
   id: string;
   email: string;
-  role: string;
-  /** Multi-role array. Defaults to [] if the backend has not yet returned it. */
+  role: 'admin' | 'user';
+  /** Multi-role array. */
   roles: string[];
-  /** Organisation tenant. Defaults to '' if the backend has not yet returned it. */
-  tenant_id: string;
+  /** Organisation tenant identifier (integer). */
+  tenant_id: number;
   is_active: boolean;
 }
 
