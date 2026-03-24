@@ -59,9 +59,9 @@ function ActivityRow({ activity }: { activity: Activity }) {
           <p className="truncate text-xs text-muted-foreground">{activity.description}</p>
         )}
         {(activity.type === 'quiz' || activity.type === 'practice_quiz') &&
-          activity.item_bank_name && (
+          typeof activity.settings.item_bank_name === 'string' && (
             <p className="text-xs text-muted-foreground/70 mt-0.5">
-              {t('courses.item_bank')}: {activity.item_bank_name}
+              {t('courses.item_bank')}: {activity.settings.item_bank_name}
             </p>
           )}
       </div>
