@@ -4,6 +4,8 @@ export { NotificationPanel, type NotificationPanelProps } from './components/Not
 export type { Notification } from './types/Notification';
 export { default as ActionButton, type DropdownItem } from './components/ActionButton';
 export { ThemeModeProvider, useThemeMode, useSwitchTheme, type ThemeMode } from './hooks/theme';
+export { useTheme, type ThemePreference } from './hooks/UseTheme';
+export { useLanguage, type Language } from './hooks/UseLanguage';
 export { default as Sidebar, type SidebarItem, type SidebarProps } from './components/Sidebar';
 export { cn } from './lib/utils';
 
