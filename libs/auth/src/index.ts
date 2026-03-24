@@ -1,6 +1,4 @@
 export { default as AuthoringRoute } from './guards/AuthoringRoute';
-// Backward-compat alias — App.tsx still uses ProtectedRoute; removed in Task 16.
-export { default as ProtectedRoute } from './guards/AuthoringRoute';
 export { default as PlatformRoute } from './guards/PlatformRoute';
 export { default as LearnerRoute } from './guards/LearnerRoute';
 export { default as RequireRole } from './guards/RequireRole';

@@ -59,7 +59,7 @@ function IconTooltip({
 
 export interface NavBarProps {
   notifications?: Notification[];
-  /** Live unread count for the badge on the bell icon. Polled every 30 s by ProtectedRoute. */
+  /** Live unread count for the badge on the bell icon. Polled every 30 s by AuthoringShell. */
   unreadCount?: number;
   onMarkNotificationAsRead?: (id: string) => void;
   onMarkAllNotificationsAsRead?: () => void;
