@@ -133,8 +133,12 @@ function AssignmentRow({ assignment, courseId }: AssignmentRowProps) {
   return (
     <li className="flex items-center gap-3 rounded-lg border px-4 py-3">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{assignment.user.name}</p>
-        <p className="truncate text-xs text-muted-foreground">{assignment.user.email}</p>
+        <p className="truncate text-sm font-medium">
+          {assignment.user?.name ?? `User #${assignment.user_id}`}
+        </p>
+        <p className="truncate text-xs text-muted-foreground">
+          {assignment.user?.email ?? '—'}
+        </p>
         {assignment.due_date && (
           <p className="mt-0.5 text-xs text-muted-foreground/70">
             {t('courses.due_date')}: {assignment.due_date}
@@ -145,7 +149,7 @@ function AssignmentRow({ assignment, courseId }: AssignmentRowProps) {
         type="button"
         aria-label={t('courses.remove')}
         className="shrink-0 rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring"
-        onClick={() => unassign({ courseId, userId: assignment.user.id })}
+        onClick={() => unassign({ courseId, userId: assignment.user?.id ?? assignment.user_id })}
       >
         <Trash2 size={14} />
       </button>
