@@ -124,5 +124,28 @@
         "progress": "Migrating question {{current}} of {{total}}",
         "error_title": "Migration failed",
         "retry": "Retry"
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your preferences",
+        "tab_appearance": "Appearance",
+        "tab_account": "Account",
+        "tab_notifications": "Notifications",
+        "theme_label": "Theme",
+        "theme_description": "Choose how the interface looks to you.",
+        "theme_light": "Light",
+        "theme_dark": "Dark",
+        "theme_system": "System",
+        "language_label": "Language",
+        "language_description": "Choose the language used throughout the interface.",
+        "language_en": "English",
+        "language_ar": "العربية",
+        "edit_profile_desc": "Update your name, photo, and contact details.",
+        "change_password_desc": "Change your account password.",
+        "notif_email": "Email Notifications",
+        "notif_email_desc": "Receive updates and alerts by email.",
+        "notif_push": "Push Notifications",
+        "notif_push_desc": "Get instant notifications in your browser.",
+        "coming_soon": "Coming soon"
     }
 }
