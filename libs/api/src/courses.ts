@@ -32,31 +32,31 @@ export interface Activity {
   updated_at: string;
 }
 
-/** A full course including its ordered activities. */
+/** A course object. `activities` is only populated on single-course fetches. */
 export interface Course {
   id: number;
   title: string;
   description?: string;
   status: CourseStatus;
-  activities: Activity[];
+  activities?: Activity[];
   created_at?: string;
   updated_at?: string;
 }
 
-/** Lightweight course summary used in list responses. */
-export interface CourseSummary {
-  id: number;
-  title: string;
-  description?: string;
-  status: CourseStatus;
-  activity_count: number;
-  created_at?: string;
-  updated_at?: string;
+/** Paginated list returned by GET /courses. */
+export interface CoursesPage {
+  items: Course[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
-export interface CreateCourseData {
-  title: string;
-  description?: string;
+/** Query parameters accepted by GET /courses. */
+export interface GetCoursesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: CourseStatus;
 }
 
 export interface CourseAssignment {
@@ -70,9 +70,15 @@ export interface CourseAssignment {
 
 // ── Course functions ───────────────────────────────────────────────────────────
 
-/** Fetch all courses (flat list, no pagination for now). */
-export async function getCourses(): Promise<CourseSummary[]> {
-  const envelope = await apiRequest<Envelope<CourseSummary[]>>('/courses');
+/** Fetch a paginated, filterable list of courses. */
+export async function getCourses(params?: GetCoursesParams): Promise<CoursesPage> {
+  const query = new URLSearchParams();
+  if (params?.page !== undefined) query.set('page', String(params.page));
+  if (params?.limit !== undefined) query.set('limit', String(params.limit));
+  if (params?.search !== undefined) query.set('search', params.search);
+  if (params?.status !== undefined) query.set('status', params.status);
+  const qs = query.toString() ? `?${query.toString()}` : '';
+  const envelope = await apiRequest<Envelope<CoursesPage>>(`/courses${qs}`);
   return envelope.data;
 }
 
