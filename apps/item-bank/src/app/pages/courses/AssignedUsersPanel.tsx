@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { UserPlus, Trash2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   Button,
@@ -18,15 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@item-bank/ui';
-import { useQuery } from '@tanstack/react-query';
 import { getUsers } from '@item-bank/api';
+import type { CourseAssignment } from '@item-bank/api/courses';
 
 import {
   useCourseAssignments,
   useAssignUser,
   useUnassignUser,
 } from '../../../features/courses/hooks';
-import type { CourseAssignment } from '@item-bank/api/courses';
 
 // ─── Assign dialog ────────────────────────────────────────────────────────────
 

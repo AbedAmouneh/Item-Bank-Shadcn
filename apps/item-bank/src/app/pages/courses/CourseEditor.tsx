@@ -20,6 +20,8 @@ import {
   Separator,
 } from '@item-bank/ui';
 
+import type { Activity, ActivityType } from '@item-bank/api/courses';
+
 import {
   useCourse,
   useUpdateCourse,
@@ -27,7 +29,6 @@ import {
   useDeleteActivity,
   useReorderActivities,
 } from '../../../features/courses/hooks';
-import type { Activity, ActivityType } from '@item-bank/api/courses';
 import { ActivityList } from './ActivityList';
 import { ActivityTypePicker } from './ActivityTypePicker';
 import { ActivitySettingsPanel } from './ActivitySettingsPanel';
@@ -112,9 +113,14 @@ const CourseEditor = () => {
   };
 
   const handleDeleteActivity = (activityId: number) => {
-    deleteActivity({ courseId, activityId });
+    // Capture a snapshot before the optimistic update so we can roll back on failure.
+    const snapshot = localActivities;
     setLocalActivities((prev) => prev.filter((a) => a.id !== activityId));
     if (selectedActivityId === activityId) setSelectedActivityId(null);
+    deleteActivity(
+      { courseId, activityId },
+      { onError: () => setLocalActivities(snapshot) },
+    );
   };
 
   const handleReorder = (newOrder: Activity[]) => {
@@ -147,6 +153,7 @@ const CourseEditor = () => {
       <div className="flex items-center gap-3 border-b px-6 py-4">
         <Link
           to="/projects"
+          aria-label={t('courses.back_to_courses')}
           className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft size={16} />
