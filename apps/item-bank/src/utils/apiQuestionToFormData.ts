@@ -403,6 +403,26 @@ function fillInBlanksImageFromApi(q: Question): QuestionFormData {
   };
 }
 
+function fillInBlanksFromApi(q: Question): QuestionFormData {
+  return {
+    ...baseFields(q),
+    type: 'fill_in_blanks',
+    content: s(q.content, 'content'),
+    answerGroups: a<Content>(q.content, 'answerGroups').map((group) => ({
+      key: s(group, 'key'),
+      answers: a<Content>(group, 'answers').map((ans) => ({
+        id: s(ans, 'id', crypto.randomUUID()),
+        text: s(ans, 'text'),
+        mark: n(ans, 'mark', 100),
+        ignoreCasing: b(ans, 'ignoreCasing', true),
+        feedback: false,
+      })),
+    })),
+    manualMarking: b(q.content, 'manualMarking'),
+    requireUniqueKeyAnswers: b(q.content, 'requireUniqueKeyAnswers'),
+  };
+}
+
 function dragDropTextFromApi(q: Question): QuestionFormData {
   return {
     ...baseFields(q),
@@ -427,8 +447,7 @@ function dragDropTextFromApi(q: Question): QuestionFormData {
 /**
  * Convert an API Question to the QuestionFormData shape expected by the editors.
  *
- * Only handles the 12 types that have been migrated to the REST API.
- * Returns null for types not yet migrated (image-bearing types still use IndexedDB).
+ * Handles all 21 question types — every type is now on the REST API.
  */
 export function apiQuestionToFormData(q: Question): QuestionFormData | null {
   switch (q.type) {
@@ -458,6 +477,8 @@ export function apiQuestionToFormData(q: Question): QuestionFormData | null {
       return spellingDictationFromApi(q);
     case 'record_audio':
       return recordAudioFromApi(q);
+    case 'fill_in_blanks':
+      return fillInBlanksFromApi(q);
     case 'drag_drop_text':
       return dragDropTextFromApi(q);
     case 'fill_in_blanks_image':
