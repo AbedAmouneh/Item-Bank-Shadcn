@@ -82,15 +82,17 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
   // Sync the form fields whenever a different activity is selected in the sidebar.
   // `reset` replaces all values at once, which is safer than calling `setValue`
   // for each field individually.
+  // All type-specific values live inside `activity.settings` — we extract them here.
   useEffect(() => {
+    const s = activity.settings;
     reset({
       title: activity.title,
       description: activity.description ?? '',
-      item_bank_id: activity.item_bank_id,
-      time_limit_minutes: activity.time_limit_minutes != null ? String(activity.time_limit_minutes) : '',
-      pass_score_percent: activity.pass_score_percent ?? 0,
-      shuffle: activity.shuffle ?? false,
-      file_url: activity.file_url ?? '',
+      item_bank_id: typeof s.item_bank_id === 'number' ? s.item_bank_id : undefined,
+      time_limit_minutes: s.time_limit_minutes != null ? String(s.time_limit_minutes) : '',
+      pass_score_percent: typeof s.pass_score_percent === 'number' ? s.pass_score_percent : 0,
+      shuffle: typeof s.shuffle === 'boolean' ? s.shuffle : false,
+      file_url: typeof s.file_url === 'string' ? s.file_url : '',
     });
   }, [activity, reset]);
 
@@ -100,21 +102,23 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
   const isQuizType = activity.type === 'quiz' || activity.type === 'practice_quiz';
 
   const onSubmit = (data: SettingsFields) => {
+    // All type-specific fields must be nested under `settings` — the backend
+    // stores and returns them as a single JSONB column.
+    const settings: Record<string, unknown> = {};
+    if (isQuizType) {
+      if (data.item_bank_id) settings['item_bank_id'] = data.item_bank_id;
+      if (data.time_limit_minutes) settings['time_limit_minutes'] = Number(data.time_limit_minutes);
+      settings['pass_score_percent'] = data.pass_score_percent ?? 0;
+      settings['shuffle'] = data.shuffle ?? false;
+    }
+    if (activity.type === 'pdf_book') {
+      if (data.file_url) settings['file_url'] = data.file_url;
+    }
     const payload: UpdateActivityData = {
       title: data.title,
       description: data.description || undefined,
+      settings,
     };
-    if (isQuizType) {
-      payload.item_bank_id = data.item_bank_id || undefined;
-      payload.time_limit_minutes = data.time_limit_minutes
-        ? Number(data.time_limit_minutes)
-        : undefined;
-      payload.pass_score_percent = data.pass_score_percent;
-      payload.shuffle = data.shuffle;
-    }
-    if (activity.type === 'pdf_book') {
-      payload.file_url = data.file_url || undefined;
-    }
     saveActivity({ courseId, activityId: activity.id, data: payload });
   };
 
