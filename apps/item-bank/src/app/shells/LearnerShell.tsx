@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
 
 import { useNavigate, Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LogOut, Pencil } from 'lucide-react';
 
 import { logout } from '@item-bank/api';
 import { useAuth } from '@item-bank/auth';
-import { cn } from '@item-bank/ui';
+import { cn, HeaderPreferenceButtons } from '@item-bank/ui';
 
 const AUTHORING_ROLES = ['org_admin', 'author', 'reviewer', 'admin', 'user'];
 
@@ -18,6 +19,7 @@ const AUTHORING_ROLES = ['org_admin', 'author', 'reviewer', 'admin', 'user'];
  * Contains zero redirect logic — that lives in LearnerRoute.
  */
 export default function LearnerShell() {
+  const { t } = useTranslation('common');
   const { user, clearSession } = useAuth();
   const navigate = useNavigate();
 
@@ -53,6 +55,8 @@ export default function LearnerShell() {
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
+          <HeaderPreferenceButtons />
+
           {/* Switch to Authoring — only shown for dual-role users */}
           {hasAuthoringRole && (
             <button
@@ -61,10 +65,10 @@ export default function LearnerShell() {
                 'flex items-center gap-2 py-1.5 px-3 rounded-lg text-sm font-medium',
                 'text-muted-foreground hover:text-foreground hover:bg-accent transition-colors',
               )}
-              aria-label="Switch to Authoring"
+              aria-label={t('learner_shell.switch_to_authoring')}
             >
               <Pencil size={16} />
-              <span className="hidden sm:block">Switch to Authoring</span>
+              <span className="hidden sm:block">{t('learner_shell.switch_to_authoring')}</span>
             </button>
           )}
 
@@ -75,7 +79,7 @@ export default function LearnerShell() {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && navigate('/profile/edit')}
-            aria-label="Go to profile"
+            aria-label={t('learner_shell.go_to_profile')}
           >
             <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white text-xs font-semibold">
               {emailLocal.slice(0, 2).toUpperCase()}
@@ -89,7 +93,7 @@ export default function LearnerShell() {
           <button
             onClick={handleLogout}
             className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            aria-label="Logout"
+            aria-label={t('table_actions.logout')}
           >
             <LogOut size={18} className="rtl:scale-x-[-1]" />
           </button>
