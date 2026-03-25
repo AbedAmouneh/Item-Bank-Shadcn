@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
 import { stripHtml } from '../../domain/extractAnswers';
@@ -40,6 +41,7 @@ const DASH_RULES = [
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function PixelDash() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -174,8 +176,8 @@ export default function PixelDash() {
           className="flex items-center justify-between shrink-0"
           style={{ width: canvasDims.w }}
         >
-          <h2 className="text-xl font-bold">Pixel Dash</h2>
-          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+          <h2 className="text-xl font-bold">{t('games.pixel_dash_title')}</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>{t('games.back_to_games')}</Button>
         </div>
 
         {/* Game frame — canvas behind, HTML overlay in front.
@@ -212,11 +214,11 @@ export default function PixelDash() {
             {isIdle && (
               <div className="flex flex-col items-center justify-center flex-1 gap-5 text-white p-6">
                 <FoxMascot line={FOX_LINES.pixel_dash_idle} />
-                <p className="text-xl font-bold">Pixel Dash</p>
+                <p className="text-xl font-bold">{t('games.pixel_dash_title')}</p>
                 <p className="text-sm text-white/60">
                   Dodge obstacles · collect coins · answer gate questions
                 </p>
-                <Button onClick={startGame} className="mt-1 bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">Start Game</Button>
+                <Button onClick={startGame} className="mt-1 bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">{t('games.start_game')}</Button>
               </div>
             )}
 
@@ -256,7 +258,7 @@ export default function PixelDash() {
                       >
                         <p className="text-2xl font-black text-red-400 drop-shadow">✗ Wrong!</p>
                         <div className="bg-emerald-900/80 border-2 border-emerald-400/70 rounded-xl px-5 py-3 max-w-[340px] text-center shadow-xl">
-                          <p className="text-emerald-300/70 text-xs font-medium mb-1">Correct answer</p>
+                          <p className="text-emerald-300/70 text-xs font-medium mb-1">{t('games.correct_answer')}</p>
                           <p className="text-emerald-200 text-base font-bold leading-snug">{wrongFeedback}</p>
                         </div>
                       </div>
@@ -342,7 +344,7 @@ export default function PixelDash() {
             <div className="absolute bottom-4 inset-x-0 z-20 flex justify-between px-8 pointer-events-none">
               <button
                 type="button"
-                aria-label="Move left"
+                aria-label={t('games.move_left_aria')}
                 className="pointer-events-auto bg-amber-900/70 hover:bg-amber-800/85 active:bg-amber-700/90 border-2 border-amber-600/50 text-amber-200 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold transition-colors"
                 onClick={() => switchLane(-1)}
               >
@@ -350,7 +352,7 @@ export default function PixelDash() {
               </button>
               <button
                 type="button"
-                aria-label="Move right"
+                aria-label={t('games.move_right_aria')}
                 className="pointer-events-auto bg-amber-900/70 hover:bg-amber-800/85 active:bg-amber-700/90 border-2 border-amber-600/50 text-amber-200 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold transition-colors"
                 onClick={() => switchLane(1)}
               >
