@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Lock, PlayCircle } from 'lucide-react';
+import { CheckCircle2, Circle, Lock, PlayCircle } from 'lucide-react';
 
 import { cn } from '@item-bank/ui';
 import type { CourseModule } from '@item-bank/types';
@@ -14,9 +14,10 @@ type ModuleSidebarProps = {
  * Vertical module list for the course player sidebar.
  *
  * Icon priority (top wins):
- * 1. completed         -> CheckCircle2 (green)
- * 2. active + unlocked -> PlayCircle (blue)
- * 3. locked            -> Lock (muted)
+ * 1. completed               -> CheckCircle2 (green)
+ * 2. active + unlocked       -> PlayCircle (blue)
+ * 3. locked                  -> Lock (muted, 50% opacity via button class)
+ * 4. unlocked + not started  -> Circle (muted — available but not yet visited)
  */
 export function ModuleSidebar({ modules, courseId, activeModuleId }: ModuleSidebarProps) {
   const navigate = useNavigate();
@@ -56,11 +57,17 @@ export function ModuleSidebar({ modules, courseId, activeModuleId }: ModuleSideb
                 className="shrink-0 text-primary"
                 aria-label="Current module"
               />
-            ) : (
+            ) : mod.locked ? (
               <Lock
                 size={16}
                 className="shrink-0 text-muted-foreground"
                 aria-label="Locked"
+              />
+            ) : (
+              <Circle
+                size={16}
+                className="shrink-0 text-muted-foreground"
+                aria-label="Not started"
               />
             )}
             <span className="truncate">{mod.title}</span>
