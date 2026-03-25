@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Activity,
   BookOpen,
@@ -66,6 +67,7 @@ function StatCard({
   iconBg,
   iconColor,
 }: StatCardProps) {
+  const { t } = useTranslation('common');
   return (
     <article
       className={cn(
@@ -84,7 +86,7 @@ function StatCard({
           {isLoading ? (
             <Bone className="mt-1 h-9 w-24" />
           ) : isError ? (
-            <p className="text-sm text-destructive">Failed to load</p>
+            <p className="text-sm text-destructive">{t('dashboard.failed_to_load')}</p>
           ) : (
             <p className="text-4xl font-bold tabular-nums tracking-tight text-foreground leading-none">
               {value?.toLocaleString() ?? '—'}
@@ -169,6 +171,7 @@ function QuickAction({ label, description, icon: Icon, href }: QuickActionProps)
 
 /** Main dashboard page — assembled at /dashboard. */
 export default function Dashboard() {
+  const { t } = useTranslation('common');
   const { user } = useAuth();
 
   const totalQuery = useQuery({
@@ -204,6 +207,8 @@ export default function Dashboard() {
       ? Math.round(statsQuery.data.average_score)
       : undefined;
 
+  const pendingCount = pendingQuery.data?.total ?? 0;
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl space-y-8 ps-4 pe-4 pt-10 pb-16 sm:ps-6 sm:pe-6 lg:ps-8 lg:pe-8">
@@ -221,13 +226,13 @@ export default function Dashboard() {
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Dashboard
+                {t('dashboard.title')}
               </p>
               <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                Welcome back, {displayName}
+                {t('dashboard.welcome_back', { name: displayName })}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Here's what's happening with your question bank.
+                {t('dashboard.subtitle')}
               </p>
             </div>
             <div className="hidden shrink-0 sm:block">
@@ -247,11 +252,11 @@ export default function Dashboard() {
             id="question-stats-heading"
             className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground"
           >
-            Question Bank
+            {t('dashboard.question_bank_section')}
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              label="Total Questions"
+              label={t('dashboard.total_questions')}
               value={totalQuery.data?.total}
               isLoading={totalQuery.isLoading}
               isError={totalQuery.isError}
@@ -261,7 +266,7 @@ export default function Dashboard() {
               iconColor="text-indigo-600 dark:text-indigo-400"
             />
             <StatCard
-              label="Draft"
+              label={t('dashboard.draft')}
               value={draftQuery.data?.total}
               isLoading={draftQuery.isLoading}
               isError={draftQuery.isError}
@@ -271,7 +276,7 @@ export default function Dashboard() {
               iconColor="text-amber-600 dark:text-amber-400"
             />
             <StatCard
-              label="Pending Review"
+              label={t('dashboard.pending_review')}
               value={pendingQuery.data?.total}
               isLoading={pendingQuery.isLoading}
               isError={pendingQuery.isError}
@@ -281,7 +286,7 @@ export default function Dashboard() {
               iconColor="text-orange-600 dark:text-orange-400"
             />
             <StatCard
-              label="Published"
+              label={t('dashboard.published')}
               value={publishedQuery.data?.total}
               isLoading={publishedQuery.isLoading}
               isError={publishedQuery.isError}
@@ -302,24 +307,24 @@ export default function Dashboard() {
             id="game-stats-heading"
             className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground"
           >
-            My Game Performance
+            {t('dashboard.game_performance')}
           </h2>
           <div className="rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
             <div className="flex flex-col divide-y divide-border sm:flex-row sm:divide-x sm:divide-y-0">
               <GameStatItem
-                label="Games Played"
+                label={t('dashboard.games_played')}
                 value={statsQuery.data?.games_played}
                 isLoading={statsQuery.isLoading}
                 icon={Gamepad2}
               />
               <GameStatItem
-                label="Best Score"
+                label={t('dashboard.best_score')}
                 value={statsQuery.data?.best_score}
                 isLoading={statsQuery.isLoading}
                 icon={Trophy}
               />
               <GameStatItem
-                label="Average Score"
+                label={t('dashboard.average_score')}
                 value={averageScore}
                 isLoading={statsQuery.isLoading}
                 icon={Activity}
@@ -337,24 +342,24 @@ export default function Dashboard() {
             id="actions-heading"
             className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground"
           >
-            Quick Actions
+            {t('dashboard.quick_actions')}
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <QuickAction
-              label="Add Question"
-              description="Create a new question in your bank"
+              label={t('dashboard.add_question')}
+              description={t('dashboard.add_question_desc')}
               icon={Plus}
               href="/home"
             />
             <QuickAction
-              label="Manage Item Banks"
-              description="Organise questions into collections"
+              label={t('dashboard.manage_item_banks')}
+              description={t('dashboard.manage_item_banks_desc')}
               icon={Database}
               href="/item-banks"
             />
             <QuickAction
-              label="Play a Game"
-              description="Test yourself with quiz games"
+              label={t('dashboard.play_a_game')}
+              description={t('dashboard.play_a_game_desc')}
               icon={Gamepad2}
               href="/games"
             />
@@ -371,7 +376,7 @@ export default function Dashboard() {
               id="admin-heading"
               className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground"
             >
-              Admin
+              {t('dashboard.admin_section')}
             </h2>
             <div
               className={cn(
@@ -389,15 +394,16 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-                    Questions Pending Review
+                    {t('dashboard.questions_pending_review')}
                   </p>
                   {pendingQuery.isLoading ? (
                     <Bone className="mt-1 h-4 w-28 bg-amber-200/70 dark:bg-amber-800/40" />
                   ) : (
                     <p className="text-xs text-amber-700 dark:text-amber-400">
-                      {pendingQuery.data?.total ?? 0}{' '}
-                      {(pendingQuery.data?.total ?? 0) === 1 ? 'question' : 'questions'} awaiting
-                      review
+                      {t('dashboard.awaiting_review', {
+                        count: pendingCount,
+                        item: pendingCount === 1 ? t('dashboard.question') : t('dashboard.questions_word'),
+                      })}
                     </p>
                   )}
                 </div>
@@ -412,7 +418,7 @@ export default function Dashboard() {
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500',
                 )}
               >
-                Review Now
+                {t('dashboard.review_now')}
               </Link>
             </div>
           </section>
