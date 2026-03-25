@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -40,6 +41,7 @@ export default function PixelDashResults({
   onPlayAgain,
   onBack,
 }: PixelDashResultsProps) {
+  const { t } = useTranslation('common');
   const accuracy = totalGatesReached > 0
     ? Math.round((gatesCleared / totalGatesReached) * 100)
     : 0;
@@ -81,30 +83,30 @@ export default function PixelDashResults({
       <div className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm">
         <div>
           <p className="font-bold text-xl text-yellow-400 tabular-nums">{score}</p>
-          <p className="text-white/60">Score</p>
+          <p className="text-white/60">{t('games.score_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl tabular-nums">{gatesCleared}</p>
-          <p className="text-white/60">Gates cleared</p>
+          <p className="text-white/60">{t('games.gates_cleared_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl text-yellow-400 tabular-nums">{coinsCollected}</p>
-          <p className="text-white/60">Coins</p>
+          <p className="text-white/60">{t('games.coins_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl tabular-nums">
             {maxStreak > 0 ? `${maxStreak} 🔥` : '0'}
           </p>
-          <p className="text-white/60">Max streak</p>
+          <p className="text-white/60">{t('games.max_streak_stat')}</p>
         </div>
         <div className="col-span-2">
           <p className="font-bold text-xl tabular-nums">{distanceM} m</p>
-          <p className="text-white/60">Distance</p>
+          <p className="text-white/60">{t('games.distance_stat')}</p>
         </div>
       </div>
 
       {isSuccess && (
-        <p className="text-xs text-emerald-400">✓ Saved</p>
+        <p className="text-xs text-emerald-400">{t('games.saved')}</p>
       )}
 
       <div className="flex gap-3">
@@ -113,9 +115,9 @@ export default function PixelDashResults({
           onClick={onBack}
           className="border-white/30 text-white hover:bg-white/10"
         >
-          ← Back
+          {t('games.back')}
         </Button>
-        <Button onClick={onPlayAgain} className="bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">Play Again</Button>
+        <Button onClick={onPlayAgain} className="bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">{t('games.play_again')}</Button>
       </div>
 
       <ScoreHistory scores={scores} />
