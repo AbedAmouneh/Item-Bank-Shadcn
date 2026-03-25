@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import { ShieldAlert, TrendingUp, FileText, Gamepad2, Users } from 'lucide-react';
 import { useAuth } from '@item-bank/auth';
 import {
@@ -139,6 +140,7 @@ function RankBadge({ rank }: { rank: number }) {
  * game session metrics, and the top-10 global player leaderboard.
  */
 export default function Analytics() {
+  const { t } = useTranslation('common');
   const { user } = useAuth();
 
   const { data, isLoading, isError } = useQuery({
@@ -153,9 +155,9 @@ export default function Analytics() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-8 text-center">
         <ShieldAlert className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-        <h2 className="text-xl font-semibold">Access denied</h2>
+        <h2 className="text-xl font-semibold">{t('analytics.access_denied')}</h2>
         <p className="text-sm text-muted-foreground">
-          This page is only available to administrators.
+          {t('analytics.access_denied_desc')}
         </p>
       </div>
     );
@@ -167,7 +169,7 @@ export default function Analytics() {
     return (
       <div className="px-8 py-8">
         <p className="text-sm text-destructive">
-          Failed to load analytics data. Please try again later.
+          {t('analytics.load_error')}
         </p>
       </div>
     );
@@ -177,8 +179,8 @@ export default function Analytics() {
 
   // Only chart types that actually have questions.
   const activeTypes = questions.by_type
-    .filter((t) => t.count > 0)
-    .map((t) => ({ ...t, label: formatTypeName(t.type) }));
+    .filter((entry) => entry.count > 0)
+    .map((entry) => ({ ...entry, label: formatTypeName(entry.type) }));
 
   const sessionsByGame = game_sessions.by_game.map((s) => ({
     ...s,
@@ -194,8 +196,8 @@ export default function Analytics() {
       <div className="flex items-center gap-3">
         <TrendingUp className="h-7 w-7 text-primary" aria-hidden="true" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-sm text-muted-foreground">Platform overview — admin view</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('analytics.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('analytics.subtitle')}</p>
         </div>
       </div>
 
@@ -204,27 +206,27 @@ export default function Analytics() {
         <div className="mb-4 flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <h2 id="qs-section-heading" className="text-base font-semibold">
-            Questions
+            {t('analytics.questions_section')}
           </h2>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard label="Total Questions" value={questions.total} accentClass="bg-primary" />
-          <StatCard label="Draft" value={questions.draft} accentClass="bg-muted-foreground" />
+          <StatCard label={t('analytics.total_questions')} value={questions.total} accentClass="bg-primary" />
+          <StatCard label={t('analytics.draft')} value={questions.draft} accentClass="bg-muted-foreground" />
           <StatCard
-            label="Pending Review"
+            label={t('analytics.pending_review')}
             value={questions.pending_review}
             accentColor="#F59E0B"
           />
-          <StatCard label="Published" value={questions.published} accentColor="#10B981" />
+          <StatCard label={t('analytics.published')} value={questions.published} accentColor="#10B981" />
         </div>
       </section>
 
       {/* ── Section 2: Questions by Type horizontal bar chart ── */}
       {activeTypes.length > 0 && (
-        <section aria-label="Questions by type">
+        <section aria-label={t('analytics.questions_by_type_aria')}>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-semibold">Questions by Type</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('analytics.questions_by_type')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={typeChartHeight}>
@@ -269,24 +271,24 @@ export default function Analytics() {
         <div className="mb-4 flex items-center gap-2">
           <Gamepad2 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <h2 id="sessions-section-heading" className="text-base font-semibold">
-            Game Sessions
+            {t('analytics.game_sessions')}
           </h2>
         </div>
 
         {/* 3 summary stats */}
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard
-            label="Total Sessions"
+            label={t('analytics.total_sessions')}
             value={game_sessions.total}
             accentClass="bg-primary"
           />
           <StatCard
-            label="Most Popular Game"
+            label={t('analytics.most_popular_game')}
             value={formatGameName(game_sessions.most_popular_game)}
             accentColor={VIOLET_ACCENT}
           />
           <StatCard
-            label="Unique Players"
+            label={t('analytics.unique_players')}
             value={game_sessions.unique_players}
             accentColor={SKY_ACCENT}
           />
@@ -295,7 +297,7 @@ export default function Analytics() {
         {/* Sessions per game bar chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Sessions per Game</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('analytics.sessions_per_game')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -328,7 +330,7 @@ export default function Analytics() {
         <div className="mb-4 flex items-center gap-2">
           <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <h2 id="players-section-heading" className="text-base font-semibold">
-            Top 10 Players
+            {t('analytics.top_players')}
           </h2>
         </div>
         <Card>
@@ -336,10 +338,10 @@ export default function Analytics() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16 text-center">Rank</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="text-end">Games Played</TableHead>
-                  <TableHead className="text-end">Total Score</TableHead>
+                  <TableHead className="w-16 text-center">{t('analytics.rank_col')}</TableHead>
+                  <TableHead>{t('analytics.name_col')}</TableHead>
+                  <TableHead className="text-end">{t('analytics.games_played_col')}</TableHead>
+                  <TableHead className="text-end">{t('analytics.total_score_col')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
