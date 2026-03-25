@@ -36,7 +36,7 @@ export function ExamQuestion({ question, answer, onChange }: ExamQuestionProps) 
       {/* ── Multiple choice ─────────────────────────── */}
       {type === 'multiple_choice' && content.choices && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="sr-only">Select your answer</legend>
+          <legend className="sr-only">{t('learn.select_your_answer')}</legend>
           {content.choices.map((choice) => (
             <label
               key={choice.id}
@@ -59,7 +59,7 @@ export function ExamQuestion({ question, answer, onChange }: ExamQuestionProps) 
       {/* ── True / False ────────────────────────────── */}
       {type === 'true_false' && (
         <fieldset className="flex gap-3">
-          <legend className="sr-only">Select True or False</legend>
+          <legend className="sr-only">{t('learn.select_true_or_false')}</legend>
           {(['true', 'false'] as const).map((val) => (
             <label
               key={val}
@@ -88,7 +88,7 @@ export function ExamQuestion({ question, answer, onChange }: ExamQuestionProps) 
             handleChange(e.target.value === '' ? undefined : Number(e.target.value))
           }
           className="w-48 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          aria-label="Numerical answer"
+          aria-label={t('learn.numerical_answer')}
         />
       )}
 
