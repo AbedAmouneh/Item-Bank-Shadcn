@@ -41,6 +41,7 @@ import ProfileGeneral from './pages/profile/General';
 import ChangePassword from './pages/profile/ChangePassword';
 import AdminUsers from './pages/admin/Users';
 import RoleSelectPage from './pages/RoleSelectPage';
+import I18nTestPage from './pages/dev/I18nTestPage';
 import MyLearningPage from './pages/learn/MyLearningPage';
 import CoursePlayerPage from './pages/learn/CoursePlayerPage';
 import ModulePage from './pages/learn/ModulePage';
@@ -154,6 +155,7 @@ export default function App() {
                     migration). Must be preserved here. */}
                 <Route element={<AuthenticatedLayout />}>
                   <Route path="/home" element={<Home />} />
+                  <Route path="/dev/i18n-test" element={<I18nTestPage />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/analytics" element={<Analytics />} />
