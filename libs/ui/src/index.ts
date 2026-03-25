@@ -1,5 +1,9 @@
 // libs/ui/src/index.ts
 export { default as NavBar, type NavBarProps } from './components/NavBar';
+export {
+  default as HeaderPreferenceButtons,
+  type HeaderPreferenceButtonsProps,
+} from './components/HeaderPreferenceButtons';
 export { NotificationPanel, type NotificationPanelProps } from './components/NotificationPanel';
 export type { Notification } from './types/Notification';
 export { default as ActionButton, type DropdownItem } from './components/ActionButton';
