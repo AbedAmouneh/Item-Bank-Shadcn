@@ -9,7 +9,7 @@ import { apiRequest } from './client';
 
 /** Shape of the user profile returned by GET /profile/me and PUT /profile/me. */
 export interface UserProfile {
-  id: string;
+  id: number;
   first_name: string;
   last_name: string;
   username: string;
