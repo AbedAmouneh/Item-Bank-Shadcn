@@ -35,12 +35,12 @@ import { AccessControlTab } from './AccessControlTab';
 
 const profileSchema = z.object({
   email: z.string().email(),
-  role: z.enum(['admin', 'user']),
+  role: z.enum(['admin', 'user', 'learner']),
 });
 
 type ProfileFormValues = {
   email: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'learner';
 };
 
 // ── Profile tab ────────────────────────────────────────────────────────────────
@@ -133,6 +133,7 @@ function ProfileTab({ user, onSuccess }: ProfileTabProps) {
               <SelectContent>
                 <SelectItem value="user">{t('admin.users.role_user')}</SelectItem>
                 <SelectItem value="admin">{t('admin.users.role_admin')}</SelectItem>
+                <SelectItem value="learner">{t('admin.users.role_learner')}</SelectItem>
               </SelectContent>
             </Select>
           )}
