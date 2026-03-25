@@ -38,7 +38,9 @@ export function CourseCard({ course }: CourseCardProps) {
         ? t('learn.review')
         : t('learn.continue');
 
-  const variant = course.due_date ? dueDateVariant(course.due_date) : null;
+  // Completed courses never show overdue/soon — the work is already done.
+  const variant =
+    course.due_date && course.status !== 'completed' ? dueDateVariant(course.due_date) : null;
 
   return (
     <div
