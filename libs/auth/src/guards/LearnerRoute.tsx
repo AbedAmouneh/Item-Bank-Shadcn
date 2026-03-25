@@ -19,8 +19,7 @@ const LearnerRoute = () => {
   if (isLoading) return null;
   if (!isAuthenticated) return <Navigate replace to="/login" />;
 
-  // DEV BYPASS — remove before merging
-  const hasLearnerRole = true || (user?.roles.includes(LEARNER_ROLE) ?? false);
+  const hasLearnerRole = user?.roles.includes(LEARNER_ROLE) ?? false;
   if (!hasLearnerRole) return <Navigate replace to="/dashboard" />;
 
   return <Outlet />;
