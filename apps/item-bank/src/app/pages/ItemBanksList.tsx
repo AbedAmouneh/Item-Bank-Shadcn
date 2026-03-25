@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, Play, Plus, Library } from 'lucide-react';
 
 import {
@@ -71,6 +72,7 @@ function BankFormDialog({
   onSubmit,
   isPending,
 }: BankFormDialogProps) {
+  const { t } = useTranslation('common');
   const {
     register,
     handleSubmit,
@@ -89,15 +91,15 @@ function BankFormDialog({
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{initialData ? 'Edit Item Bank' : 'New Item Bank'}</DialogTitle>
+          <DialogTitle>{initialData ? t('item_banks.edit_bank') : t('item_banks.new_bank')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="bank-name">Name</Label>
+            <Label htmlFor="bank-name">{t('item_banks.name_label')}</Label>
             <Input
               id="bank-name"
               {...register('name')}
-              placeholder="e.g. Grade 5 Science"
+              placeholder={t('item_banks.name_placeholder')}
               aria-invalid={!!errors.name}
             />
             {errors.name && (
@@ -106,13 +108,13 @@ function BankFormDialog({
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="bank-description">
-              Description{' '}
-              <span className="text-muted-foreground">(optional)</span>
+              {t('item_banks.description_label')}{' '}
+              <span className="text-muted-foreground">{t('item_banks.description_optional')}</span>
             </Label>
             <Textarea
               id="bank-description"
               {...register('description')}
-              placeholder="A short description of what this bank covers"
+              placeholder={t('item_banks.description_placeholder')}
               rows={3}
               aria-invalid={!!errors.description}
             />
@@ -122,10 +124,10 @@ function BankFormDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t('profile.cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Saving…' : 'Save'}
+              {isPending ? t('item_banks.saving') : t('item_banks.save')}
             </Button>
           </DialogFooter>
         </form>
@@ -168,6 +170,7 @@ interface ItemBankCardProps {
 }
 
 function ItemBankCard({ bank, onEdit, onDelete }: ItemBankCardProps) {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
 
   return (
@@ -183,7 +186,7 @@ function ItemBankCard({ bank, onEdit, onDelete }: ItemBankCardProps) {
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
-              aria-label="Edit item bank"
+              aria-label={t('item_banks.edit_label')}
               className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               onClick={(e) => {
                 e.stopPropagation();
@@ -194,7 +197,7 @@ function ItemBankCard({ bank, onEdit, onDelete }: ItemBankCardProps) {
             </button>
             <button
               type="button"
-              aria-label="Delete item bank"
+              aria-label={t('item_banks.delete_label')}
               className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-ring"
               onClick={(e) => {
                 e.stopPropagation();
@@ -210,7 +213,7 @@ function ItemBankCard({ bank, onEdit, onDelete }: ItemBankCardProps) {
         {bank.description ? (
           <p className="line-clamp-2 text-sm text-muted-foreground">{bank.description}</p>
         ) : (
-          <p className="text-sm italic text-muted-foreground/50">No description</p>
+          <p className="text-sm italic text-muted-foreground/50">{t('item_banks.no_description')}</p>
         )}
       </CardContent>
       <CardFooter>
@@ -223,7 +226,7 @@ function ItemBankCard({ bank, onEdit, onDelete }: ItemBankCardProps) {
           }}
         >
           <Play size={14} className="me-1.5" />
-          Play
+          {t('item_banks.play')}
         </Button>
       </CardFooter>
     </Card>
@@ -237,6 +240,7 @@ function ItemBankCard({ bank, onEdit, onDelete }: ItemBankCardProps) {
 type DialogMode = 'create' | 'edit';
 
 const ItemBanksList = () => {
+  const { t } = useTranslation('common');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>('create');
   const [editTarget, setEditTarget] = useState<ItemBank | null>(null);
@@ -282,16 +286,16 @@ const ItemBanksList = () => {
     <div className="w-full px-8 py-8">
       {/* Page header */}
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Item Banks</h1>
+        <h1 className="text-2xl font-bold">{t('item_banks.title')}</h1>
         <Button onClick={openCreate}>
           <Plus size={16} className="me-1.5" />
-          New Item Bank
+          {t('item_banks.new_bank')}
         </Button>
       </div>
 
       {/* Error */}
       {isError && (
-        <p className="mb-4 text-destructive">Failed to load item banks.</p>
+        <p className="mb-4 text-destructive">{t('item_banks.load_error')}</p>
       )}
 
       {/* Loading skeletons */}
@@ -308,13 +312,13 @@ const ItemBanksList = () => {
       {!isLoading && !isError && banks.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
           <Library size={48} className="text-muted-foreground/40" />
-          <p className="text-lg font-medium text-muted-foreground">No item banks yet</p>
+          <p className="text-lg font-medium text-muted-foreground">{t('item_banks.no_banks')}</p>
           <p className="text-sm text-muted-foreground/70">
-            Create your first item bank to organise questions by topic or curriculum.
+            {t('item_banks.no_banks_desc')}
           </p>
           <Button onClick={openCreate}>
             <Plus size={16} className="me-1.5" />
-            New Item Bank
+            {t('item_banks.new_bank')}
           </Button>
         </div>
       )}
@@ -360,12 +364,12 @@ const ItemBanksList = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('profile.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={handleDeleteConfirm}
             >
-              Delete
+              {t('item_banks.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
