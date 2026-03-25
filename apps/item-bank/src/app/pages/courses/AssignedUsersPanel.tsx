@@ -81,7 +81,7 @@ function AssignDialog({ courseId, open, onClose }: AssignDialogProps) {
             <Label htmlFor="assign-user">{t('courses.user_email')}</Label>
             <Select value={selectedUserId} onValueChange={setSelectedUserId}>
               <SelectTrigger id="assign-user">
-                <SelectValue placeholder="Select a user" />
+                <SelectValue placeholder={t('courses.select_a_user')} />
               </SelectTrigger>
               <SelectContent>
                 {users.map((u) => (
