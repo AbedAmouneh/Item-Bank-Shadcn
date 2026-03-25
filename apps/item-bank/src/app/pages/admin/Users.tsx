@@ -48,7 +48,7 @@ const createUserSchema = (t: (k: string) => string) =>
       .string()
       .min(1, t('admin.users.password_required'))
       .min(8, t('admin.users.password_min')),
-    role: z.enum(['admin', 'user'], {
+    role: z.enum(['admin', 'user', 'learner'], {
       error: t('admin.users.role_required'),
     }),
   });
@@ -56,7 +56,7 @@ const createUserSchema = (t: (k: string) => string) =>
 type CreateUserFormValues = {
   email: string;
   password: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'learner';
 };
 
 interface CreateUserDialogProps {
@@ -169,6 +169,7 @@ function CreateUserDialog({ open, onClose, onSuccess }: CreateUserDialogProps) {
                   <SelectContent>
                     <SelectItem value="user">{t('admin.users.role_user')}</SelectItem>
                     <SelectItem value="admin">{t('admin.users.role_admin')}</SelectItem>
+                    <SelectItem value="learner">{t('admin.users.role_learner')}</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -347,7 +348,9 @@ function UsersContent() {
                   <TableCell>
                     {u.role === 'admin'
                       ? t('admin.users.role_admin')
-                      : t('admin.users.role_user')}
+                      : u.role === 'learner'
+                        ? t('admin.users.role_learner')
+                        : t('admin.users.role_user')}
                   </TableCell>
                   <TableCell>
                     <StatusBadge isActive={u.is_active} />
