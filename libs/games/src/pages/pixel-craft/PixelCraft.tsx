@@ -7,6 +7,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
 import FoxMascot, { FOX_LINES } from '../../components/FoxMascot';
@@ -41,6 +42,7 @@ interface PopupPosition {
  * Pixel Craft game page.
  */
 export default function PixelCraft() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -165,7 +167,7 @@ export default function PixelCraft() {
       <div
         ref={resultSlotRef}
         className="flex items-center justify-center"
-        aria-label="Craft result slot"
+        aria-label={t('games.result_slot_aria')}
         style={{
           width: 72,
           height: 72,
@@ -180,7 +182,7 @@ export default function PixelCraft() {
         {craftedEmoji ?? '☆'}
       </div>
       <div className="min-h-4 text-center text-xs text-slate-400">
-        {craftedLabel ?? 'Awaiting craft'}
+        {craftedLabel ?? t('games.awaiting_craft')}
       </div>
     </div>
   );
@@ -200,7 +202,7 @@ export default function PixelCraft() {
         >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-black text-white">Pixel Craft</h2>
+            <h2 className="text-2xl font-black text-white">{t('games.pixel_craft_title')}</h2>
             <p className="text-sm text-slate-400">
               Drag the right fragments into the grid to forge the answer.
             </p>
@@ -208,7 +210,7 @@ export default function PixelCraft() {
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="rounded-md bg-slate-900/80 px-3 py-2 text-sm font-semibold text-slate-200">
-              Score: <span className="text-yellow-300">{score}</span>
+              {t('games.score_label')}: <span className="text-yellow-300">{score}</span>
             </div>
             <StreakFire streak={streak} visible={streak >= 3} />
             <Button
@@ -216,7 +218,7 @@ export default function PixelCraft() {
               onClick={() => navigate('/games')}
               className="text-slate-200 hover:bg-slate-800 hover:text-white"
             >
-              Back to Games
+              {t('games.back_to_games')}
             </Button>
           </div>
         </div>
@@ -239,7 +241,7 @@ export default function PixelCraft() {
             >
               <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                 {phase === 'idle'
-                  ? 'Workshop Brief'
+                  ? t('games.workshop_brief')
                   : `Craft ${currentCraftNumber} of ${totalCrafts}`}
               </div>
               <p className="text-lg font-bold leading-snug text-white">
@@ -254,7 +256,7 @@ export default function PixelCraft() {
                   <div
                     className="h-10 w-10 rounded-full border-[3px] border-slate-700 border-t-slate-200 animate-spin"
                     role="status"
-                    aria-label="Loading craft puzzles"
+                    aria-label={t('games.loading')}
                   />
                 ) : (
                   <>
