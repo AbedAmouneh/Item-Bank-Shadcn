@@ -44,12 +44,11 @@ export default function LearnerShell() {
       <header className="w-full h-16 bg-white dark:bg-[hsl(var(--nav-background))] border-b border-border shadow-nav px-4 md:px-6 flex items-center justify-between gap-4">
         {/* Logo + brand */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center justify-center font-bold text-lg w-8 h-8 rounded-lg bg-primary text-white">
-            A
-          </div>
-          <span className="hidden sm:block font-semibold text-base text-foreground">
-            My Learning
-          </span>
+          <img
+            src="/york-e-logo.png"
+            alt="eYork E-Learning"
+            className="h-12 w-auto object-contain"
+          />
         </div>
 
         {/* Right actions */}
