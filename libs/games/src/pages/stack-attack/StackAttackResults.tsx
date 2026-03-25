@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -41,6 +42,7 @@ export default function StackAttackResults({
   onPlayAgain,
   onBack,
 }: StackAttackResultsProps) {
+  const { t } = useTranslation('common');
   const totalQs = correctCount + wrongCount;
   const accuracy = totalQs > 0 ? Math.round((correctCount / totalQs) * 100) : 0;
 
@@ -80,34 +82,34 @@ export default function StackAttackResults({
       <div className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm">
         <div>
           <p className="font-bold text-xl text-yellow-400 tabular-nums">{score}</p>
-          <p className="text-white/60">Score</p>
+          <p className="text-white/60">{t('games.score_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl tabular-nums">
             {towerHeight} {towerHeight === 1 ? 'block' : 'blocks'}
           </p>
-          <p className="text-white/60">Tower height</p>
+          <p className="text-white/60">{t('games.tower_height_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl text-yellow-400 tabular-nums">
             {goldenBlocks > 0 ? `${goldenBlocks} 👑` : '0'}
           </p>
-          <p className="text-white/60">Golden blocks</p>
+          <p className="text-white/60">{t('games.golden_blocks_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl tabular-nums">
             {maxStreak > 0 ? `${maxStreak} 🔥` : '—'}
           </p>
-          <p className="text-white/60">Max streak</p>
+          <p className="text-white/60">{t('games.max_streak_stat')}</p>
         </div>
         <div className="col-span-2">
           <p className="font-bold text-xl tabular-nums">{accuracy}%</p>
-          <p className="text-white/60">Accuracy ({correctCount}/{totalQs})</p>
+          <p className="text-white/60">{t('games.accuracy_stat')} ({correctCount}/{totalQs})</p>
         </div>
       </div>
 
       {isSuccess && (
-        <p className="text-xs text-emerald-400">✓ Saved</p>
+        <p className="text-xs text-emerald-400">{t('games.saved')}</p>
       )}
 
       <div className="flex gap-3">
@@ -116,9 +118,9 @@ export default function StackAttackResults({
           onClick={onBack}
           className="border-white/30 text-white hover:bg-white/10"
         >
-          ← Back
+          {t('games.back')}
         </Button>
-        <Button onClick={onPlayAgain} className="bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">Play Again</Button>
+        <Button onClick={onPlayAgain} className="bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">{t('games.play_again')}</Button>
       </div>
 
       <ScoreHistory scores={scores} />
