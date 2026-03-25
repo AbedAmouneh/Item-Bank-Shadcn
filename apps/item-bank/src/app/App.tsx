@@ -44,6 +44,10 @@ import RoleSelectPage from './pages/RoleSelectPage';
 import MyLearningPage from './pages/learn/MyLearningPage';
 import CoursePlayerPage from './pages/learn/CoursePlayerPage';
 import ModulePage from './pages/learn/ModulePage';
+import PreExamPage from './pages/learn/PreExamPage';
+import ExamPage from './pages/learn/ExamPage';
+import ExamResultsPage from './pages/learn/ExamResultsPage';
+import AnswerReviewPage from './pages/learn/AnswerReviewPage';
 import PlatformDashboardPage from './pages/platform/PlatformDashboardPage';
 import AuthoringShell from './shells/AuthoringShell';
 import LearnerShell from './shells/LearnerShell';
@@ -123,7 +127,18 @@ export default function App() {
                 <Route path="/learn/dashboard" element={<MyLearningPage />} />
                 <Route path="/learn/courses/:courseId" element={<CoursePlayerPage />} />
                 <Route path="/learn/courses/:courseId/module/:moduleId" element={<ModulePage />} />
+                <Route path="/learn/exams/:assessmentId" element={<PreExamPage />} />
+                <Route
+                  path="/learn/exams/:assessmentId/results/:attemptId"
+                  element={<ExamResultsPage />}
+                />
+                <Route
+                  path="/learn/exams/:assessmentId/review/:attemptId"
+                  element={<AnswerReviewPage />}
+                />
               </Route>
+              {/* Full-page takeover — no nav shell — must stay outside LearnerShell */}
+              <Route path="/learn/exams/:assessmentId/take" element={<ExamPage />} />
             </Route>
 
             {/* Authoring world — org_admin, author, reviewer, admin, user */}
