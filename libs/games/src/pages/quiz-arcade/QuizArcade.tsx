@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Question } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -48,6 +49,7 @@ function calcScore(timeLeft: number, streak: number): number {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function QuizArcade() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -210,9 +212,9 @@ export default function QuizArcade() {
     return (
       <div className="flex flex-col items-center gap-4 p-20 text-center">
         <p className="text-muted-foreground">
-          {isError ? 'Could not load questions.' : 'No published questions match these filters.'}
+          {isError ? t('games.could_not_load') : t('games.no_questions_error')}
         </p>
-        <Button variant="outline" onClick={() => navigate('/games')}>← Back to Games</Button>
+        <Button variant="outline" onClick={() => navigate('/games')}>{t('games.back_to_games')}</Button>
       </div>
     );
   }
@@ -225,8 +227,8 @@ export default function QuizArcade() {
       {/* Game column — flex-1 so the canvas is centred in the remaining space */}
       <div className="flex flex-col flex-1 items-center gap-4 pt-6 pb-6 min-w-0">
         <div className="flex items-center justify-between shrink-0" style={{ width: CANVAS_W }}>
-          <h2 className="text-xl font-bold">Quiz Arcade</h2>
-          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+          <h2 className="text-xl font-bold">{t('games.quiz_arcade_title')}</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>{t('games.back_to_games')}</Button>
         </div>
 
         {/* Game frame */}
@@ -240,7 +242,7 @@ export default function QuizArcade() {
               <div
                 className="w-10 h-10 rounded-full border-[3px] border-white/20 border-t-white animate-spin"
                 role="status"
-                aria-label="Loading questions"
+                aria-label={t('games.loading')}
               />
             </div>
           ) : (
@@ -261,11 +263,11 @@ export default function QuizArcade() {
                 {screen === 'idle' && (
                   <div className="flex flex-col items-center justify-center flex-1 gap-5 text-white px-6">
                     <FoxMascot line={foxLine} />
-                    <p className="text-xl font-bold">Quiz Arcade</p>
+                    <p className="text-xl font-bold">{t('games.quiz_arcade_title')}</p>
                     <p className="text-sm text-white/60">
                       {allQuestions.length} questions • {QUESTION_TIME}s each
                     </p>
-                    <Button onClick={startGame} className="mt-1">Start Game</Button>
+                    <Button onClick={startGame} className="mt-1">{t('games.start_game')}</Button>
                   </div>
                 )}
 
