@@ -61,7 +61,7 @@ export default function ExamResultsPage() {
 
   const minutesTaken = Math.floor(result.time_taken_seconds / 60);
   const secondsTaken = result.time_taken_seconds % 60;
-  const timeTakenFormatted = `${minutesTaken}m ${secondsTaken}s`;
+  const timeTakenFormatted = t('learn.time_taken_format', { minutes: minutesTaken, seconds: secondsTaken });
 
   return (
     <main className="w-full max-w-xl mx-auto px-6 py-12 flex flex-col gap-8 items-center text-center">
