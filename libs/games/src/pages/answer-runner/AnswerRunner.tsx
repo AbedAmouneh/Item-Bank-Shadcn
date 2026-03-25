@@ -20,6 +20,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Game,
   World,
@@ -230,6 +231,7 @@ type Phase = 'idle' | 'playing' | 'results';
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AnswerRunner() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -481,7 +483,7 @@ export default function AnswerRunner() {
           No compatible questions found. Add some multiple-choice or true/false questions first.
         </p>
         <Button variant="outline" onClick={() => navigate('/games')}>
-          ← Back to Games
+          {t('games.back_to_games')}
         </Button>
       </div>
     );
@@ -493,7 +495,7 @@ export default function AnswerRunner() {
     return (
       <div className="flex flex-col items-center gap-6 p-6">
         <div className="flex items-center justify-between w-full max-w-[700px]">
-          <h2 className="text-xl font-bold">Answer Runner</h2>
+          <h2 className="text-xl font-bold">{t('games.answer_runner_title')}</h2>
         </div>
         <div className="flex justify-start px-2">
           <FoxMascot line={foxLine} />
@@ -523,8 +525,8 @@ export default function AnswerRunner() {
       {/* Game column — flex-1 so the canvas is centred in the remaining space */}
       <div className="flex flex-col flex-1 items-center gap-4 pt-6 pb-6 min-w-0">
         <div className="flex items-center justify-between shrink-0" style={{ width: canvasDims.w }}>
-          <h2 className="text-xl font-bold">Answer Runner</h2>
-          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+          <h2 className="text-xl font-bold">{t('games.answer_runner_title')}</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>{t('games.back_to_games')}</Button>
         </div>
 
         {/* Game frame — physically sized to fill the screen on any viewport */}
@@ -538,7 +540,7 @@ export default function AnswerRunner() {
             <div
               className="w-10 h-10 rounded-full border-[3px] border-white/20 border-t-white animate-spin"
               role="status"
-              aria-label="Loading questions"
+              aria-label={t('games.loading')}
             />
           </div>
         )}
@@ -644,7 +646,7 @@ export default function AnswerRunner() {
           {phase === 'idle' && (
             <div className="flex flex-col items-center justify-center flex-1 gap-5 text-white pointer-events-auto px-6">
               <FoxMascot line={foxLine} />
-              <p className="text-xl font-bold">Answer Runner</p>
+              <p className="text-xl font-bold">{t('games.answer_runner_title')}</p>
               <p className="text-sm text-white/60 text-center">
                 {showTouchControls
                   ? 'Use the on-screen D-pad to move · hit the correct answer · dodge the wrong ones'
@@ -682,7 +684,7 @@ export default function AnswerRunner() {
             <span />
             <button
               className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-              aria-label="Move up"
+              aria-label={t('games.move_up_aria')}
               onTouchStart={() => addTouchKey('ArrowUp')}
               onTouchEnd={() => removeTouchKey('ArrowUp')}
               onMouseDown={() => addTouchKey('ArrowUp')}
@@ -694,7 +696,7 @@ export default function AnswerRunner() {
             {/* Row 2: Left · spacer · Right */}
             <button
               className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-              aria-label="Move left"
+              aria-label={t('games.move_left_aria')}
               onTouchStart={() => addTouchKey('ArrowLeft')}
               onTouchEnd={() => removeTouchKey('ArrowLeft')}
               onMouseDown={() => addTouchKey('ArrowLeft')}
@@ -704,7 +706,7 @@ export default function AnswerRunner() {
             <span />
             <button
               className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-              aria-label="Move right"
+              aria-label={t('games.move_right_aria')}
               onTouchStart={() => addTouchKey('ArrowRight')}
               onTouchEnd={() => removeTouchKey('ArrowRight')}
               onMouseDown={() => addTouchKey('ArrowRight')}
@@ -716,7 +718,7 @@ export default function AnswerRunner() {
             <span />
             <button
               className="flex items-center justify-center rounded-xl bg-white/15 text-white text-xl font-bold active:bg-white/30 select-none"
-              aria-label="Move down"
+              aria-label={t('games.move_down_aria')}
               onTouchStart={() => addTouchKey('ArrowDown')}
               onTouchEnd={() => removeTouchKey('ArrowDown')}
               onMouseDown={() => addTouchKey('ArrowDown')}
