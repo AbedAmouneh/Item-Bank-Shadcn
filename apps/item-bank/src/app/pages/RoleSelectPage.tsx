@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const LAST_MODE_KEY = 'last-mode';
 
@@ -12,6 +13,7 @@ const LAST_MODE_KEY = 'last-mode';
  * picker with no nav bar distracting from the choice.
  */
 export default function RoleSelectPage() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
 
   // On revisit, skip the picker and go straight to the last-used mode.
@@ -36,10 +38,10 @@ export default function RoleSelectPage() {
     <div className="min-h-screen flex flex-col items-center justify-center gap-8 bg-background px-4">
       <div className="text-center">
         <h1 className="text-2xl font-bold text-foreground">
-          Your account has access to two experiences.
+          {t('role_select.title')}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Choose how you want to proceed — you can switch at any time.
+          {t('role_select.subtitle')}
         </p>
       </div>
 
@@ -48,13 +50,13 @@ export default function RoleSelectPage() {
         <button
           onClick={handleSelectAuthor}
           className="flex-1 flex flex-col items-center gap-3 p-8 rounded-2xl border-2 border-border bg-card text-card-foreground hover:border-primary hover:shadow-card transition-all cursor-pointer text-start"
-          aria-label="Go to Authoring Tools"
+          aria-label={t('role_select.authoring_tools_aria')}
         >
           <span className="text-4xl" aria-hidden>✏️</span>
           <div>
-            <p className="font-semibold text-lg">Authoring Tools</p>
+            <p className="font-semibold text-lg">{t('role_select.authoring_tools')}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Create and manage your content
+              {t('role_select.authoring_tools_desc')}
             </p>
           </div>
         </button>
@@ -63,13 +65,13 @@ export default function RoleSelectPage() {
         <button
           onClick={handleSelectLearn}
           className="flex-1 flex flex-col items-center gap-3 p-8 rounded-2xl border-2 border-border bg-card text-card-foreground hover:border-primary hover:shadow-card transition-all cursor-pointer text-start"
-          aria-label="Go to My Learning"
+          aria-label={t('role_select.my_learning_aria')}
         >
           <span className="text-4xl" aria-hidden>🎓</span>
           <div>
-            <p className="font-semibold text-lg">My Learning</p>
+            <p className="font-semibold text-lg">{t('role_select.my_learning')}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              View your assigned courses and exams
+              {t('role_select.my_learning_desc')}
             </p>
           </div>
         </button>
