@@ -92,7 +92,7 @@ export default function PreExamPage() {
           label={t('learn.time_limit')}
           value={
             brief.time_limit_mins !== null
-              ? `${brief.time_limit_mins} min`
+              ? t('learn.time_limit_minutes', { count: brief.time_limit_mins })
               : t('learn.no_limit')
           }
         />
