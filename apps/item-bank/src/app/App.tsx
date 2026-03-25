@@ -50,6 +50,9 @@ import ExamPage from './pages/learn/ExamPage';
 import ExamResultsPage from './pages/learn/ExamResultsPage';
 import AnswerReviewPage from './pages/learn/AnswerReviewPage';
 import PlatformDashboardPage from './pages/platform/PlatformDashboardPage';
+import TenantsListPage from './pages/platform/TenantsListPage';
+import CreateTenantPage from './pages/platform/CreateTenantPage';
+import TenantDetailPage from './pages/platform/TenantDetailPage';
 import AuthoringShell from './shells/AuthoringShell';
 import LearnerShell from './shells/LearnerShell';
 import PlatformShell from './shells/PlatformShell';
@@ -109,10 +112,10 @@ export default function App() {
               }
             >
               <Route element={<PlatformShell />}>
-                <Route
-                  path="/platform/dashboard"
-                  element={<PlatformDashboardPage />}
-                />
+                <Route path="/platform/dashboard" element={<PlatformDashboardPage />} />
+                <Route path="/platform/tenants" element={<TenantsListPage />} />
+                <Route path="/platform/tenants/new" element={<CreateTenantPage />} />
+                <Route path="/platform/tenants/:id" element={<TenantDetailPage />} />
               </Route>
             </Route>
 

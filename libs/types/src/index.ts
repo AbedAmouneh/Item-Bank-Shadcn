@@ -46,3 +46,17 @@ export interface AuthUser {
   tenant_id: number;
   is_active: boolean;
 }
+
+export type {
+  Tenant,
+  TenantStatus,
+  TenantPlan,
+  PlatformStats,
+  TenantsPage,
+  CreateTenantData,
+  CreateTenantResponse,
+  UpdateTenantData,
+  TenantUser,
+  TenantUsage,
+  GetTenantsParams,
+} from './platform';
