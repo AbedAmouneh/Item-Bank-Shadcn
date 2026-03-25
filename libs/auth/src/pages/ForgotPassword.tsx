@@ -29,8 +29,8 @@ const ForgotPassword = () => {
 
           <img
             className="h-20 object-contain"
-            src="/images/york-press.png"
-            alt="York Press logo"
+            src="/york-e-logo.png"
+            alt="eYork E-Learning"
           />
 
           <h1 className="text-[1.75rem] font-bold text-foreground text-center">
