@@ -99,4 +99,14 @@ export type {
   CourseAssignment,
   AssignUserData,
 } from './courses';
-export { getMyLearning, getLearnerCourse, completeModule } from './learn';
+export {
+  getMyLearning,
+  getLearnerCourse,
+  completeModule,
+  getAssessmentBrief,
+  startAttempt,
+  saveAnswer,
+  submitAttempt,
+  getAttemptResult,
+  logViolation,
+} from './learn';
