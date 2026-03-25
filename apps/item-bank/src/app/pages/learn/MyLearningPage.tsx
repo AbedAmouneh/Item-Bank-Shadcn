@@ -93,6 +93,7 @@ export default function MyLearningPage() {
 
       {/* Assignments */}
       <Section title={t('learn.assignments')}>
+        {isError && <p className="text-sm text-destructive">{t('learn.loading_error')}</p>}
         {isLoading && (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -104,7 +105,7 @@ export default function MyLearningPage() {
         {!isLoading && !isError && assignments.length === 0 && (
           <EmptyState icon={BookOpen} />
         )}
-        {!isLoading && assignments.length > 0 && (
+        {!isLoading && !isError && assignments.length > 0 && (
           <div className="flex flex-col gap-2">
             {assignments.map((a) => <AssignmentCard key={a.id} assignment={a} />)}
           </div>
@@ -113,6 +114,7 @@ export default function MyLearningPage() {
 
       {/* Exams */}
       <Section title={t('learn.exams')}>
+        {isError && <p className="text-sm text-destructive">{t('learn.loading_error')}</p>}
         {isLoading && (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -124,7 +126,7 @@ export default function MyLearningPage() {
         {!isLoading && !isError && exams.length === 0 && (
           <EmptyState icon={GraduationCap} />
         )}
-        {!isLoading && exams.length > 0 && (
+        {!isLoading && !isError && exams.length > 0 && (
           <div className="flex flex-col gap-2">
             {exams.map((e) => <ExamCard key={e.id} exam={e} />)}
           </div>
