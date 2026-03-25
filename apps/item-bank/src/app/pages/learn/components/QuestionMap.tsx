@@ -1,4 +1,5 @@
 import { Flag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { cn } from '@item-bank/ui';
 import type { ExamQuestion, QuestionAnswer } from '@item-bank/types';
@@ -29,12 +30,13 @@ export function QuestionMap({
   onNavigate,
   onToggleFlag,
 }: QuestionMapProps) {
+  const { t } = useTranslation('common');
   const currentQuestion = questions[currentIndex];
 
   return (
     <div className="flex flex-col gap-3 p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Questions
+        {t('learn.question_map_heading')}
       </p>
       <div className="grid grid-cols-5 gap-1.5">
         {questions.map((q, index) => {
@@ -78,23 +80,23 @@ export function QuestionMap({
               : 'text-muted-foreground hover:text-foreground hover:bg-accent',
           )}
           aria-pressed={flagged.has(currentQuestion.id)}
-          aria-label="Flag this question for review"
+          aria-label={t('learn.flag_for_review')}
         >
           <Flag size={12} />
-          {flagged.has(currentQuestion.id) ? 'Flagged' : 'Flag for review'}
+          {flagged.has(currentQuestion.id) ? t('learn.flagged') : t('learn.flag_for_review')}
         </button>
       )}
 
       {/* Legend */}
       <div className="flex flex-col gap-1 pt-2 border-t border-border text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm bg-primary inline-block" /> Answered
+          <span className="w-3 h-3 rounded-sm bg-primary inline-block" /> {t('learn.answered')}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm border border-orange-400 inline-block" /> Flagged
+          <span className="w-3 h-3 rounded-sm border border-orange-400 inline-block" /> {t('learn.flagged')}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm border border-border inline-block" /> Unanswered
+          <span className="w-3 h-3 rounded-sm border border-border inline-block" /> {t('learn.unanswered')}
         </span>
       </div>
     </div>
