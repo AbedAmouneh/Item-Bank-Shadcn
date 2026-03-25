@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -39,6 +40,7 @@ export default function MeteorCatcherResults({
   onPlayAgain,
   onBack,
 }: MeteorCatcherResultsProps) {
+  const { t } = useTranslation('common');
   const totalQs = catches + wrongHits;
   const accuracy = totalQs > 0 ? Math.round((catches / totalQs) * 100) : 0;
 
@@ -78,32 +80,32 @@ export default function MeteorCatcherResults({
       <div className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm">
         <div>
           <p className="font-bold text-xl text-yellow-400 tabular-nums">{score}</p>
-          <p className="text-white/60">Score</p>
+          <p className="text-white/60">{t('games.score_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl tabular-nums">{catches} ☄️</p>
-          <p className="text-white/60">Catches</p>
+          <p className="text-white/60">{t('games.catches_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl text-red-400 tabular-nums">
             {bossesDefeated > 0 ? `${bossesDefeated} 💥` : '—'}
           </p>
-          <p className="text-white/60">Bosses defeated</p>
+          <p className="text-white/60">{t('games.bosses_defeated_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-xl tabular-nums">
             {maxStreak > 0 ? `${maxStreak} 🔥` : '—'}
           </p>
-          <p className="text-white/60">Max streak</p>
+          <p className="text-white/60">{t('games.max_streak_stat')}</p>
         </div>
         <div className="col-span-2">
           <p className="font-bold text-xl tabular-nums">{accuracy}%</p>
-          <p className="text-white/60">Accuracy ({catches}/{totalQs})</p>
+          <p className="text-white/60">{t('games.accuracy_stat')} ({catches}/{totalQs})</p>
         </div>
       </div>
 
       {isSuccess && (
-        <p className="text-xs text-emerald-400">✓ Saved</p>
+        <p className="text-xs text-emerald-400">{t('games.saved')}</p>
       )}
 
       <div className="flex gap-3">
@@ -112,9 +114,9 @@ export default function MeteorCatcherResults({
           onClick={onBack}
           className="border-white/30 text-white hover:bg-white/10"
         >
-          ← Back
+          {t('games.back')}
         </Button>
-        <Button onClick={onPlayAgain}>Play Again</Button>
+        <Button onClick={onPlayAgain}>{t('games.play_again')}</Button>
       </div>
 
       <ScoreHistory scores={scores} />
