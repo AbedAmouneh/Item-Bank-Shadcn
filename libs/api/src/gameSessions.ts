@@ -17,7 +17,14 @@ interface Envelope<T> {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Identifies a game in API calls. Matches the backend's accepted values. */
-export type GameId = 'quiz-arcade' | 'memory-match' | 'answer-runner' | 'pixel-dash' | 'stack-attack' | 'meteor-catcher';
+export type GameId =
+  | 'quiz-arcade'
+  | 'memory-match'
+  | 'answer-runner'
+  | 'pixel-craft'
+  | 'pixel-dash'
+  | 'stack-attack'
+  | 'meteor-catcher';
 
 /** Payload sent to POST /game-sessions to record a completed game. */
 export interface GameSessionData {
@@ -31,6 +38,15 @@ export interface GameSessionData {
   correct_qs: number;
   /** The item bank the game was scoped to, if any. */
   item_bank_id?: number;
+  /** Game-specific metrics (gates cleared, tower height, max streak, etc.). */
+  extra_data?: Record<string, unknown>;
+}
+
+/** Personal game-session statistics returned by GET /game-sessions/my-stats. */
+export interface MyStats {
+  games_played: number;
+  best_score: number;
+  average_score: number;
 }
 
 /** One row in the leaderboard returned by GET /leaderboard. */
@@ -62,6 +78,18 @@ export async function saveGameSession(data: GameSessionData): Promise<void> {
 }
 
 /**
+ * Fetch the current user's personal game-session statistics.
+ *
+ * @returns Games played, best score, and average score across all sessions.
+ */
+export async function getMyStats(): Promise<MyStats> {
+  const envelope = await apiRequest<Envelope<MyStats>>(
+    '/game-sessions/my-stats',
+  );
+  return envelope.data;
+}
+
+/**
  * Fetch the top-10 leaderboard for a game within an item bank.
  *
  * @param game       - Which game's scores to retrieve.
@@ -73,6 +101,8 @@ export async function getLeaderboard(
   itemBankId: number,
 ): Promise<LeaderboardEntry[]> {
   const qs = `?game=${encodeURIComponent(game)}&item_bank_id=${itemBankId}`;
-  const envelope = await apiRequest<Envelope<LeaderboardEntry[]>>(`/leaderboard${qs}`);
+  const envelope = await apiRequest<Envelope<LeaderboardEntry[]>>(
+    `/leaderboard${qs}`,
+  );
   return envelope.data;
 }

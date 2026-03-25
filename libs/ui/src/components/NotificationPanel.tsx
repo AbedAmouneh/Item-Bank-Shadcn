@@ -33,6 +33,8 @@ function formatRelativeTime(iso: string): string {
 
 export interface NotificationPanelProps {
   notifications: Notification[];
+  /** Number of unread notifications. Used for the badge on the bell icon. */
+  unreadCount: number;
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
 }
@@ -44,13 +46,13 @@ export interface NotificationPanelProps {
  */
 export function NotificationPanel({
   notifications,
+  unreadCount,
   onMarkAsRead,
   onMarkAllAsRead,
 }: NotificationPanelProps) {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
-  const hasUnread = notifications.some((n) => !n.read);
-  const allRead = notifications.every((n) => n.read);
+  const allRead = unreadCount === 0;
 
   /** Translates the sentinel string from formatRelativeTime into a display string. */
   function renderTime(iso: string): string {
@@ -86,8 +88,10 @@ export function NotificationPanel({
         >
           <span className="relative">
             <Bell size={18} />
-            {hasUnread && (
-              <span className="absolute top-0 end-0 w-2 h-2 rounded-full bg-destructive" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -end-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
             )}
           </span>
         </button>

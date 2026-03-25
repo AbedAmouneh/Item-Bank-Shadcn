@@ -14,6 +14,9 @@ export {
   reorderQuestions,
   uploadQuestionAudio,
   deleteQuestionAudio,
+  publishQuestion,
+  rejectQuestion,
+  exportQuestions,
 } from './questions';
 export type {
   Question,
@@ -30,11 +33,89 @@ export {
   deleteItemBank,
 } from './itemBanks';
 export type { ItemBank, ItemBanksPage, GetItemBanksParams } from './itemBanks';
-export { getTags, createTag } from './tags';
+export { getTags, createTag, deleteTag } from './tags';
 export type { Tag } from './tags';
 export { getProfile, updateProfile, changePassword } from './profile';
 export type { UserProfile, UpdateProfileData, ChangePasswordData } from './profile';
-export { getUsers, createUser, activateUser, deactivateUser, updateUser } from './admin';
-export type { AdminUser, AdminUsersPage, GetUsersParams, CreateUserData, UpdateUserData } from './admin';
-export { saveGameSession, getLeaderboard } from './gameSessions';
-export type { GameSessionData, LeaderboardEntry, GameId } from './gameSessions';
+export { getUsers, createUser, activateUser, deactivateUser, updateUser, getAuditLogs, getUserItemBanks, assignItemBankToUser, removeItemBankFromUser } from './admin';
+export type { AdminUser, AdminUsersPage, GetUsersParams, CreateUserData, UpdateUserData, AuditLog, GetAuditLogsParams, UserItemBankAccess } from './admin';
+export { saveGameSession, getMyStats, getLeaderboard } from './gameSessions';
+export type { GameSessionData, MyStats, LeaderboardEntry, GameId } from './gameSessions';
+export { getAnalyticsOverview } from './analytics';
+export type {
+  AnalyticsOverview,
+  TopPlayer,
+  QuestionTypeBreakdown,
+  GameSessionCount,
+} from './analytics';
+export {
+  getNotifications,
+  getUnreadCount,
+  markAsRead,
+  markAllAsRead,
+} from './notifications';
+export type { Notification } from './notifications';
+export {
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  assignQuestionsToCategory,
+  removeQuestionFromCategory,
+} from './categories';
+export type {
+  Category,
+  CreateCategoryData,
+  UpdateCategoryData,
+  AssignQuestionsData,
+} from './categories';
+export {
+  getCourses,
+  createCourse,
+  getCourse,
+  updateCourse,
+  deleteCourse,
+  createActivity,
+  updateActivity,
+  deleteActivity,
+  reorderActivities,
+  getCourseAssignments,
+  assignUser,
+  unassignUser,
+  uploadMedia,
+} from './courses';
+export type {
+  Course,
+  CourseSummary,
+  CoursesPage,
+  Activity,
+  ActivityType,
+  CourseStatus,
+  CreateCourseData,
+  UpdateCourseData,
+  CreateActivityData,
+  UpdateActivityData,
+  GetCoursesParams,
+  CourseAssignment,
+  AssignUserData,
+} from './courses';
+export {
+  getMyLearning,
+  getLearnerCourse,
+  completeModule,
+  getAssessmentBrief,
+  startAttempt,
+  saveAnswer,
+  submitAttempt,
+  getAttemptResult,
+  logViolation,
+} from './learn';
+export {
+  getPlatformStats,
+  getTenants,
+  getTenant,
+  createTenant,
+  updateTenant,
+  getTenantUsers,
+  getTenantUsage,
+} from './platform';

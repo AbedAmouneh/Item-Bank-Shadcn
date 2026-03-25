@@ -1,5 +1,5 @@
 // libs/profile/src/components/ProfileSidebar.tsx
-import { UserCircle, Lock, Folder, FileEdit } from 'lucide-react';
+import { UserCircle, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@item-bank/auth';
@@ -27,21 +27,13 @@ export default function ProfileSidebar() {
       selected: selectedId === 'change-password',
       onClick: () => navigate('/profile/change-password'),
     },
-    {
-      id: 'file-manager',
-      label: t('profile.file_manager'),
-      icon: Folder,
-      selected: selectedId === 'file-manager',
-      onClick: () => navigate('/profile/file-manager'),
-    },
-    {
-      id: 'my-annotations',
-      label: t('profile.my_annotations'),
-      icon: FileEdit,
-      selected: selectedId === 'my-annotations',
-      onClick: () => navigate('/profile/my-annotations'),
-    },
   ];
+
+  const roleLabel: Record<string, string> = {
+    admin: t('profile.role_admin'),
+    user: t('admin.users.role_user'),
+    learner: t('admin.users.role_learner'),
+  };
 
   const header = (
     <div className="flex items-center p-4 gap-4">
@@ -59,7 +51,7 @@ export default function ProfileSidebar() {
           {user?.email ?? ''}
         </p>
         <p className="text-[0.8125rem] text-muted-foreground truncate">
-          {user?.role === 'admin' ? t('profile.role_admin') : t('admin.users.role_user')}
+          {roleLabel[user?.role ?? ''] ?? user?.role ?? ''}
         </p>
       </div>
     </div>

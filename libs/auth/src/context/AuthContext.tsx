@@ -1,6 +1,7 @@
 import { createContext, useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import type { AuthUser } from '@item-bank/types';
 import {
   clearCsrfToken,
   getMe,
@@ -8,14 +9,7 @@ import {
   setCsrfToken,
 } from '@item-bank/api';
 
-/** The authenticated user shape used throughout the app. */
-export interface AuthUser {
-  id: string;
-  email: string;
-  /** The server always returns one of these two values. */
-  role: 'admin' | 'user';
-  is_active: boolean;
-}
+export type { AuthUser };
 
 export interface AuthContextValue {
   user: AuthUser | null;
@@ -39,10 +33,6 @@ export interface AuthContextValue {
  */
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
-// ---------------------------------------------------------------------------
-// AuthProvider
-// ---------------------------------------------------------------------------
-
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -61,8 +51,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // -- session helpers -------------------------------------------------------
-
   const clearSession = useCallback(() => {
     setUser(null);
     clearCsrfToken();
@@ -76,8 +64,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [],
   );
 
-  // -- initial hydration: check whether a JWT cookie already exists ----------
-
   useEffect(() => {
     let cancelled = false;
 
@@ -85,26 +71,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const apiUser = await getMe();
         if (cancelled) return;
-        // The server's role field is a string; we cast to the known union
-        // type because the API contract guarantees these two values.
         setUser({
           id: apiUser.id,
           email: apiUser.email,
-          role: apiUser.role as 'admin' | 'user',
+          role: apiUser.role,
+          roles: apiUser.roles ?? [],
+          tenant_id: apiUser.tenant_id,
           is_active: apiUser.is_active,
         });
         try {
           await refreshToken();
-        } catch (err) {
-          // CSRF refresh failed, but the user is still authenticated via the
-          // cookie. Log the failure; mutating requests may fail until the user
-          // logs in again, but we don't force a logout here.
-          console.error('Failed to refresh CSRF token after session restore:', err);
+        } catch {
+          // CSRF refresh failed — the user is still authenticated via the
+          // cookie. Mutating requests may fail until the next login, but
+          // we do not force a logout here.
         }
         if (cancelled) return;
         setIsLoading(false);
       } catch {
-        // 401 or network failure — user is not authenticated.
         if (cancelled) return;
         setUser(null);
         setIsLoading(false);
@@ -112,22 +96,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     hydrate();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
-
-  // -- listen for forced logout from the HTTP client -------------------------
 
   useEffect(() => {
     window.addEventListener('auth:logout', clearSession);
-    return () => {
-      window.removeEventListener('auth:logout', clearSession);
-    };
+    return () => { window.removeEventListener('auth:logout', clearSession); };
   }, [clearSession]);
-
-  // -- context value ---------------------------------------------------------
 
   const value: AuthContextValue = {
     user,

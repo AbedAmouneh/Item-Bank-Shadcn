@@ -157,6 +157,10 @@ export const FOX_LINES = {
     'Magnificent! Your tower reaches the sky — a true master builder! 🌟',
   stack_topple:
     'Every tower teaches balance. Come back and build higher! 🦊',
+
+  // ── Pixel Craft ────────────────────────────────────────────────────────────
+  pixel_craft_idle:
+    'The forge awaits, explorer! Drag the right fragments into the grid and craft your answer! ⚒️',
 } as const;
 
 /** Return a random line from an array. */

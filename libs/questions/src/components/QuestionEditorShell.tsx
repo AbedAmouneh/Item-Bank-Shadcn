@@ -643,6 +643,28 @@ function QuestionEditorShellForm({
         }
       }
 
+      if (questionType === 'multiple_choice') {
+        const choices = (values.choices ?? []) as Choice[];
+        const hasEmptyChoices = choices.some((c) => !c.text.trim());
+        const correctCount = choices.filter((c) => c.isCorrect).length;
+        const minSel = values.minSelections ?? 1;
+        const maxSel = values.maxSelections ?? 1;
+
+        if (hasEmptyChoices) {
+          errors.choices = { message: t('editor.error_empty_choices') };
+        } else if (correctCount === 0) {
+          errors.choices = { message: t('editor.error_no_correct_choices') };
+        } else if (correctCount < minSel || correctCount > maxSel) {
+          errors.choices = {
+            message: t('editor.error_correct_count_range', {
+              count: correctCount,
+              min: minSel,
+              max: maxSel,
+            }),
+          };
+        }
+      }
+
       if (
         questionType === 'free_hand_drawing' &&
         values.enableBackgroundImage === false

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  GraduationCap,
   Maximize,
   Minimize,
   Moon,
@@ -21,13 +22,18 @@ import { NotificationPanel } from './NotificationPanel';
 const baseNavItems = [
   { labelKey: 'nav.dashboard', path: '/dashboard' },
   { labelKey: 'nav.projects', path: '/projects' },
-  { labelKey: 'nav.itemBank', path: '/home' },
+  { labelKey: 'nav.itemBanks', path: '/item-banks' },
   { labelKey: 'nav.analytics', path: '/analytics' },
   { labelKey: 'nav.games', path: '/games' },
   { labelKey: 'nav.settings', path: '/settings' },
 ];
 
-const adminNavItem = { labelKey: 'nav.adminUsers', path: '/admin/users' };
+const adminNavItems = [
+  { labelKey: 'nav.adminUsers', path: '/admin/users' },
+  { labelKey: 'nav.reviewQueue', path: '/admin/review' },
+  { labelKey: 'nav.adminTags', path: '/admin/tags' },
+  { labelKey: 'nav.auditLog', path: '/admin/audit-log' },
+];
 
 function IconTooltip({
   label,
@@ -53,6 +59,8 @@ function IconTooltip({
 
 export interface NavBarProps {
   notifications?: Notification[];
+  /** Live unread count for the badge on the bell icon. Polled every 30 s by AuthoringShell. */
+  unreadCount?: number;
   onMarkNotificationAsRead?: (id: string) => void;
   onMarkAllNotificationsAsRead?: () => void;
   /** Called when the user clicks the logout button. Owned by the caller so
@@ -64,16 +72,23 @@ export interface NavBarProps {
   userName?: string;
   /** Two-letter initials shown inside the avatar circle. Falls back to '??' if not provided. */
   userInitials?: string;
+  /**
+   * When provided, a "Switch to Learning" icon button is rendered in the right
+   * action strip. Pass undefined to hide the button (for authoring-only users).
+   */
+  onSwitchToLearn?: () => void;
 }
 
 function NavBar({
   notifications = [],
+  unreadCount = 0,
   onMarkNotificationAsRead = (_id: string) => {},
   onMarkAllNotificationsAsRead = () => {},
   onLogout = () => {},
   userRole,
   userName,
   userInitials,
+  onSwitchToLearn = undefined,
 }: NavBarProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -86,7 +101,7 @@ function NavBar({
 
   const navItems = [
     ...baseNavItems,
-    ...(userRole === 'admin' ? [adminNavItem] : []),
+    ...(userRole === 'admin' ? adminNavItems : []),
   ];
 
   const handleNavItemClick = (path: string) => {
@@ -122,17 +137,16 @@ function NavBar({
           className="flex items-center gap-3 shrink-0 cursor-pointer py-1.5 px-2 -ms-2 rounded-xl hover:bg-accent transition-colors"
           onClick={() => navigate('/home')}
         >
-          <div className="flex items-center justify-center font-bold text-lg w-8 h-8 rounded-lg bg-primary text-white">
-            A
-          </div>
-          <span className="hidden sm:block font-semibold text-base text-foreground">
-            {t('brand')}
-          </span>
+          <img
+            src="/york-e-logo.png"
+            alt="eYork E-Learning"
+            className="h-12 w-auto object-contain"
+          />
         </div>
 
         {/* Center — Nav pills (desktop) */}
-        <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 p-1 rounded-full bg-muted">
+        <nav className="hidden md:flex items-center justify-center flex-1 min-w-0">
+          <div className="flex items-center gap-1 p-1 rounded-full bg-muted overflow-x-auto scrollbar-none">
             {navItems.map((item) => (
               <button
                 key={item.path}
@@ -190,6 +204,7 @@ function NavBar({
           {/* Notifications */}
           <NotificationPanel
             notifications={notifications}
+            unreadCount={unreadCount}
             onMarkAsRead={onMarkNotificationAsRead}
             onMarkAllAsRead={onMarkAllNotificationsAsRead}
           />
@@ -214,6 +229,19 @@ function NavBar({
               <Languages size={18} />
             </button>
           </IconTooltip>
+
+          {/* Switch to Learning — only shown for dual-role users */}
+          {onSwitchToLearn && (
+            <IconTooltip label="Switch to Learning">
+              <button
+                className={navIconBtnClass}
+                aria-label="Switch to Learning"
+                onClick={onSwitchToLearn}
+              >
+                <GraduationCap size={18} />
+              </button>
+            </IconTooltip>
+          )}
 
           {/* Logout */}
           <IconTooltip label={t('table_actions.logout')}>

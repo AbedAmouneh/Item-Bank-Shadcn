@@ -290,7 +290,19 @@ const General = () => {
 
               {/* Action row */}
               <div className="flex items-center flex-wrap gap-3">
-                <Button type="button" variant="outline" onClick={() => reset()}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    reset({
+                      firstName: profile?.first_name ?? '',
+                      lastName: profile?.last_name ?? '',
+                      username: profile?.username ?? '',
+                      phoneNumber: profile?.phone_number ?? '',
+                      email: profile?.email ?? '',
+                    })
+                  }
+                >
                   {t('profile.cancel')}
                 </Button>
 

@@ -24,6 +24,7 @@ export interface Question {
   item_bank_id?: number;
   tag_ids?: number[];
   content: Record<string, unknown>;
+  reviewer_notes?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -231,4 +232,51 @@ export async function uploadQuestionAudio(
  */
 export async function deleteQuestionAudio(id: number): Promise<void> {
   await apiRequest<void>(`/questions/${id}/audio`, { method: 'DELETE' });
+}
+
+/**
+ * Export all questions as a downloadable file.
+ *
+ * Uses a direct fetch instead of apiRequest because the response body is a
+ * raw file (Blob), not a JSON envelope.  GET requests do not require CSRF, so
+ * bypassing apiRequest is safe here.
+ *
+ * @param format - "json" or "csv".
+ * @returns      A Blob containing the file contents, ready for download.
+ */
+export async function exportQuestions(format: 'json' | 'csv'): Promise<Blob> {
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+  const response = await fetch(`${BASE_URL}/questions/export?format=${format}`, {
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error(`Export failed with status ${response.status}`);
+  }
+  return response.blob();
+}
+
+/**
+ * Publish a question, transitioning its status from In Review to Published.
+ *
+ * @param id    - The question's database ID.
+ * @param notes - Optional reviewer notes to store alongside the decision.
+ */
+export async function publishQuestion(id: number, notes?: string): Promise<void> {
+  await apiRequest<void>(`/questions/${id}/publish`, {
+    method: 'POST',
+    body: JSON.stringify({ reviewer_notes: notes }),
+  });
+}
+
+/**
+ * Reject a question, transitioning its status back from In Review to Draft.
+ *
+ * @param id     - The question's database ID.
+ * @param reason - Reviewer notes explaining the rejection (min 10, max 500 characters).
+ */
+export async function rejectQuestion(id: number, reason: string): Promise<void> {
+  await apiRequest<void>(`/questions/${id}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ reviewer_notes: reason, rejection_note: reason }),
+  });
 }

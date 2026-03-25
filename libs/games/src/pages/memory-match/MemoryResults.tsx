@@ -9,7 +9,7 @@
  * Offers Play Again and Back to Games actions.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -43,8 +43,13 @@ export default function MemoryResults({
   const { scores, save } = useGameScores('memory-match');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
+  // hasSavedRef prevents a second save if React re-runs this effect (e.g. Strict Mode double-invoke).
+  const hasSavedRef = useRef(false);
+
   // Fire once on mount — one component mount = one completed game session.
   useEffect(() => {
+    if (hasSavedRef.current) return;
+    hasSavedRef.current = true;
     save({ score, correct: matchCount, total: totalPairs, accuracy: efficiency });
     mutate({
       game: 'memory-match',
@@ -54,7 +59,7 @@ export default function MemoryResults({
       correct_qs: matchCount,
       item_bank_id,
     });
-  }, [mutate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [save, mutate, score, matchCount, totalPairs, efficiency, item_bank_id]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 p-8 text-center text-white">

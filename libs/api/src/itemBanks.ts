@@ -18,6 +18,7 @@ export interface ItemBank {
   id: number;
   name: string;
   description?: string;
+  question_count: number;
   created_at?: string;
   updated_at?: string;
 }

@@ -16,7 +16,8 @@
       "@item-bank/ui": ["libs/ui/src/index.ts"],
       "@item-bank/profile": ["libs/profile/src/index.ts"],
       "@item-bank/api": ["libs/api/src/index.ts"],
-      "@item-bank/games": ["libs/games/src/index.ts"]
+      "@item-bank/games": ["libs/games/src/index.ts"],
+      "@item-bank/types": ["libs/types/src/index.ts"]
     }
   },
   "exclude": [

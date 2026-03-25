@@ -9,6 +9,7 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 
 import { login } from '@item-bank/api';
+import { ALL_AUTHORING_ROLES, LEARNER_ROLE, PLATFORM_ROLES } from '@item-bank/types';
 
 import { useAuth } from '../hooks/useAuth';
 import AuthPageWrapper from '../components/AuthPageWrapper';
@@ -34,18 +35,44 @@ const Login = () => {
   const { mutate, isPending, error } = useMutation({
     mutationFn: ({ email, password }: LoginFields) => login(email, password),
     onSuccess: (data) => {
+      const roles = data.user.roles ?? [];
+
+      // 1. Store the verified session — must happen before navigate().
       setSession(
         {
           id: data.user.id,
           email: data.user.email,
-          // The API layer types role as string; the server contract guarantees
-          // these two values, so we assert the union here at the boundary.
-          role: data.user.role as 'admin' | 'user',
+          role: data.user.role,
+          roles,
+          tenant_id: data.user.tenant_id,
           is_active: data.user.is_active,
         },
         data.csrf_token,
       );
-      navigate('/home', { replace: true });
+
+      // 2. Navigate based on the roles value from the API response.
+      //    Reading from useAuth() here would give stale pre-login state.
+      const isPlatform = roles.some((r) =>
+        (PLATFORM_ROLES as readonly string[]).includes(r),
+      );
+      const isLearner = roles.includes(LEARNER_ROLE);
+      const isAuthor = roles.some((r) =>
+        (ALL_AUTHORING_ROLES as readonly string[]).includes(r),
+      );
+
+      if (isPlatform) {
+        navigate('/platform/dashboard', { replace: true });
+      } else if (isAuthor && isLearner) {
+        const lastMode = localStorage.getItem('last-mode');
+        if (lastMode === 'learn') navigate('/learn/dashboard', { replace: true });
+        else if (lastMode === 'author') navigate('/dashboard', { replace: true });
+        else navigate('/role-select', { replace: true });
+      } else if (isLearner) {
+        navigate('/learn/dashboard', { replace: true });
+      } else {
+        // Default: authoring roles or legacy single-role accounts.
+        navigate('/dashboard', { replace: true });
+      }
     },
   });
 
@@ -59,8 +86,8 @@ const Login = () => {
           {/* Logo */}
           <img
             className="h-20 object-contain"
-            src="/images/york-press.png"
-            alt="York Press logo"
+            src="/york-e-logo.png"
+            alt="eYork E-Learning"
           />
 
           {/* Title */}
@@ -117,13 +144,22 @@ const Login = () => {
           </div>
 
           {/* Footer links */}
-          <div className="flex items-center w-full">
+          <div className="flex items-center justify-between w-full">
             <RouterLink
               to="/forgot-password"
               className="text-sm text-muted-foreground hover:text-foreground hover:underline whitespace-nowrap no-underline transition-colors"
             >
               {t('auth:forgot_password')}
             </RouterLink>
+            <span className="text-sm text-muted-foreground">
+              {t('auth:no_account')}{' '}
+              <RouterLink
+                to="/signup"
+                className="text-primary font-medium hover:underline no-underline transition-colors"
+              >
+                {t('auth:sign_up')}
+              </RouterLink>
+            </span>
           </div>
 
         </form>

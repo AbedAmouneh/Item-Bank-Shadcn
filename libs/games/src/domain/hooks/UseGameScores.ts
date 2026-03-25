@@ -42,9 +42,11 @@ interface UseGameScoresResult {
 }
 
 export function useGameScores(game: string): UseGameScoresResult {
-  const [scores, setScores] = useState<GameScoreEntry[]>(() =>
-    readFromStorage(game),
-  );
+  // Start empty so stale localStorage data is never shown on mount.
+  // The authoritative source of truth is game_sessions on the server.
+  // localStorage is used only as an in-session write cache: save() writes here
+  // after each game so ScoreHistory can update instantly without a network round-trip.
+  const [scores, setScores] = useState<GameScoreEntry[]>([]);
 
   const save = useCallback(
     (entry: Omit<GameScoreEntry, 'date'>) => {

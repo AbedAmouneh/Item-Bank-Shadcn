@@ -18,8 +18,7 @@ const ForgotPassword = () => {
   const {register, handleSubmit, formState: {errors}} = useForm({resolver: zodResolver(forgotPasswordSchema)});
   const { t } = useTranslation('auth');
 
-  const resetPassword = handleSubmit(async (data) => {
-    console.log(data)
+  const resetPassword = handleSubmit(async () => {
     setSubmitted(true);
   })
 
@@ -30,8 +29,8 @@ const ForgotPassword = () => {
 
           <img
             className="h-20 object-contain"
-            src="/images/york-press.png"
-            alt="York Press logo"
+            src="/york-e-logo.png"
+            alt="eYork E-Learning"
           />
 
           <h1 className="text-[1.75rem] font-bold text-foreground text-center">

@@ -1,6 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent } from '@item-bank/ui';
+import { Download } from 'lucide-react';
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@item-bank/ui';
 import {
   QuestionEditorShell,
   QuestionCardList,
@@ -11,10 +21,7 @@ import {
   useCreateQuestion,
   useUpdateQuestion,
 } from '@item-bank/questions';
-import { getQuestion } from '@item-bank/api';
-import { putQuestion, getQuestionById } from '../../db/db';
-import { createStoredQuestion } from '../../utils/questionFactory';
-import { storedToFormData } from '../../utils/questionToFormData';
+import { getQuestion, exportQuestions } from '@item-bank/api';
 import { normalizeStatus, formatLastModified } from '../../utils/questionUtils';
 import { formDataToApiPayload } from '../../utils/questionToApiPayload';
 import { apiQuestionToFormData } from '../../utils/apiQuestionToFormData';
@@ -58,33 +65,53 @@ function SnackbarNotification({ message, severity, onClose }: SnackbarNotificati
   );
 }
 
-/**
- * Question types wired to the REST API for both read and write.
- * Image-bearing types (fill_in_blanks_image, image_sequencing, etc.) are not
- * yet migrated — they still use IndexedDB until the image upload step.
- */
-const API_MIGRATED_TYPES = new Set<string>([
-  'true_false',
-  'short_answer',
-  'multiple_choice',
-  'essay',
-  'numerical',
-  'highlight_correct_word',
-  'select_correct_word',
-  'text_sequencing',
-  'text_classification',
-  'matching',
-  'crossword',
-  'spelling_dictation',
-  'record_audio',
-  'drag_drop_text',
-  'fill_in_blanks_image',
-  'image_sequencing',
-  'free_hand_drawing',
-  'multiple_hotspots',
-  'drag_drop_image',
-  'image_classification',
-]);
+interface ExportDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  format: 'json' | 'csv';
+  onFormatChange: (format: 'json' | 'csv') => void;
+  onDownload: () => void;
+}
+
+/** Modal that lets the user pick an export format and trigger a download. */
+function ExportDialog({ open, onOpenChange, format, onFormatChange, onDownload }: ExportDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Export Questions</DialogTitle>
+          <DialogDescription>Choose a format to download all questions.</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-3 py-2">
+          {(['json', 'csv'] as const).map((f) => (
+            <label key={f} className="flex cursor-pointer items-center gap-3">
+              <input
+                type="radio"
+                name="export-format"
+                value={f}
+                checked={format === f}
+                onChange={() => onFormatChange(f)}
+                className="h-4 w-4 accent-primary"
+              />
+              <span className="text-sm font-medium">{f.toUpperCase()}</span>
+            </label>
+          ))}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button onClick={onDownload}>
+            <Download className="me-2 h-4 w-4" />
+            Download
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 /** Convert an API Question to the QuestionRow shape expected by QuestionsTable. */
 function apiToRow(q: {
@@ -116,6 +143,8 @@ const Home = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<SnackbarSeverity>('success');
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
   const selectedQuestionType = useRef<QuestionType | null>(null);
   const questionToEditId = useRef<string | number | null>(null);
 
@@ -136,45 +165,22 @@ const Home = () => {
   }, []);
 
   const handleEditQuestion = useCallback((row: QuestionRow) => {
-    if (API_MIGRATED_TYPES.has(row.type)) {
-      // Fetch from REST API for migrated types.
-      getQuestion(row.id as number)
-        .then((question) => {
-          const formData = apiQuestionToFormData(question);
-          if (!formData) {
-            console.error('Unsupported type returned from API for editing:', question.type);
-            return;
-          }
-          selectedQuestionType.current = formData.type;
-          questionToEditId.current = row.id;
-          setInitialFormData(formData);
-          setEditorMode('edit');
-          setQuestionToEdit(row);
-          setIsEditorOpen(true);
-        })
-        .catch((err) => console.error('Failed to load question for editing', err));
-    } else {
-      // Non-migrated (image-bearing) types still read from IndexedDB.
-      getQuestionById(String(row.id))
-        .then((storedQuestion) => {
-          if (!storedQuestion) {
-            console.error('Question not found in IndexedDB:', row.id);
-            return;
-          }
-          if (storedQuestion.type === 'fill_in_blanks') {
-            const formData = storedToFormData(storedQuestion);
-            selectedQuestionType.current = formData.type;
-            questionToEditId.current = row.id;
-            setInitialFormData(formData);
-            setEditorMode('edit');
-            setQuestionToEdit(row);
-            setIsEditorOpen(true);
-          } else {
-            console.error('Edit not supported for this question type yet');
-          }
-        })
-        .catch((err) => console.error('Failed to load question for editing', err));
-    }
+    getQuestion(row.id as number)
+      .then((question) => {
+        const formData = apiQuestionToFormData(question);
+        if (!formData) return;
+        selectedQuestionType.current = formData.type;
+        questionToEditId.current = row.id;
+        setInitialFormData(formData);
+        setEditorMode('edit');
+        setQuestionToEdit(row);
+        setIsEditorOpen(true);
+      })
+      .catch(() => {
+        setSnackbarSeverity('error');
+        setSnackbarMessage('Failed to load question for editing.');
+        setSnackbarOpen(true);
+      });
   }, []);
 
   const closeEditor = useCallback(() => {
@@ -190,32 +196,16 @@ const Home = () => {
       const successMsg =
         editorMode === 'edit' ? 'Question updated successfully.' : 'Question created successfully.';
 
-      if (API_MIGRATED_TYPES.has(questionData.type)) {
-        const payload = formDataToApiPayload(questionData);
-        if (!payload) {
-          // Validation failed for this type — keep the editor open.
-          return;
-        }
+      const payload = formDataToApiPayload(questionData);
+      if (!payload) {
+        // Validation failed for this type — keep the editor open.
+        return;
+      }
 
-        if (editorMode === 'edit' && questionToEditId.current) {
-          updateQuestionMutate(
-            { id: Number(questionToEditId.current), data: payload },
-            {
-              onSuccess: () => {
-                closeEditor();
-                setSnackbarSeverity('success');
-                setSnackbarMessage(successMsg);
-                setSnackbarOpen(true);
-              },
-              onError: () => {
-                setSnackbarSeverity('error');
-                setSnackbarMessage('Failed to save question.');
-                setSnackbarOpen(true);
-              },
-            }
-          );
-        } else {
-          createQuestionMutate(payload, {
+      if (editorMode === 'edit' && questionToEditId.current) {
+        updateQuestionMutate(
+          { id: Number(questionToEditId.current), data: payload },
+          {
             onSuccess: () => {
               closeEditor();
               setSnackbarSeverity('success');
@@ -227,40 +217,22 @@ const Home = () => {
               setSnackbarMessage('Failed to save question.');
               setSnackbarOpen(true);
             },
-          });
-        }
-        return;
-      }
-
-      // Non-migrated (image-bearing) types still write to IndexedDB.
-      const storedQuestion = createStoredQuestion(questionData);
-
-      if (storedQuestion) {
-        if (editorMode === 'edit' && questionToEditId.current) {
-          storedQuestion.id = String(questionToEditId.current);
-          storedQuestion.lastModified = new Date().toISOString();
-        }
-
-        putQuestion(storedQuestion)
-          .then(() => {
+          }
+        );
+      } else {
+        createQuestionMutate(payload, {
+          onSuccess: () => {
             closeEditor();
             setSnackbarSeverity('success');
             setSnackbarMessage(successMsg);
             setSnackbarOpen(true);
-          })
-          .catch((err) => {
-            console.error('Failed to save question to IndexedDB', err);
+          },
+          onError: () => {
             setSnackbarSeverity('error');
             setSnackbarMessage('Failed to save question.');
             setSnackbarOpen(true);
-          });
-      } else if (questionData.type === 'image_sequencing') {
-        console.error('Image sequencing factory validation failed — keeping editor open');
-      } else if (questionData.type === 'drag_drop_image') {
-        console.error('Drag drop image factory validation failed — keeping editor open');
-      } else {
-        console.error('Unsupported question type or validation failed:', questionData.type);
-        closeEditor();
+          },
+        });
       }
     },
     [editorMode, closeEditor, createQuestionMutate, updateQuestionMutate]
@@ -270,16 +242,54 @@ const Home = () => {
     if (row) navigate(`/questions/${row.id}/preview`);
   }, [navigate]);
 
+  const handleExport = useCallback(async () => {
+    try {
+      const blob = await exportQuestions(exportFormat);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `questions.${exportFormat}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setIsExportOpen(false);
+      setSnackbarSeverity('success');
+      setSnackbarMessage('Questions exported successfully.');
+      setSnackbarOpen(true);
+    } catch {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Failed to export questions.');
+      setSnackbarOpen(true);
+    }
+  }, [exportFormat]);
+
   return (
     <div className="w-full px-8 py-8">
       {isError && (
         <p className="text-destructive mb-4">Failed to load questions</p>
       )}
+
+      {/* Toolbar */}
+      <div className="mb-4 flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setIsExportOpen(true)}>
+          <Download className="me-2 h-4 w-4" />
+          Export
+        </Button>
+      </div>
+
       <QuestionCardList
         questions={questions}
         onEditQuestion={handleEditQuestion}
         onPreviewQuestion={handleQuestionViewOpen}
         onQuestionTypeChange={handleQuestionTypeChange}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={isExportOpen}
+        onOpenChange={setIsExportOpen}
+        format={exportFormat}
+        onFormatChange={setExportFormat}
+        onDownload={handleExport}
       />
 
       {/* Editor Dialog */}

@@ -11,12 +11,18 @@ export { default as GamesLobby } from './pages/GamesLobby';
 export { default as QuizArcade } from './pages/quiz-arcade/QuizArcade';
 export { default as MemoryMatch } from './pages/memory-match/MemoryMatch';
 export { default as AnswerRunner } from './pages/answer-runner/AnswerRunner';
+export { default as PixelCraft } from './pages/pixel-craft/PixelCraft';
 export { default as PixelDash } from './pages/pixel-dash/PixelDash';
 export { default as StackAttack } from './pages/stack-attack/StackAttack';
 export { default as MeteorCatcher } from './pages/meteor-catcher/MeteorCatcher';
 
 // ── Domain hooks ───────────────────────────────────────────────────────────
-export { useGameQuestions, useGameScores, useFallbackQuestions, usePostGameSession } from './domain/hooks';
+export {
+  useGameQuestions,
+  useGameScores,
+  useFallbackQuestions,
+  usePostGameSession,
+} from './domain/hooks';
 
 // ── Shared V2 components ───────────────────────────────────────────────────
 export { default as CoinBurst } from './components/CoinBurst';
@@ -36,4 +42,3 @@ export type {
   FallbackQuestion,
 } from './domain/types';
 export type { FallbackResult } from './domain/UseFallbackQuestions';
-export type { CreateGameSessionPayload } from './domain/UsePostGameSession';

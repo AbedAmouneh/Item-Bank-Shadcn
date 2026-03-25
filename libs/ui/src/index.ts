@@ -107,3 +107,16 @@ export {
   DropdownMenuGroup,
 } from './components/ui/dropdown-menu';
 export { Slider } from './components/ui/slider';
+export { Switch } from './components/ui/switch';
+export { Checkbox } from './components/ui/checkbox';
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from './components/ui/command';

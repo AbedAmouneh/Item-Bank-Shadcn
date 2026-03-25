@@ -28,7 +28,7 @@ export default function QuestionPreview() {
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-8 py-4">
           <button
             type="button"
-            onClick={() => navigate('/home')}
+            onClick={() => navigate(-1)}
             aria-label={t('preview_page.back')}
             className="flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >

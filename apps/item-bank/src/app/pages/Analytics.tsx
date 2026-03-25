@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@item-bank/ui';
-import { getAnalyticsOverview } from '../../../../../libs/api/src/analytics';
+import { getAnalyticsOverview } from '@item-bank/api';
 
 // ─── Chart constants ──────────────────────────────────────────────────────────
 

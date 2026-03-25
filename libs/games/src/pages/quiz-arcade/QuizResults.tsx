@@ -8,7 +8,7 @@
  * to play again or return to the lobby.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -38,8 +38,13 @@ export default function QuizResults({
   const { scores, save } = useGameScores('quiz-arcade');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
+  // hasSavedRef prevents a second save if React re-runs this effect (e.g. Strict Mode double-invoke).
+  const hasSavedRef = useRef(false);
+
   // Fire once on mount — one component mount = one completed game session.
   useEffect(() => {
+    if (hasSavedRef.current) return;
+    hasSavedRef.current = true;
     save({ score: result.score, correct: result.correct, total: result.total, accuracy });
     mutate({
       game: 'quiz-arcade',
@@ -49,7 +54,7 @@ export default function QuizResults({
       correct_qs: result.correct,
       item_bank_id,
     });
-  }, [mutate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [save, mutate, result, accuracy, item_bank_id]);
 
   const emoji =
     accuracy >= 90 ? '🏆' : accuracy >= 70 ? '⭐' : accuracy >= 50 ? '👍' : '💪';
