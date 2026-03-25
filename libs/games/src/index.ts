@@ -42,4 +42,3 @@ export type {
   FallbackQuestion,
 } from './domain/types';
 export type { FallbackResult } from './domain/UseFallbackQuestions';
-export type { CreateGameSessionPayload } from './domain/UsePostGameSession';

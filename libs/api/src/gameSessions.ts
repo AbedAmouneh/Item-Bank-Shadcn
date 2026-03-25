@@ -38,6 +38,8 @@ export interface GameSessionData {
   correct_qs: number;
   /** The item bank the game was scoped to, if any. */
   item_bank_id?: number;
+  /** Game-specific metrics (gates cleared, tower height, max streak, etc.). */
+  extra_data?: Record<string, unknown>;
 }
 
 /** Personal game-session statistics returned by GET /game-sessions/my-stats. */

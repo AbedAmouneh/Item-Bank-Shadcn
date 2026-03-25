@@ -2,6 +2,17 @@ worktree-dir: .worktrees/
 
 # Project: Item Bank (Nx Monorepo)
 
+## Documentation & Notes Rule
+
+All documentation files (`.md`, `.docx`, `.pdf`) must live inside the `notes/` folder at the repo root — never scattered at the root level.
+
+- **`notes/`** — active, current documents (plans, specs, prompts in use right now)
+- **`notes/old/`** — completed or historical documents (done batches, old plans, past bug prompts)
+
+The only files exempt from this rule are `CLAUDE.md`, `AGENTS.md`, and `README.md` — they must stay at the root to work correctly.
+
+When creating any new doc file, always save it to `notes/`. When a document is no longer actively needed, move it to `notes/old/`.
+
 ---
 
 ## Who is reading this code
