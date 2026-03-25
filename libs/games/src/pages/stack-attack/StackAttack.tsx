@@ -18,6 +18,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
 import { stripHtml } from '../../domain/extractAnswers';
@@ -44,6 +45,7 @@ const STACK_RULES = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function StackAttack() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -152,8 +154,8 @@ export default function StackAttack() {
           className="flex items-center justify-between shrink-0"
           style={{ width: canvasDims.w }}
         >
-          <h2 className="text-xl font-bold">Stack Attack</h2>
-          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+          <h2 className="text-xl font-bold">{t('games.stack_attack_title')}</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>{t('games.back_to_games')}</Button>
         </div>
 
         {/* ── Question card — above canvas ──────────────────────────────── */}
@@ -228,12 +230,12 @@ export default function StackAttack() {
           {isIdle && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 text-white p-6">
               <FoxMascot line={foxLine} />
-              <p className="text-xl font-bold">Stack Attack</p>
+              <p className="text-xl font-bold">{t('games.stack_attack_title')}</p>
               <p className="text-sm text-white/60 text-center max-w-xs">
                 Answer questions to stack blocks. Time your click for a PERFECT! landing.
               </p>
               <Button onClick={startGame} className="mt-1 bg-amber-600 hover:bg-amber-500 text-white border-0 shadow-lg shadow-amber-900/50">
-                Start Game
+                {t('games.start_game')}
               </Button>
             </div>
           )}
