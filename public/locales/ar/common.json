@@ -320,6 +320,12 @@
         "your_answer": "إجابتك",
         "correct_answer": "الإجابة الصحيحة",
         "incorrect": "خاطئ",
-        "explanation": "الشرح"
+        "explanation": "الشرح",
+        "question_map_heading": "الأسئلة",
+        "answered": "تمت الإجابة",
+        "unanswered": "بدون إجابة",
+        "flagged": "تم وضع علامة",
+        "flag_for_review": "وضع علامة للمراجعة",
+        "answer_placeholder": "اكتب إجابتك هنا..."
     }
 }
