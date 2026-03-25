@@ -112,7 +112,7 @@ export default function PreExamPage() {
           value={
             attemptsExhausted
               ? t('learn.no_attempts_remaining')
-              : t('learn.attempts_remaining_other', { count: brief.attempts_remaining })
+              : t('learn.attempts_remaining', { count: brief.attempts_remaining })
           }
         />
       </div>
