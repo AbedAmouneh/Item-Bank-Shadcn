@@ -222,11 +222,6 @@ function StatusBadge({ isActive }: { isActive: boolean }) {
 // Users page
 // ---------------------------------------------------------------------------
 
-function formatLastLogin(lastLogin?: string | null, neverLabel = 'Never'): string {
-  if (!lastLogin) return neverLabel;
-  return new Date(lastLogin).toLocaleDateString();
-}
-
 export default function Users() {
   const { t } = useTranslation('common');
   const { user } = useAuth();
@@ -246,7 +241,7 @@ function UsersContent() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sheetUser, setSheetUser] = useState<AdminUser | null>(null);
-  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [pendingUserId, setPendingUserId] = useState<number | null>(null);
   const [toggleError, setToggleError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -258,7 +253,7 @@ function UsersContent() {
   const users: AdminUser[] = usersPage?.items ?? [];
 
   const { mutate: toggleStatus } = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
       isActive ? deactivateUser(id) : activateUser(id),
     onMutate: ({ id }) => {
       setPendingUserId(id);
@@ -333,7 +328,6 @@ function UsersContent() {
                 <TableHead>{t('admin.users.email')}</TableHead>
                 <TableHead>{t('admin.users.role')}</TableHead>
                 <TableHead>{t('admin.users.status')}</TableHead>
-                <TableHead>{t('admin.users.last_login')}</TableHead>
                 <TableHead className="text-end">{t('admin.users.actions')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -354,9 +348,6 @@ function UsersContent() {
                   </TableCell>
                   <TableCell>
                     <StatusBadge isActive={u.is_active} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {formatLastLogin(u.last_login, t('admin.users.never'))}
                   </TableCell>
                   <TableCell className="text-end">
                     <div className="flex items-center justify-end gap-2">
