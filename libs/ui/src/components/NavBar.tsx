@@ -1,15 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  Ellipsis,
   GraduationCap,
   Maximize,
-  Minimize,
-  Moon,
-  Sun,
   Languages,
   LogOut,
   Menu as MenuIcon,
+  Minimize,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
@@ -19,12 +20,15 @@ import { useLanguage } from '../hooks/UseLanguage';
 import type { Notification } from '../types/Notification';
 import { NotificationPanel } from './NotificationPanel';
 
-const baseNavItems = [
+const primaryNavItems = [
   { labelKey: 'nav.dashboard', path: '/dashboard' },
   { labelKey: 'nav.projects', path: '/projects' },
   { labelKey: 'nav.itemBanks', path: '/item-banks' },
-  { labelKey: 'nav.analytics', path: '/analytics' },
   { labelKey: 'nav.games', path: '/games' },
+];
+
+const secondaryNavItems = [
+  { labelKey: 'nav.analytics', path: '/analytics' },
   { labelKey: 'nav.settings', path: '/settings' },
 ];
 
@@ -40,7 +44,7 @@ function IconTooltip({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <TooltipPrimitive.Root>
@@ -99,10 +103,11 @@ function NavBar({
   const { mode } = useThemeMode();
   const { language, setLanguage } = useLanguage();
 
-  const navItems = [
-    ...baseNavItems,
+  const overflowNavItems = [
+    ...secondaryNavItems,
     ...(userRole === 'admin' ? adminNavItems : []),
   ];
+  const mobileNavItems = [...primaryNavItems, ...overflowNavItems];
 
   const handleNavItemClick = (path: string) => {
     navigate(path);
@@ -147,7 +152,7 @@ function NavBar({
         {/* Center — Nav pills (desktop) */}
         <nav className="hidden md:flex items-center justify-center flex-1 min-w-0">
           <div className="flex items-center gap-1 p-1 rounded-full bg-muted overflow-x-auto scrollbar-none">
-            {navItems.map((item) => (
+            {primaryNavItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => handleNavItemClick(item.path)}
@@ -161,6 +166,38 @@ function NavBar({
                 {t(item.labelKey)}
               </button>
             ))}
+
+            {/* Extra navigation links collapse under "More" to keep the header readable. */}
+            <DropdownMenuPrimitive.Root>
+              <DropdownMenuPrimitive.Trigger asChild>
+                <button
+                  className="py-2 px-4 rounded-full text-[0.9375rem] font-medium cursor-pointer whitespace-nowrap select-none transition-colors duration-150 text-[hsl(var(--nav-pill-unselected-text))] hover:bg-accent hover:text-foreground"
+                  aria-label={t('table_actions.menu')}
+                >
+                  {t('table_actions.menu')}
+                </button>
+              </DropdownMenuPrimitive.Trigger>
+              <DropdownMenuPrimitive.Portal>
+                <DropdownMenuPrimitive.Content
+                  className="min-w-[220px] rounded-xl border border-border shadow-card bg-card text-card-foreground p-1 z-50 animate-fade-in"
+                  sideOffset={8}
+                  align="end"
+                >
+                  {overflowNavItems.map((item) => (
+                    <DropdownMenuPrimitive.Item
+                      key={item.path}
+                      className={cn(
+                        'text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none',
+                        isSelected(item.path) && 'text-primary font-medium'
+                      )}
+                      onSelect={() => handleNavItemClick(item.path)}
+                    >
+                      {t(item.labelKey)}
+                    </DropdownMenuPrimitive.Item>
+                  ))}
+                </DropdownMenuPrimitive.Content>
+              </DropdownMenuPrimitive.Portal>
+            </DropdownMenuPrimitive.Root>
           </div>
         </nav>
 
@@ -183,7 +220,7 @@ function NavBar({
               sideOffset={6}
               align="start"
             >
-              {navItems.map((item) => (
+              {mobileNavItems.map((item) => (
                 <DropdownMenuPrimitive.Item
                   key={item.path}
                   className={cn(
@@ -209,46 +246,62 @@ function NavBar({
             onMarkAllAsRead={onMarkAllNotificationsAsRead}
           />
 
-          {/* Fullscreen */}
-          <IconTooltip label={t('table_actions.fullscreen')}>
-            <button className={navIconBtnClass} aria-label={t('table_actions.fullscreen')} onClick={toggleFullscreen}>
-              {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
-            </button>
-          </IconTooltip>
-
-          {/* Theme toggle */}
-          <IconTooltip label={t('table_actions.theme')}>
-            <button className={navIconBtnClass} aria-label={t('table_actions.theme')} onClick={switchTheme}>
-              {mode === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-          </IconTooltip>
-
-          {/* Language toggle */}
-          <IconTooltip label={t('table_actions.language')}>
-            <button className={navIconBtnClass} aria-label={t('table_actions.language')} onClick={handleLanguageToggle}>
-              <Languages size={18} />
-            </button>
-          </IconTooltip>
-
-          {/* Switch to Learning — only shown for dual-role users */}
-          {onSwitchToLearn && (
-            <IconTooltip label="Switch to Learning">
-              <button
-                className={navIconBtnClass}
-                aria-label="Switch to Learning"
-                onClick={onSwitchToLearn}
-              >
-                <GraduationCap size={18} />
-              </button>
+          {/* Quick actions menu keeps infrequent controls out of the main row. */}
+          <DropdownMenuPrimitive.Root>
+            <IconTooltip label={t('table_actions.menu')}>
+              <DropdownMenuPrimitive.Trigger asChild>
+                <button className={navIconBtnClass} aria-label={t('table_actions.menu')}>
+                  <Ellipsis size={18} />
+                </button>
+              </DropdownMenuPrimitive.Trigger>
             </IconTooltip>
-          )}
-
-          {/* Logout */}
-          <IconTooltip label={t('table_actions.logout')}>
-            <button className={navIconBtnClass} aria-label={t('table_actions.logout')} onClick={onLogout}>
-              <LogOut size={18} className="rtl:scale-x-[-1]" />
-            </button>
-          </IconTooltip>
+            <DropdownMenuPrimitive.Portal>
+              <DropdownMenuPrimitive.Content
+                className="min-w-[220px] rounded-xl border border-border shadow-card bg-card text-card-foreground p-1 z-50 animate-fade-in"
+                sideOffset={8}
+                align="end"
+              >
+                <DropdownMenuPrimitive.Item
+                  className="text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none flex items-center gap-2"
+                  onSelect={toggleFullscreen}
+                >
+                  {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+                  {t('table_actions.fullscreen')}
+                </DropdownMenuPrimitive.Item>
+                <DropdownMenuPrimitive.Item
+                  className="text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none flex items-center gap-2"
+                  onSelect={switchTheme}
+                >
+                  {mode === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+                  {t('table_actions.theme')}
+                </DropdownMenuPrimitive.Item>
+                <DropdownMenuPrimitive.Item
+                  className="text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none flex items-center gap-2"
+                  onSelect={handleLanguageToggle}
+                >
+                  <Languages size={16} />
+                  {t('table_actions.language')}
+                </DropdownMenuPrimitive.Item>
+                {onSwitchToLearn && (
+                  <DropdownMenuPrimitive.Item
+                    className="text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none flex items-center gap-2"
+                    onSelect={onSwitchToLearn}
+                  >
+                    <GraduationCap size={16} />
+                    {t('nav_bar.switch_to_learning')}
+                  </DropdownMenuPrimitive.Item>
+                )}
+                <DropdownMenuPrimitive.Separator className="my-1 h-px bg-border" />
+                <DropdownMenuPrimitive.Item
+                  className="text-sm py-2 px-3 rounded-lg cursor-pointer hover:bg-accent focus:bg-accent transition-colors outline-none flex items-center gap-2"
+                  onSelect={onLogout}
+                >
+                  <LogOut size={16} className="rtl:scale-x-[-1]" />
+                  {t('table_actions.logout')}
+                </DropdownMenuPrimitive.Item>
+              </DropdownMenuPrimitive.Content>
+            </DropdownMenuPrimitive.Portal>
+          </DropdownMenuPrimitive.Root>
 
           {/* User avatar */}
           <div
