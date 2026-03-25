@@ -1,4 +1,5 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Play } from 'lucide-react';
 
 import {
@@ -63,6 +64,7 @@ function HeaderSkeleton() {
 // ---------------------------------------------------------------------------
 
 const ItemBankDetail = () => {
+  const { t } = useTranslation('common');
   const { id } = useParams<{ id: string }>();
   const bankId = Number(id);
   const navigate = useNavigate();
@@ -86,7 +88,7 @@ const ItemBankDetail = () => {
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={15} />
-        Back to Item Banks
+        {t('item_banks.back_to_banks')}
       </Link>
 
       {/* Bank header */}
@@ -94,9 +96,9 @@ const ItemBankDetail = () => {
 
       {(bankError || (!bankLoading && !bank)) && (
         <div className="py-16 text-center">
-          <p className="text-lg font-medium text-muted-foreground">Item bank not found.</p>
+          <p className="text-lg font-medium text-muted-foreground">{t('item_banks.not_found')}</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate('/item-banks')}>
-            Go back
+            {t('item_banks.go_back')}
           </Button>
         </div>
       )}
@@ -115,7 +117,7 @@ const ItemBankDetail = () => {
               className="shrink-0"
             >
               <Play size={15} className="me-1.5" />
-              Play with this bank
+              {t('item_banks.play_with_bank')}
             </Button>
           </div>
 
@@ -124,10 +126,10 @@ const ItemBankDetail = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Modified</TableHead>
+                  <TableHead>{t('item_banks.name_col')}</TableHead>
+                  <TableHead>{t('item_banks.type_col')}</TableHead>
+                  <TableHead>{t('item_banks.status_col')}</TableHead>
+                  <TableHead>{t('item_banks.last_modified_col')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -170,7 +172,7 @@ const ItemBankDetail = () => {
             {!questionsLoading && questions.length === 0 && (
               <div className="py-16 text-center">
                 <p className="text-sm text-muted-foreground">
-                  No questions in this item bank yet.
+                  {t('item_banks.no_questions')}
                 </p>
               </div>
             )}
