@@ -5,13 +5,15 @@
  * may import from it, but it may not import from any other @item-bank/* lib.
  */
 
+import type { Role } from './roles';
+
 export {
   PLATFORM_ROLES,
   AUTHORING_ROLES,
   ALL_AUTHORING_ROLES,
   LEARNER_ROLE,
 } from './roles';
-export type { PlatformRole, AuthoringRole, LearnerRole, AppRole } from './roles';
+export type { PlatformRole, AuthoringRole, LearnerRole, AppRole, Role } from './roles';
 
 export type {
   LearnerCourse,
@@ -37,7 +39,7 @@ export interface AuthUser {
    * All new guard and UI logic must read from `roles`.
    * Remove once NavBar is updated to consume `roles` directly.
    */
-  role: 'admin' | 'user';
+  role: Role;
   /** Multi-role array — the primary source of truth for all guard and UI logic. */
   roles: string[];
   /** Organisation tenant identifier (integer). */
