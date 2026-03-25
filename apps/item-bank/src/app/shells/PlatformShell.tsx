@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LogOut, LayoutDashboard, Building2 } from 'lucide-react';
 import { logout } from '@item-bank/api';
 import { useAuth } from '@item-bank/auth';
+import { HeaderPreferenceButtons } from '@item-bank/ui';
 
 /**
  * Navigation shell for the platform world (super_admin / sales area).
@@ -69,6 +70,8 @@ export default function PlatformShell() {
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
+          <HeaderPreferenceButtons />
+
           <div className="flex items-center gap-2 py-1 px-2 rounded-xl">
             <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white text-xs font-semibold">
               {emailLocal.slice(0, 2).toUpperCase()}
@@ -80,7 +83,7 @@ export default function PlatformShell() {
           <button
             onClick={handleLogout}
             className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            aria-label="Logout"
+            aria-label={t('table_actions.logout')}
           >
             <LogOut size={18} className="rtl:scale-x-[-1]" />
           </button>
