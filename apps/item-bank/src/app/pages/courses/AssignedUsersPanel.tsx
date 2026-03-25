@@ -43,7 +43,7 @@ function AssignDialog({ courseId, open, onClose }: AssignDialogProps) {
 
   const { data: usersPage } = useQuery({
     queryKey: ['admin-users-picker'],
-    queryFn: () => getUsers({ per_page: 200 }),
+    queryFn: () => getUsers({ limit: 200 }),
     enabled: open,
   });
   const users = usersPage?.items ?? [];
