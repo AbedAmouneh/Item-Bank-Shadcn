@@ -1,6 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Download } from 'lucide-react';
+
 import {
   Button,
   Dialog,
@@ -22,6 +25,7 @@ import {
   useUpdateQuestion,
 } from '@item-bank/questions';
 import { getQuestion, exportQuestions } from '@item-bank/api';
+
 import { normalizeStatus, formatLastModified } from '../../utils/questionUtils';
 import { formDataToApiPayload } from '../../utils/questionToApiPayload';
 import { apiQuestionToFormData } from '../../utils/apiQuestionToFormData';
@@ -43,6 +47,7 @@ interface SnackbarNotificationProps {
 
 /** Fixed bottom-center notification that auto-dismisses after 4 seconds. */
 function SnackbarNotification({ message, severity, onClose }: SnackbarNotificationProps) {
+  const { t } = useTranslation('common');
   useEffect(() => {
     const timer = setTimeout(onClose, 4000);
     return () => clearTimeout(timer);
@@ -55,7 +60,7 @@ function SnackbarNotification({ message, severity, onClose }: SnackbarNotificati
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close notification"
+          aria-label={t('home.close_notification')}
           className="ms-2 rounded p-0.5 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
         >
           ✕
@@ -75,12 +80,13 @@ interface ExportDialogProps {
 
 /** Modal that lets the user pick an export format and trigger a download. */
 function ExportDialog({ open, onOpenChange, format, onFormatChange, onDownload }: ExportDialogProps) {
+  const { t } = useTranslation('common');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Export Questions</DialogTitle>
-          <DialogDescription>Choose a format to download all questions.</DialogDescription>
+          <DialogTitle>{t('home.export_questions')}</DialogTitle>
+          <DialogDescription>{t('home.choose_format')}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-3 py-2">
@@ -101,11 +107,11 @@ function ExportDialog({ open, onOpenChange, format, onFormatChange, onDownload }
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{t('profile.cancel')}</Button>
           </DialogClose>
           <Button onClick={onDownload}>
             <Download className="me-2 h-4 w-4" />
-            Download
+            {t('home.download')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -135,6 +141,7 @@ function apiToRow(q: {
 }
 
 const Home = () => {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [questionToEdit, setQuestionToEdit] = useState<QuestionRow | null>(null);
@@ -178,10 +185,10 @@ const Home = () => {
       })
       .catch(() => {
         setSnackbarSeverity('error');
-        setSnackbarMessage('Failed to load question for editing.');
+        setSnackbarMessage(t('home.failed_to_load_edit'));
         setSnackbarOpen(true);
       });
-  }, []);
+  }, [t]);
 
   const closeEditor = useCallback(() => {
     setQuestionToEdit(null);
@@ -194,7 +201,7 @@ const Home = () => {
   const handleSave = useCallback(
     (questionData: QuestionFormData) => {
       const successMsg =
-        editorMode === 'edit' ? 'Question updated successfully.' : 'Question created successfully.';
+        editorMode === 'edit' ? t('home.question_updated') : t('home.question_created');
 
       const payload = formDataToApiPayload(questionData);
       if (!payload) {
@@ -214,7 +221,7 @@ const Home = () => {
             },
             onError: () => {
               setSnackbarSeverity('error');
-              setSnackbarMessage('Failed to save question.');
+              setSnackbarMessage(t('home.failed_to_save'));
               setSnackbarOpen(true);
             },
           }
@@ -229,13 +236,13 @@ const Home = () => {
           },
           onError: () => {
             setSnackbarSeverity('error');
-            setSnackbarMessage('Failed to save question.');
+            setSnackbarMessage(t('home.failed_to_save'));
             setSnackbarOpen(true);
           },
         });
       }
     },
-    [editorMode, closeEditor, createQuestionMutate, updateQuestionMutate]
+    [editorMode, t, closeEditor, createQuestionMutate, updateQuestionMutate]
   );
 
   const handleQuestionViewOpen = useCallback((row: QuestionRow | null) => {
@@ -253,26 +260,26 @@ const Home = () => {
       URL.revokeObjectURL(url);
       setIsExportOpen(false);
       setSnackbarSeverity('success');
-      setSnackbarMessage('Questions exported successfully.');
+      setSnackbarMessage(t('home.export_success'));
       setSnackbarOpen(true);
     } catch {
       setSnackbarSeverity('error');
-      setSnackbarMessage('Failed to export questions.');
+      setSnackbarMessage(t('home.failed_to_export'));
       setSnackbarOpen(true);
     }
-  }, [exportFormat]);
+  }, [exportFormat, t]);
 
   return (
     <div className="w-full px-8 py-8">
       {isError && (
-        <p className="text-destructive mb-4">Failed to load questions</p>
+        <p className="text-destructive mb-4">{t('home.failed_to_load')}</p>
       )}
 
       {/* Toolbar */}
       <div className="mb-4 flex justify-end">
         <Button variant="outline" size="sm" onClick={() => setIsExportOpen(true)}>
           <Download className="me-2 h-4 w-4" />
-          Export
+          {t('home.export_label')}
         </Button>
       </div>
 
