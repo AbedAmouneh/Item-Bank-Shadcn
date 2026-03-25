@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -34,6 +35,7 @@ export default function MemoryResults({
   onPlayAgain,
   onBack,
 }: MemoryResultsProps) {
+  const { t } = useTranslation('common');
   // Perfect game = totalPairs moves (one lucky flip per pair). Efficiency caps at 100%.
   const efficiency = moves > 0 ? Math.min(100, Math.round((totalPairs / moves) * 100)) : 100;
   const allMatched = matchCount >= totalPairs;
@@ -72,21 +74,21 @@ export default function MemoryResults({
       <div className="flex gap-8 text-sm">
         <div>
           <p className="font-bold text-lg">{matchCount}/{totalPairs}</p>
-          <p className="text-white/60">Pairs</p>
+          <p className="text-white/60">{t('games.pairs_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-lg">{moves}</p>
-          <p className="text-white/60">Moves</p>
+          <p className="text-white/60">{t('games.moves_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-lg">{efficiency}%</p>
-          <p className="text-white/60">Efficiency</p>
+          <p className="text-white/60">{t('games.efficiency_stat')}</p>
         </div>
       </div>
 
       {/* Subtle save indicator — only shown after the API call succeeds */}
       {isSuccess && (
-        <p className="text-xs text-emerald-400">✓ Saved</p>
+        <p className="text-xs text-emerald-400">{t('games.saved')}</p>
       )}
 
       <div className="flex gap-3 mt-2">
@@ -95,9 +97,9 @@ export default function MemoryResults({
           onClick={onBack}
           className="border-white/30 text-white hover:bg-white/10"
         >
-          ← Back to Games
+          {t('games.back_to_games')}
         </Button>
-        <Button onClick={onPlayAgain}>Play Again</Button>
+        <Button onClick={onPlayAgain}>{t('games.play_again')}</Button>
       </div>
 
       <ScoreHistory scores={scores} />
