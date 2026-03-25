@@ -7,7 +7,7 @@
  * Fox line: meteor_win for a great score (≥ 5 catches), meteor_lose otherwise.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -45,8 +45,13 @@ export default function MeteorCatcherResults({
   const { scores, save } = useGameScores('meteor-catcher');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
+  // hasSavedRef prevents a second save if React re-runs this effect (e.g. Strict Mode double-invoke).
+  const hasSavedRef = useRef(false);
+
   // Fire-and-forget on mount — one mount equals one completed run.
   useEffect(() => {
+    if (hasSavedRef.current) return;
+    hasSavedRef.current = true;
     save({ score, correct: catches, total: totalQs, accuracy });
     mutate({
       game: 'meteor-catcher',
@@ -56,7 +61,7 @@ export default function MeteorCatcherResults({
       correct_qs: catches,
       item_bank_id,
     });
-  }, [mutate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [save, mutate, score, catches, totalQs, accuracy, item_bank_id]);
 
   const didWell = catches >= WIN_CATCH_THRESHOLD;
   const foxLine = didWell ? FOX_LINES.meteor_win : FOX_LINES.meteor_lose;

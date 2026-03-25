@@ -9,7 +9,7 @@
  * Fox mascot line: win if gatesCleared >= 5, lose otherwise.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -48,8 +48,13 @@ export default function PixelDashResults({
   const { scores, save } = useGameScores('pixel-dash');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
+  // hasSavedRef prevents a second save if React re-runs this effect (e.g. Strict Mode double-invoke).
+  const hasSavedRef = useRef(false);
+
   // Fire-and-forget on mount — one mount = one completed run.
   useEffect(() => {
+    if (hasSavedRef.current) return;
+    hasSavedRef.current = true;
     save({ score, correct: gatesCleared, total: totalGatesReached, accuracy });
     mutate({
       game: 'pixel-dash',
@@ -59,7 +64,7 @@ export default function PixelDashResults({
       correct_qs: gatesCleared,
       item_bank_id,
     });
-  }, [mutate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [save, mutate, score, gatesCleared, totalGatesReached, accuracy, item_bank_id]);
 
   const didWell = gatesCleared >= 5;
   const foxLine = didWell ? FOX_LINES.pixel_dash_win : FOX_LINES.pixel_dash_lose;

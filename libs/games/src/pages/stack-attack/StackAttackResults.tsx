@@ -7,7 +7,7 @@
  * Stats shown: score, tower height, golden blocks, max streak.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -47,8 +47,13 @@ export default function StackAttackResults({
   const { scores, save } = useGameScores('stack-attack');
   const { mutate, isSuccess } = useMutation({ mutationFn: saveGameSession });
 
+  // hasSavedRef prevents a second save if React re-runs this effect (e.g. Strict Mode double-invoke).
+  const hasSavedRef = useRef(false);
+
   // Fire-and-forget on mount — one mount = one completed run.
   useEffect(() => {
+    if (hasSavedRef.current) return;
+    hasSavedRef.current = true;
     save({ score, correct: correctCount, total: totalQs, accuracy });
     mutate({
       game: 'stack-attack',
@@ -58,7 +63,7 @@ export default function StackAttackResults({
       correct_qs: correctCount,
       item_bank_id,
     });
-  }, [mutate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [save, mutate, score, correctCount, totalQs, accuracy, item_bank_id]);
 
   const didWell = towerHeight >= WIN_HEIGHT_THRESHOLD;
   const foxLine = didWell ? FOX_LINES.stack_win : FOX_LINES.stack_topple;
