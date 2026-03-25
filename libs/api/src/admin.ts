@@ -13,7 +13,7 @@ import type { ItemBank } from './itemBanks';
 export interface AdminUser {
   id: string;
   email: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'learner';
   is_active: boolean;
   last_login?: string | null;
   /** Controls which item banks the user can access. */
@@ -38,7 +38,7 @@ export interface GetUsersParams {
 export interface CreateUserData {
   email: string;
   password: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'learner';
 }
 
 interface Envelope<T> {
@@ -104,7 +104,7 @@ export async function deactivateUser(id: string): Promise<AdminUser> {
 /** Fields that can be changed when editing an existing user. */
 export interface UpdateUserData {
   email?: string;
-  role?: 'admin' | 'user';
+  role?: 'admin' | 'user' | 'learner';
   course_assignment_mode?: 'all_access' | 'assigned_only';
 }
 
