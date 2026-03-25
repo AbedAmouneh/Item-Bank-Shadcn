@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -31,6 +32,7 @@ export default function QuizResults({
   onPlayAgain,
   onBackToLobby,
 }: QuizResultsProps) {
+  const { t } = useTranslation('common');
   const accuracy = result.total > 0
     ? Math.round((result.correct / result.total) * 100)
     : 0;
@@ -67,35 +69,35 @@ export default function QuizResults({
         <p className="text-5xl font-extrabold text-yellow-400 mb-1">
           {result.score}
         </p>
-        <p className="text-sm text-white/60 uppercase tracking-widest">Final score</p>
+        <p className="text-sm text-white/60 uppercase tracking-widest">{t('games.final_score')}</p>
       </div>
 
       <div className="flex gap-8 text-sm">
         <div>
           <p className="font-bold text-lg">{result.correct}/{result.total}</p>
-          <p className="text-white/60">Correct</p>
+          <p className="text-white/60">{t('games.correct_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-lg">{accuracy}%</p>
-          <p className="text-white/60">Accuracy</p>
+          <p className="text-white/60">{t('games.accuracy_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-lg">{emoji}</p>
-          <p className="text-white/60">Rating</p>
+          <p className="text-white/60">{t('games.rating_stat')}</p>
         </div>
       </div>
 
       {/* Subtle save indicator — only shown after the API call succeeds */}
       {isSuccess && (
-        <p className="text-xs text-emerald-400">✓ Saved</p>
+        <p className="text-xs text-emerald-400">{t('games.saved')}</p>
       )}
 
       <div className="flex gap-3 mt-2">
         <Button variant="outline" onClick={onBackToLobby} className="border-white/30 text-white hover:bg-white/10">
-          ← Back to Games
+          {t('games.back_to_games')}
         </Button>
         <Button onClick={onPlayAgain}>
-          Play Again
+          {t('games.play_again')}
         </Button>
       </div>
 
