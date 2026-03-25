@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import type { ExamQuestion as ExamQuestionType, QuestionAnswer } from '@item-bank/types';
 
 interface ExamQuestionProps {
@@ -18,6 +20,7 @@ interface ExamQuestionProps {
  * The answer stored is always { type, value } so the server can decode it.
  */
 export function ExamQuestion({ question, answer, onChange }: ExamQuestionProps) {
+  const { t } = useTranslation('common');
   const { type, content } = question;
   const currentValue = answer?.value;
 
@@ -96,8 +99,8 @@ export function ExamQuestion({ question, answer, onChange }: ExamQuestionProps) 
           onChange={(e) => handleChange(e.target.value)}
           rows={6}
           className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-          aria-label="Your answer"
-          placeholder="Type your answer here…"
+          aria-label={t('learn.your_answer')}
+          placeholder={t('learn.answer_placeholder')}
         />
       )}
     </div>
