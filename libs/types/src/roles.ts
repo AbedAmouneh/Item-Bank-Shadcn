@@ -9,3 +9,6 @@ export type PlatformRole = typeof PLATFORM_ROLES[number];
 export type AuthoringRole = typeof AUTHORING_ROLES[number];
 export type LearnerRole = typeof LEARNER_ROLE;
 export type AppRole = PlatformRole | AuthoringRole | LearnerRole;
+
+/** All roles the backend can assign — covers every value returned by the API. */
+export type Role = typeof ALL_AUTHORING_ROLES[number] | PlatformRole | LearnerRole;
