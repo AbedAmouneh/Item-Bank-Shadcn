@@ -198,7 +198,7 @@ function CourseCard({ course, onDelete }: CourseCardProps) {
         {course.description ? (
           <p className="line-clamp-2 text-sm text-muted-foreground">{course.description}</p>
         ) : (
-          <p className="text-sm italic text-muted-foreground/50">No description</p>
+          <p className="text-sm italic text-muted-foreground/50">{t('courses.no_description')}</p>
         )}
       </CardContent>
       <CardFooter>
