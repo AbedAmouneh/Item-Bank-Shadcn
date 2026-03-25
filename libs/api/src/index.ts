@@ -38,7 +38,7 @@ export type { Tag } from './tags';
 export { getProfile, updateProfile, changePassword } from './profile';
 export type { UserProfile, UpdateProfileData, ChangePasswordData } from './profile';
 export { getUsers, createUser, activateUser, deactivateUser, updateUser, getAuditLogs, getUserItemBanks, assignItemBankToUser, removeItemBankFromUser } from './admin';
-export type { AdminUser, AdminUsersPage, GetUsersParams, CreateUserData, UpdateUserData, AuditLog, GetAuditLogsParams } from './admin';
+export type { AdminUser, AdminUsersPage, GetUsersParams, CreateUserData, UpdateUserData, AuditLog, GetAuditLogsParams, UserItemBankAccess } from './admin';
 export { saveGameSession, getMyStats, getLeaderboard } from './gameSessions';
 export type { GameSessionData, MyStats, LeaderboardEntry, GameId } from './gameSessions';
 export { getAnalyticsOverview } from './analytics';
