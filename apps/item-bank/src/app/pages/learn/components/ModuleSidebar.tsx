@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, Lock, PlayCircle } from 'lucide-react';
 
 import { cn } from '@item-bank/ui';
@@ -20,11 +21,12 @@ type ModuleSidebarProps = {
  * 4. unlocked + not started  -> Circle (muted — available but not yet visited)
  */
 export function ModuleSidebar({ modules, courseId, activeModuleId }: ModuleSidebarProps) {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const sorted = [...modules].sort((a, b) => a.position - b.position);
 
   return (
-    <nav aria-label="Course modules" className="flex flex-col gap-1 p-3">
+    <nav aria-label={t('learn.module_nav_aria')} className="flex flex-col gap-1 p-3">
       {sorted.map((mod) => {
         const isActive = mod.id === activeModuleId;
 
@@ -49,25 +51,25 @@ export function ModuleSidebar({ modules, courseId, activeModuleId }: ModuleSideb
               <CheckCircle2
                 size={16}
                 className="shrink-0 text-green-600 dark:text-green-400"
-                aria-label="Completed"
+                aria-label={t('learn.module_completed')}
               />
             ) : isActive && !mod.locked ? (
               <PlayCircle
                 size={16}
                 className="shrink-0 text-primary"
-                aria-label="Current module"
+                aria-label={t('learn.module_current')}
               />
             ) : mod.locked ? (
               <Lock
                 size={16}
                 className="shrink-0 text-muted-foreground"
-                aria-label="Locked"
+                aria-label={t('learn.module_locked')}
               />
             ) : (
               <Circle
                 size={16}
                 className="shrink-0 text-muted-foreground"
-                aria-label="Not started"
+                aria-label={t('learn.module_not_started')}
               />
             )}
             <span className="truncate">{mod.title}</span>
