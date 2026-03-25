@@ -5,13 +5,15 @@
  * mechanics (credentials, CSRF, retries) to `apiRequest` in ./client.
  */
 
+import type { Role } from '@item-bank/types';
+
 import { apiRequest, clearCsrfToken, setCsrfToken } from './client';
 
 /** Shape of the user object returned by the server on login and /me. */
 export interface ApiUser {
   id: string;
   email: string;
-  role: 'admin' | 'user';
+  role: Role;
   /** Multi-role array. */
   roles: string[];
   /** Organisation tenant identifier (integer). */
@@ -105,4 +107,36 @@ export async function logout(): Promise<void> {
   } finally {
     clearCsrfToken();
   }
+}
+
+/** Shape of the data returned by POST /account/register. */
+export interface RegisterResponse {
+  id: string;
+  email: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Create a new user account (public self-registration).
+ *
+ * The server does NOT set a JWT cookie here — the user must call `login`
+ * after registering to start an authenticated session.
+ *
+ * @param fullName - The user's display name (split into first / last on the server).
+ * @param email    - The user's email address.
+ * @param password - The chosen password (min 8 characters).
+ * @returns        Basic user info for the newly created account.
+ */
+export async function register(
+  fullName: string,
+  email: string,
+  password: string,
+): Promise<RegisterResponse> {
+  const envelope = await apiRequest<Envelope<RegisterResponse>>('/account/register', {
+    method: 'POST',
+    body: JSON.stringify({ full_name: fullName, email, password }),
+  });
+  return envelope.data;
 }
