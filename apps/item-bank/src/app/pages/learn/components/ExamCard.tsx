@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Clock, RotateCcw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button, Badge } from '@item-bank/ui';
 import type { LearnerExam } from '@item-bank/types';
@@ -8,10 +9,11 @@ type ExamCardProps = { exam: LearnerExam };
 
 /**
  * Displays a single exam row with attempt info, last score, and a CTA.
- * All CTAs are disabled — exam navigation is Batch 3B.
+ * CTA navigates to the pre-exam briefing page for this exam.
  */
 export function ExamCard({ exam }: ExamCardProps) {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
   const attemptsRemaining = exam.max_attempts - exam.attempts_used;
   const isExhausted = exam.attempts_used >= exam.max_attempts && !exam.last_passed;
 
@@ -49,11 +51,11 @@ export function ExamCard({ exam }: ExamCardProps) {
           )}
         </div>
       </div>
-      {/* CTA disabled — exam UI is Batch 3B */}
       <Button
         size="sm"
         variant={isExhausted ? 'ghost' : 'default'}
-        disabled
+        disabled={isExhausted}
+        onClick={() => navigate(`/learn/exams/${exam.id}`)}
         className="shrink-0"
       >
         {ctaLabel}
