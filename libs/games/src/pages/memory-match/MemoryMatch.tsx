@@ -16,6 +16,7 @@
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
 import { useGameQuestions } from '../../domain/hooks';
@@ -119,6 +120,7 @@ function shuffleCards(cards: MemoryCard[]): MemoryCard[] {
 type GameScreen = 'idle' | 'playing' | 'results';
 
 export default function MemoryMatch() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -303,8 +305,8 @@ export default function MemoryMatch() {
       {/* Game column — flex-1 so the canvas is centred in the remaining space */}
       <div className="flex flex-col flex-1 items-center gap-4 pt-6 pb-6 min-w-0">
         <div className="flex items-center justify-between shrink-0" style={{ width: CANVAS_W }}>
-          <h2 className="text-xl font-bold">Memory Match</h2>
-          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+          <h2 className="text-xl font-bold">{t('games.memory_match_title')}</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>{t('games.back_to_games')}</Button>
         </div>
 
         {/* Game frame — fixed canvas behind, HTML overlay in front */}
@@ -318,7 +320,7 @@ export default function MemoryMatch() {
               <div
                 className="w-10 h-10 rounded-full border-[3px] border-muted border-t-foreground animate-spin"
                 role="status"
-                aria-label="Loading questions"
+                aria-label={t('games.loading')}
               />
             </div>
           )}
@@ -334,11 +336,11 @@ export default function MemoryMatch() {
           {screen === 'idle' && (
             <div className="flex flex-col items-center justify-center flex-1 gap-5 text-white p-6">
               <FoxMascot line={foxLine} />
-              <p className="text-xl font-bold">Memory Match</p>
+              <p className="text-xl font-bold">{t('games.memory_match_title')}</p>
               <p className="text-sm text-white/60">
                 {candidateCards.length / 2} pairs · flip cards to find matches
               </p>
-              <Button onClick={startGame} className="mt-1">Start Game</Button>
+              <Button onClick={startGame} className="mt-1">{t('games.start_game')}</Button>
             </div>
           )}
 
