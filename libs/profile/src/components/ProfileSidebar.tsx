@@ -29,6 +29,12 @@ export default function ProfileSidebar() {
     },
   ];
 
+  const roleLabel: Record<string, string> = {
+    admin: t('profile.role_admin'),
+    user: t('admin.users.role_user'),
+    learner: t('admin.users.role_learner'),
+  };
+
   const header = (
     <div className="flex items-center p-4 gap-4">
       {/* Avatar circle — replaces MUI Avatar + StyledAvatar */}
@@ -45,7 +51,7 @@ export default function ProfileSidebar() {
           {user?.email ?? ''}
         </p>
         <p className="text-[0.8125rem] text-muted-foreground truncate">
-          {user?.role === 'admin' ? t('profile.role_admin') : t('admin.users.role_user')}
+          {roleLabel[user?.role ?? ''] ?? user?.role ?? ''}
         </p>
       </div>
     </div>
