@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getTags, getItemBank, getLeaderboard } from '@item-bank/api';
@@ -131,6 +132,7 @@ function GameCardGrid({
   games: GameCardInfo[];
   onPlay: (g: GameCardInfo) => void;
 }) {
+  const { t } = useTranslation('common');
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {games.map((game) => (
@@ -143,22 +145,22 @@ function GameCardGrid({
           </CardHeader>
           <CardContent className="flex-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-              Compatible types
+              {t('games.compatible_types')}
             </p>
             <div className="flex flex-wrap gap-1">
-              {game.compatibleTypes.map((t) => (
+              {game.compatibleTypes.map((typeKey) => (
                 <span
-                  key={t}
+                  key={typeKey}
                   className="text-xs bg-muted text-muted-foreground rounded-full px-2 py-0.5"
                 >
-                  {TYPE_LABELS[t] ?? t}
+                  {TYPE_LABELS[typeKey] ?? typeKey}
                 </span>
               ))}
             </div>
           </CardContent>
           <CardFooter>
             <Button className="w-full" onClick={() => onPlay(game)}>
-              Play →
+              {t('games.play_button')}
             </Button>
           </CardFooter>
         </Card>
@@ -170,6 +172,7 @@ function GameCardGrid({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function GamesLobby() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [selectedTagId, setSelectedTagId] = useState<string>('all');
@@ -227,10 +230,10 @@ export default function GamesLobby() {
       {/* Header — item bank name in scoped mode, generic title otherwise */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">
-          {isItemBankMode ? (itemBank?.name ?? '…') : '🎮 Games'}
+          {isItemBankMode ? (itemBank?.name ?? '…') : ('🎮 ' + t('games.tab_games'))}
         </h1>
         <p className="text-muted-foreground mt-1">
-          Play with your question bank
+          {t('games.play_with_bank')}
         </p>
       </div>
 
@@ -238,8 +241,8 @@ export default function GamesLobby() {
         /* Item bank mode: Games tab + Leaderboard tab */
         <Tabs defaultValue="games">
           <TabsList className="mb-8">
-            <TabsTrigger value="games">Games</TabsTrigger>
-            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+            <TabsTrigger value="games">{t('games.tab_games')}</TabsTrigger>
+            <TabsTrigger value="leaderboard">{t('games.tab_leaderboard')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="games">
@@ -250,7 +253,7 @@ export default function GamesLobby() {
             {/* Game selector for the leaderboard */}
             <div className="flex items-center gap-3 mb-6">
               <span className="text-sm font-medium text-muted-foreground">
-                Game
+                {t('games.game_label')}
               </span>
               <Select
                 value={leaderboardGame}
@@ -258,7 +261,7 @@ export default function GamesLobby() {
               >
                 <SelectTrigger
                   className="w-48"
-                  aria-label="Select game for leaderboard"
+                  aria-label={t('games.select_game_leaderboard_aria')}
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -277,22 +280,22 @@ export default function GamesLobby() {
                 <div
                   className="w-8 h-8 rounded-full border-[3px] border-muted border-t-foreground animate-spin"
                   role="status"
-                  aria-label="Loading leaderboard"
+                  aria-label={t('games.loading_leaderboard')}
                 />
               </div>
             ) : leaderboard.length === 0 ? (
               <p className="text-center text-muted-foreground py-12">
-                No scores yet. Play a game to be first on the board!
+                {t('games.no_scores')}
               </p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
-                    <TableHead>Player</TableHead>
-                    <TableHead className="text-end">Score</TableHead>
-                    <TableHead className="text-end">Accuracy</TableHead>
-                    <TableHead className="text-end">Correct</TableHead>
+                    <TableHead>{t('games.player_col')}</TableHead>
+                    <TableHead className="text-end">{t('games.score_col')}</TableHead>
+                    <TableHead className="text-end">{t('games.accuracy_col')}</TableHead>
+                    <TableHead className="text-end">{t('games.correct_col')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -331,12 +334,12 @@ export default function GamesLobby() {
             <Select value={selectedType} onValueChange={setSelectedType}>
               <SelectTrigger
                 className="w-48"
-                aria-label="Filter by question type"
+                aria-label={t('games.filter_by_type_aria')}
               >
-                <SelectValue placeholder="All types" />
+                <SelectValue placeholder={t('games.all_types')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="all">{t('games.all_types')}</SelectItem>
                 {Object.entries(TYPE_LABELS).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
@@ -346,11 +349,11 @@ export default function GamesLobby() {
             </Select>
 
             <Select value={selectedTagId} onValueChange={setSelectedTagId}>
-              <SelectTrigger className="w-48" aria-label="Filter by tag">
-                <SelectValue placeholder="All tags" />
+              <SelectTrigger className="w-48" aria-label={t('games.filter_by_tag_aria')}>
+                <SelectValue placeholder={t('games.all_tags')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All tags</SelectItem>
+                <SelectItem value="all">{t('games.all_tags')}</SelectItem>
                 {tags.map((tag) => (
                   <SelectItem key={tag.id} value={String(tag.id)}>
                     {tag.name}
