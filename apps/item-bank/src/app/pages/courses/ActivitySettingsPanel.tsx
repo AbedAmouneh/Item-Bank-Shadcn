@@ -79,12 +79,15 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
     formState: { errors },
   } = useForm<SettingsFields>({ resolver: zodResolver(settingsSchema) });
 
-  // Sync the form fields whenever a different activity is selected in the sidebar,
-  // or when the item banks list finishes loading (so the Select can resolve the
-  // saved item_bank_id to the correct option label).
+  // Sync the form fields whenever a different activity is selected in the sidebar.
   // `reset` replaces all values at once, which is safer than calling `setValue`
   // for each field individually.
   // All type-specific values live inside `activity.settings` — we extract them here.
+  // NOTE: `itemBanks` is intentionally excluded from the dependency array.
+  // Including it would cause an infinite loop because `itemBanksPage?.items ?? []`
+  // creates a new array reference on every render when the data is loading.
+  // The form's item_bank_id value comes from activity.settings — the Select will
+  // display the correct option label once itemBanks finishes loading.
   useEffect(() => {
     const s = activity.settings;
     reset({
@@ -97,7 +100,7 @@ export function ActivitySettingsPanel({ courseId, activity }: ActivitySettingsPa
       file_url: typeof s.file_url === 'string' ? s.file_url : '',
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activity, itemBanks, reset]);
+  }, [activity, reset]);
 
   const shuffleValue = watch('shuffle') ?? false;
   const passScore = watch('pass_score_percent') ?? 0;
