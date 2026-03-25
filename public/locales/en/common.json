@@ -320,6 +320,12 @@
         "your_answer": "Your Answer",
         "correct_answer": "Correct Answer",
         "incorrect": "Incorrect",
-        "explanation": "Explanation"
+        "explanation": "Explanation",
+        "question_map_heading": "Questions",
+        "answered": "Answered",
+        "unanswered": "Unanswered",
+        "flagged": "Flagged",
+        "flag_for_review": "Flag for review",
+        "answer_placeholder": "Type your answer here…"
     }
 }
