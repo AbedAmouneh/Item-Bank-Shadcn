@@ -19,6 +19,13 @@ export type {
   LearnerAssignment,
   MyLearningData,
   CourseModule,
+  AssessmentBrief,
+  ExamQuestionContent,
+  ExamQuestion,
+  QuestionAnswer,
+  AttemptSession,
+  AttemptResultQuestion,
+  AttemptResult,
 } from './learn';
 
 /** The authenticated user shape used throughout the app. */

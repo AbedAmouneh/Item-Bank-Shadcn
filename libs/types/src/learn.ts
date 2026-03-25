@@ -60,6 +60,96 @@ export interface MyLearningData {
 }
 
 /**
+ * Summary data shown on the PreExamPage before the learner starts.
+ * Returned by GET /learn/assessments/:id/brief.
+ */
+export interface AssessmentBrief {
+  id: number;
+  title: string;
+  description: string | null;
+  /** Duration in minutes. Null means no time limit. */
+  time_limit_mins: number | null;
+  question_count: number;
+  passing_score_percent: number;
+  max_attempts: number;
+  attempts_used: number;
+  /** Server-computed: max_attempts - attempts_used, clamped to 0. */
+  attempts_remaining: number;
+  anti_cheat_enabled: boolean;
+}
+
+/** Content shape for a single question returned inside AttemptSession. */
+export interface ExamQuestionContent {
+  text: string;
+  choices?: { id: string; text: string }[];
+  /** Shown in answer review when available. */
+  explanation?: string;
+}
+
+/** A single question as served during an active exam attempt. */
+export interface ExamQuestion {
+  id: number;
+  /** 1-based display order. */
+  position: number;
+  type: string;
+  content: ExamQuestionContent;
+  /** Maximum points this question is worth. */
+  points: number;
+}
+
+/**
+ * The learner's answer to one question.
+ * Stored as { type, value } so the server can decode by question type.
+ */
+export interface QuestionAnswer {
+  type: string;
+  value: unknown;
+}
+
+/**
+ * Returned by POST /learn/assessments/:id/attempts.
+ * Contains everything ExamPage needs to run without further API calls.
+ */
+export interface AttemptSession {
+  attempt_id: number;
+  assessment_id: number;
+  /** ISO-8601 string, or null when there is no time limit. */
+  deadline_at: string | null;
+  questions: ExamQuestion[];
+}
+
+/** Per-question breakdown inside AttemptResult. */
+export interface AttemptResultQuestion {
+  id: number;
+  position: number;
+  type: string;
+  content: ExamQuestionContent;
+  learner_answer: QuestionAnswer | null;
+  correct_answer: QuestionAnswer;
+  is_correct: boolean;
+  points_awarded: number;
+  points_possible: number;
+}
+
+/**
+ * Full result returned by POST /learn/attempts/:id/submit
+ * and GET /learn/attempts/:id/result.
+ */
+export interface AttemptResult {
+  attempt_id: number;
+  assessment_id: number;
+  score_percent: number;
+  passed: boolean;
+  correct_count: number;
+  total_count: number;
+  /** Seconds elapsed from attempt start to submission. */
+  time_taken_seconds: number;
+  attempt_number: number;
+  attempts_remaining: number;
+  questions: AttemptResultQuestion[];
+}
+
+/**
  * A single module inside a learner's course.
  * locked and completed are server-controlled — never derive them on the client.
  */
