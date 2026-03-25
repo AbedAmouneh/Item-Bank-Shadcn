@@ -19,7 +19,7 @@ import {
   cn,
 } from '@item-bank/ui';
 import { getItemBanks } from '@item-bank/api';
-import type { ItemBank } from '@item-bank/api';
+import type { ItemBank, UserItemBankAccess } from '@item-bank/api';
 import {
   getUserItemBanks,
   assignItemBankToUser,
@@ -150,7 +150,7 @@ function ItemBankCombobox({ assignedIds, onSelect, disabled = false }: ItemBankC
 // ── Assigned item bank row ─────────────────────────────────────────────────────
 
 interface AssignedBankRowProps {
-  itemBank: ItemBank;
+  itemBank: UserItemBankAccess;
   onRemove: (id: number) => void;
   isRemoving: boolean;
 }
@@ -189,7 +189,7 @@ export function AccessControlTab({ user, onModeChange }: AccessControlTabProps) 
   const [assignError, setAssignError] = useState('');
   const [removingId, setRemovingId] = useState<number | null>(null);
 
-  const userId = Number(user.id);
+  const userId = user.id;
   const currentMode: AccessMode = user.course_assignment_mode ?? 'all_access';
   const showBankList = currentMode === 'assigned_only';
 
