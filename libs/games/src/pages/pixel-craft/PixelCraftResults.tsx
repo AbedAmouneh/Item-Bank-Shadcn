@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@item-bank/ui';
 import { usePostGameSession } from '../../domain/hooks';
 import type { PixelCraftSummary } from './hooks/usePixelCraftLogic';
@@ -19,6 +20,7 @@ export default function PixelCraftResults({
   onPlayAgain,
   onBack,
 }: PixelCraftResultsProps) {
+  const { t } = useTranslation('common');
   const perfectRate =
     summary.craftsCompleted > 0
       ? Math.round((summary.perfectCrafts / summary.craftsCompleted) * 100)
@@ -65,7 +67,7 @@ export default function PixelCraftResults({
       </div>
 
       <div>
-        <p className="text-2xl font-black text-white">Workshop Complete</p>
+        <p className="text-2xl font-black text-white">{t('games.workshop_complete')}</p>
         <p className="mt-1 text-sm text-slate-400">
           You finished {summary.craftsCompleted} craft
           {summary.craftsCompleted === 1 ? '' : 's'}.
@@ -75,35 +77,35 @@ export default function PixelCraftResults({
       <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
         <div className="rounded-md bg-slate-800/80 px-4 py-3">
           <p className="text-xl font-black text-yellow-300">{summary.score}</p>
-          <p className="text-slate-400">Score</p>
+          <p className="text-slate-400">{t('games.score_stat')}</p>
         </div>
         <div className="rounded-md bg-slate-800/80 px-4 py-3">
           <p className="text-xl font-black text-white">
             {summary.perfectCrafts}
           </p>
-          <p className="text-slate-400">Perfect crafts</p>
+          <p className="text-slate-400">{t('games.perfect_crafts_stat')}</p>
         </div>
         <div className="rounded-md bg-slate-800/80 px-4 py-3">
           <p className="text-xl font-black text-white">{summary.avgTimeSec}s</p>
-          <p className="text-slate-400">Average time</p>
+          <p className="text-slate-400">{t('games.average_time_stat')}</p>
         </div>
         <div className="rounded-md bg-slate-800/80 px-4 py-3">
           <p className="text-xl font-black text-white">
             {summary.wrongPlacements}
           </p>
-          <p className="text-slate-400">Wrong drops</p>
+          <p className="text-slate-400">{t('games.wrong_drops_stat')}</p>
         </div>
       </div>
 
       <div className="rounded-md bg-slate-900/70 px-4 py-3 text-sm text-slate-300">
-        Perfect craft rate:{' '}
+        {t('games.perfect_craft_rate')}:{' '}
         <span className="font-bold text-white">{perfectRate}%</span>
       </div>
 
       {saving && (
-        <p className="text-xs text-slate-400">Saving workshop stats...</p>
+        <p className="text-xs text-slate-400">{t('games.saving')}</p>
       )}
-      {saved && <p className="text-xs text-emerald-400">Saved</p>}
+      {saved && <p className="text-xs text-emerald-400">{t('games.saved')}</p>}
       {error && <p className="text-xs text-amber-300">{error}</p>}
 
       <div className="flex flex-wrap justify-center gap-3">
@@ -112,13 +114,13 @@ export default function PixelCraftResults({
           onClick={onBack}
           className="border-slate-500 text-white hover:bg-slate-800"
         >
-          Back to Games
+          {t('games.back_to_games')}
         </Button>
         <Button
           onClick={onPlayAgain}
           className="bg-blue-600 text-white hover:bg-blue-500"
         >
-          Play Again
+          {t('games.play_again')}
         </Button>
       </div>
     </div>
