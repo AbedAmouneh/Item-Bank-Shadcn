@@ -86,8 +86,8 @@ const Login = () => {
           {/* Logo */}
           <img
             className="h-20 object-contain"
-            src="/images/york-press.png"
-            alt="York Press logo"
+            src="/york-e-logo.png"
+            alt="eYork E-Learning"
           />
 
           {/* Title */}
@@ -144,13 +144,22 @@ const Login = () => {
           </div>
 
           {/* Footer links */}
-          <div className="flex items-center w-full">
+          <div className="flex items-center justify-between w-full">
             <RouterLink
               to="/forgot-password"
               className="text-sm text-muted-foreground hover:text-foreground hover:underline whitespace-nowrap no-underline transition-colors"
             >
               {t('auth:forgot_password')}
             </RouterLink>
+            <span className="text-sm text-muted-foreground">
+              {t('auth:no_account')}{' '}
+              <RouterLink
+                to="/signup"
+                className="text-primary font-medium hover:underline no-underline transition-colors"
+              >
+                {t('auth:sign_up')}
+              </RouterLink>
+            </span>
           </div>
 
         </form>
