@@ -45,7 +45,7 @@ export default function PlatformDashboardPage() {
 
   const { data: stats, isLoading: statsLoading } = usePlatformStats();
   // Fetch the 10 most recently created tenants, sorted newest-first.
-  const { data: recentPage, isLoading: recentLoading } = useTenants({
+  const { data: recentPage, isLoading: recentLoading, isError: recentError } = useTenants({
     per_page: 10,
     sort_by: 'created_at',
     sort_dir: 'desc',
@@ -102,10 +102,10 @@ export default function PlatformDashboardPage() {
             ))}
           </div>
         )}
-        {!recentLoading && recentTenants.length === 0 && (
-          <p className="text-sm text-muted-foreground">{t('platform.load_error')}</p>
+        {!recentLoading && recentError && (
+          <p className="text-sm text-destructive">{t('platform.load_error')}</p>
         )}
-        {!recentLoading && recentTenants.length > 0 && (
+        {!recentLoading && !recentError && recentTenants.length > 0 && (
           <div className="flex flex-col gap-2">
             {recentTenants.map((tenant) => (
               <TenantCard key={tenant.id} tenant={tenant} />

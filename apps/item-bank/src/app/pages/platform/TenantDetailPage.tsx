@@ -247,6 +247,11 @@ export default function TenantDetailPage() {
 
   const { data: tenant } = useTenant(tenantId);
 
+  // All hooks are called above — safe to bail out early now.
+  if (!tenantId) {
+    return <main className="p-6"><p className="text-sm text-destructive">{t('platform.not_found')}</p></main>;
+  }
+
   return (
     <main className="p-6 flex flex-col gap-6 max-w-5xl mx-auto">
       <div className="flex items-center gap-3">
