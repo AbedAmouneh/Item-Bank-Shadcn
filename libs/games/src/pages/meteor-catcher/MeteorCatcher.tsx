@@ -19,6 +19,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@item-bank/ui';
 import { stripHtml } from '../../domain/extractAnswers';
@@ -55,6 +56,7 @@ const SHIP_CLIP =
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function MeteorCatcher() {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -150,7 +152,7 @@ export default function MeteorCatcher() {
     <div className="flex w-full">
       {/* How-to-play sidebar — desktop only */}
       <div className="hidden lg:flex flex-col w-64 shrink-0 ps-4 pt-6 gap-2 text-sm text-muted-foreground">
-        <p className="font-semibold text-foreground mb-1">How to play</p>
+        <p className="font-semibold text-foreground mb-1">{t('games.how_to_play')}</p>
         {RULES.map((rule, i) => (
           <p key={i} className="leading-snug">
             <span className="text-primary font-bold me-1">{i + 1}.</span>
@@ -167,8 +169,8 @@ export default function MeteorCatcher() {
           className="flex items-center justify-between shrink-0"
           style={{ width: w }}
         >
-          <h2 className="text-xl font-bold">Meteor Catcher</h2>
-          <Button variant="ghost" onClick={() => navigate('/games')}>← Back to Games</Button>
+          <h2 className="text-xl font-bold">{t('games.meteor_catcher_title')}</h2>
+          <Button variant="ghost" onClick={() => navigate('/games')}>{t('games.back_to_games')}</Button>
         </div>
 
         {/* ── Question pill — above canvas ───────────────────────────────── */}
@@ -296,7 +298,7 @@ export default function MeteorCatcher() {
               {/* ── Player spaceship ─────────────────────────────────────── */}
               <div
                 ref={shipDivRef}
-                aria-label="Player ship"
+                aria-label={t('games.player_ship_aria')}
                 style={{
                   position: 'absolute',
                   top: shipY,
@@ -337,12 +339,12 @@ export default function MeteorCatcher() {
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 text-white p-6">
               <p className="text-5xl select-none">☄️</p>
               <FoxMascot line={foxLine} />
-              <p className="text-xl font-bold">Meteor Catcher</p>
+              <p className="text-xl font-bold">{t('games.meteor_catcher_title')}</p>
               <p className="text-sm text-white/60 text-center max-w-xs">
                 Steer your ship to catch meteors labelled with the correct answer.
                 Dodge the wrong ones!
               </p>
-              <Button onClick={startGame} className="mt-1">Start Game</Button>
+              <Button onClick={startGame} className="mt-1">{t('games.start_game')}</Button>
             </div>
           )}
 
@@ -373,7 +375,7 @@ export default function MeteorCatcher() {
             <div className="flex gap-2">
               <button
                 type="button"
-                aria-label="Move ship left"
+                aria-label={t('games.move_ship_left_aria')}
                 onPointerDown={() => setShipKeyLeft(true)}
                 onPointerUp={() => setShipKeyLeft(false)}
                 onPointerLeave={() => setShipKeyLeft(false)}
@@ -383,7 +385,7 @@ export default function MeteorCatcher() {
               </button>
               <button
                 type="button"
-                aria-label="Move ship right"
+                aria-label={t('games.move_ship_right_aria')}
                 onPointerDown={() => setShipKeyRight(true)}
                 onPointerUp={() => setShipKeyRight(false)}
                 onPointerLeave={() => setShipKeyRight(false)}
