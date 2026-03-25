@@ -7,7 +7,7 @@
 
 import type { Role } from '@item-bank/types';
 
-import { apiRequest, clearCsrfToken, setCsrfToken } from './client';
+import { apiRequest, clearCsrfToken } from './client';
 
 /** Shape of the user object returned by the server on login and /me. */
 export interface ApiUser {
@@ -56,8 +56,6 @@ export async function login(
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-
-  setCsrfToken(envelope.data.csrf_token);
 
   return envelope.data;
 }
