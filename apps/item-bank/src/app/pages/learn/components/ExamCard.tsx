@@ -38,7 +38,7 @@ export function ExamCard({ exam }: ExamCardProps) {
           <span className="flex items-center gap-1">
             <RotateCcw size={12} />
             {attemptsRemaining > 0
-              ? t('learn.attempts_remaining_other', { count: attemptsRemaining })
+              ? t('learn.attempts_remaining', { count: attemptsRemaining })
               : t('learn.no_attempts_remaining')}
           </span>
           {exam.last_score !== null && (
