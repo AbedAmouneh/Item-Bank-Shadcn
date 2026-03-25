@@ -137,12 +137,11 @@ function NavBar({
           className="flex items-center gap-3 shrink-0 cursor-pointer py-1.5 px-2 -ms-2 rounded-xl hover:bg-accent transition-colors"
           onClick={() => navigate('/home')}
         >
-          <div className="flex items-center justify-center font-bold text-lg w-8 h-8 rounded-lg bg-primary text-white">
-            A
-          </div>
-          <span className="hidden sm:block font-semibold text-base text-foreground">
-            {t('brand')}
-          </span>
+          <img
+            src="/york-e-logo.png"
+            alt="eYork E-Learning"
+            className="h-12 w-auto object-contain"
+          />
         </div>
 
         {/* Center — Nav pills (desktop) */}
