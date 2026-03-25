@@ -7,15 +7,13 @@
  */
 
 import { apiRequest } from './client';
-import type { ItemBank } from './itemBanks';
 
 /** A user record as returned by the admin endpoints. */
 export interface AdminUser {
-  id: string;
+  id: number;
   email: string;
   role: 'admin' | 'user' | 'learner';
   is_active: boolean;
-  last_login?: string | null;
   /** Controls which item banks the user can access. */
   course_assignment_mode?: 'all_access' | 'assigned_only';
 }
@@ -25,13 +23,13 @@ export interface AdminUsersPage {
   items: AdminUser[];
   total: number;
   page: number;
-  per_page: number;
+  limit: number;
 }
 
 /** Optional query parameters for listing users. */
 export interface GetUsersParams {
   page?: number;
-  per_page?: number;
+  limit?: number;
 }
 
 /** Payload for creating a new user. */
@@ -55,7 +53,7 @@ interface Envelope<T> {
 export async function getUsers(params: GetUsersParams = {}): Promise<AdminUsersPage> {
   const query = new URLSearchParams();
   if (params.page !== undefined) query.set('page', String(params.page));
-  if (params.per_page !== undefined) query.set('per_page', String(params.per_page));
+  if (params.limit !== undefined) query.set('limit', String(params.limit));
   const qs = query.toString() ? `?${query.toString()}` : '';
   const envelope = await apiRequest<Envelope<AdminUsersPage>>(`/admin/users${qs}`);
   return envelope.data;
@@ -78,27 +76,19 @@ export async function createUser(data: CreateUserData): Promise<AdminUser> {
 /**
  * Activate a previously deactivated user account.
  *
- * @param id - The user's ID.
- * @returns  The updated user record.
+ * @param id - The user's numeric ID.
  */
-export async function activateUser(id: string): Promise<AdminUser> {
-  const envelope = await apiRequest<Envelope<AdminUser>>(`/admin/users/${id}/activate`, {
-    method: 'POST',
-  });
-  return envelope.data;
+export async function activateUser(id: number): Promise<void> {
+  await apiRequest<unknown>(`/admin/users/${id}/activate`, { method: 'POST' });
 }
 
 /**
  * Deactivate an active user account.
  *
- * @param id - The user's ID.
- * @returns  The updated user record.
+ * @param id - The user's numeric ID.
  */
-export async function deactivateUser(id: string): Promise<AdminUser> {
-  const envelope = await apiRequest<Envelope<AdminUser>>(`/admin/users/${id}/deactivate`, {
-    method: 'POST',
-  });
-  return envelope.data;
+export async function deactivateUser(id: number): Promise<void> {
+  await apiRequest<unknown>(`/admin/users/${id}/deactivate`, { method: 'POST' });
 }
 
 /** Fields that can be changed when editing an existing user. */
@@ -115,7 +105,7 @@ export interface UpdateUserData {
  * @param data - Fields to update.
  * @returns    The updated user record.
  */
-export async function updateUser(id: string, data: UpdateUserData): Promise<AdminUser> {
+export async function updateUser(id: number, data: UpdateUserData): Promise<AdminUser> {
   const envelope = await apiRequest<{ success: boolean; data: AdminUser }>(
     `/admin/users/${id}`,
     {
@@ -128,16 +118,23 @@ export async function updateUser(id: string, data: UpdateUserData): Promise<Admi
 
 // ── Item-bank access management ────────────────────────────────────────────────
 
+/** A row returned by GET /admin/users/:id/item-banks — only the fields the endpoint sends. */
+export interface UserItemBankAccess {
+  id: number;
+  name: string;
+  assigned_at: string;
+}
+
 /**
  * Fetch the list of item banks explicitly assigned to a user.
  *
  * Only relevant when the user's course_assignment_mode is "assigned_only".
  *
  * @param userId - The numeric database ID of the user.
- * @returns      Array of item banks assigned to that user.
+ * @returns      Array of item-bank access rows assigned to that user.
  */
-export async function getUserItemBanks(userId: number): Promise<ItemBank[]> {
-  const envelope = await apiRequest<Envelope<ItemBank[]>>(
+export async function getUserItemBanks(userId: number): Promise<UserItemBankAccess[]> {
+  const envelope = await apiRequest<Envelope<UserItemBankAccess[]>>(
     `/admin/users/${userId}/item-banks`,
   );
   return envelope.data;
