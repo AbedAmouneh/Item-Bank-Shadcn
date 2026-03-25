@@ -266,6 +266,8 @@
         "no_limit": "No limit",
         "attempts_remaining_one": "{{count}} attempt remaining",
         "attempts_remaining_other": "{{count}} attempts remaining",
+        "time_limit_minutes": "{{count}} min",
+        "time_taken_format": "{{minutes}}m {{seconds}}s",
         "overdue": "Overdue",
         "due_soon": "Due soon",
         "not_submitted": "Not submitted",
