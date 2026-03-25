@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { saveGameSession } from '@item-bank/api';
 import { Button } from '@item-bank/ui';
@@ -35,6 +36,7 @@ export default function AnswerRunnerResults({
   onPlayAgain,
   onBack,
 }: AnswerRunnerResultsProps) {
+  const { t } = useTranslation('common');
   const accuracy = totalQuestions > 0
     ? Math.round((correctCount / totalQuestions) * 100)
     : 0;
@@ -71,23 +73,23 @@ export default function AnswerRunnerResults({
       <div className="flex gap-8 text-sm">
         <div>
           <p className="font-bold text-lg text-yellow-400">{score}</p>
-          <p className="text-white/60">Score</p>
+          <p className="text-white/60">{t('games.score_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-lg">
             {correctCount}/{totalQuestions}
           </p>
-          <p className="text-white/60">Correct</p>
+          <p className="text-white/60">{t('games.correct_stat')}</p>
         </div>
         <div>
           <p className="font-bold text-lg">{accuracy}%</p>
-          <p className="text-white/60">Accuracy</p>
+          <p className="text-white/60">{t('games.accuracy_stat')}</p>
         </div>
       </div>
 
       {/* Subtle save indicator — only shown after the API call succeeds */}
       {isSuccess && (
-        <p className="text-xs text-emerald-400">✓ Saved</p>
+        <p className="text-xs text-emerald-400">{t('games.saved')}</p>
       )}
 
       <div className="flex gap-3 mt-2">
@@ -96,9 +98,9 @@ export default function AnswerRunnerResults({
           onClick={onBack}
           className="border-white/30 text-white hover:bg-white/10"
         >
-          ← Back to Games
+          {t('games.back_to_games')}
         </Button>
-        <Button onClick={onPlayAgain}>Play Again</Button>
+        <Button onClick={onPlayAgain}>{t('games.play_again')}</Button>
       </div>
 
       <ScoreHistory scores={scores} />
