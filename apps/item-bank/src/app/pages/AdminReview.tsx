@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ClipboardList, CheckCircle, XCircle, Eye } from 'lucide-react';
 
 import {
@@ -107,6 +108,7 @@ interface ApproveDialogProps {
 }
 
 function ApproveDialog({ open, onClose, onSubmit, isPending, error }: ApproveDialogProps) {
+  const { t } = useTranslation('common');
   const { register, handleSubmit, reset } = useForm<ApproveFields>({
     resolver: zodResolver(approveSchema),
   });
@@ -130,18 +132,18 @@ function ApproveDialog({ open, onClose, onSubmit, isPending, error }: ApproveDia
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Approve this question?</DialogTitle>
+          <DialogTitle>{t('admin_review.approve_title')}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="approve-notes">
-              Reviewer Notes{' '}
-              <span className="text-muted-foreground">(optional)</span>
+              {t('admin_review.reviewer_notes')}{' '}
+              <span className="text-muted-foreground">{t('admin_review.reviewer_notes_optional')}</span>
             </Label>
             <Textarea
               id="approve-notes"
               {...register('notes')}
-              placeholder="Any feedback for the author…"
+              placeholder={t('admin_review.approve_placeholder')}
               rows={3}
             />
           </div>
@@ -152,10 +154,10 @@ function ApproveDialog({ open, onClose, onSubmit, isPending, error }: ApproveDia
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t('profile.cancel')}
             </Button>
             <Button type="button" onClick={handleApproveClick} disabled={isPending}>
-              {isPending ? 'Approving…' : 'Approve'}
+              {isPending ? t('admin_review.approving') : t('admin_review.approve')}
             </Button>
           </DialogFooter>
         </div>
@@ -178,6 +180,7 @@ interface RejectDialogProps {
 }
 
 function RejectDialog({ open, title, onClose, onSubmit, isPending, error }: RejectDialogProps) {
+  const { t } = useTranslation('common');
   const {
     register,
     handleSubmit,
@@ -203,11 +206,11 @@ function RejectDialog({ open, title, onClose, onSubmit, isPending, error }: Reje
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="reject-reason">Reason</Label>
+            <Label htmlFor="reject-reason">{t('admin_review.reject_reason_label')}</Label>
             <Textarea
               id="reject-reason"
               {...register('reason')}
-              placeholder="Explain why the question is being rejected (min 10 characters)…"
+              placeholder={t('admin_review.reject_reason_placeholder')}
               rows={4}
               aria-invalid={!!errors.reason}
             />
@@ -222,10 +225,10 @@ function RejectDialog({ open, title, onClose, onSubmit, isPending, error }: Reje
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t('profile.cancel')}
             </Button>
             <Button type="button" variant="destructive" onClick={handleRejectClick} disabled={isPending}>
-              {isPending ? 'Rejecting…' : 'Reject'}
+              {isPending ? t('admin_review.rejecting') : t('admin_review.reject')}
             </Button>
           </DialogFooter>
         </div>
@@ -261,6 +264,7 @@ function SkeletonRows() {
 // ---------------------------------------------------------------------------
 
 const AdminReview = () => {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [dialog, setDialog] = useState<DialogState>({ type: 'idle' });
@@ -396,7 +400,7 @@ const AdminReview = () => {
       {/* Page heading */}
       <div className="flex items-center gap-4 flex-wrap">
         <ClipboardList className="text-primary" size={28} />
-        <h1 className="font-semibold text-xl text-foreground">Review Queue</h1>
+        <h1 className="font-semibold text-xl text-foreground">{t('admin_review.title')}</h1>
         {!isLoading && (
           <Badge variant="secondary">{pendingCount}</Badge>
         )}
@@ -408,7 +412,7 @@ const AdminReview = () => {
       {selectedIds.size > 0 && (
         <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-4 py-2.5">
           <span className="text-sm text-muted-foreground">
-            {selectedIds.size} selected
+            {t('admin_review.select_count', { count: selectedIds.size })}
           </span>
           <Button
             size="sm"
@@ -417,7 +421,7 @@ const AdminReview = () => {
             disabled={isApproving || isRejecting}
           >
             <CheckCircle size={15} className="me-1.5" />
-            Approve Selected
+            {t('admin_review.approve_selected')}
           </Button>
           <Button
             size="sm"
@@ -427,14 +431,14 @@ const AdminReview = () => {
             disabled={isApproving || isRejecting}
           >
             <XCircle size={15} className="me-1.5" />
-            Reject Selected
+            {t('admin_review.reject_selected')}
           </Button>
         </div>
       )}
 
       {/* Fetch error */}
       {isError && (
-        <p className="text-sm text-destructive">Failed to load questions.</p>
+        <p className="text-sm text-destructive">{t('admin_review.load_error')}</p>
       )}
 
       {/* Table */}
@@ -446,16 +450,16 @@ const AdminReview = () => {
                 <Checkbox
                   checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                   onCheckedChange={toggleSelectAll}
-                  aria-label="Select all questions"
+                  aria-label={t('admin_review.select_all')}
                   disabled={questions.length === 0}
                 />
               </TableHead>
-              <TableHead>Question Name</TableHead>
-              <TableHead>Type</TableHead>
+              <TableHead>{t('admin_review.question_name_col')}</TableHead>
+              <TableHead>{t('admin_review.type_col')}</TableHead>
               {/* submitted_by is not yet a field on the Question type — shows — until API adds it */}
-              <TableHead>Submitted By</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-end">Actions</TableHead>
+              <TableHead>{t('admin_review.submitted_by_col')}</TableHead>
+              <TableHead>{t('admin_review.date_col')}</TableHead>
+              <TableHead className="text-end">{t('admin.users.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -467,7 +471,7 @@ const AdminReview = () => {
                   colSpan={6}
                   className="py-12 text-center text-muted-foreground"
                 >
-                  No questions pending review.
+                  {t('admin_review.no_pending')}
                 </TableCell>
               </TableRow>
             )}
@@ -501,7 +505,7 @@ const AdminReview = () => {
                         aria-label={`Preview ${q.name}`}
                       >
                         <Eye size={15} className="me-1" />
-                        Preview
+                        {t('admin_review.preview')}
                       </Button>
                       <Button
                         size="sm"
@@ -511,7 +515,7 @@ const AdminReview = () => {
                         aria-label={`Approve ${q.name}`}
                       >
                         <CheckCircle size={15} className="me-1" />
-                        Approve
+                        {t('admin_review.approve')}
                       </Button>
                       <Button
                         size="sm"
@@ -521,7 +525,7 @@ const AdminReview = () => {
                         aria-label={`Reject ${q.name}`}
                       >
                         <XCircle size={15} className="me-1" />
-                        Reject
+                        {t('admin_review.reject')}
                       </Button>
                     </div>
                   </TableCell>
@@ -543,7 +547,7 @@ const AdminReview = () => {
       {/* Single reject dialog */}
       <RejectDialog
         open={dialog.type === 'reject'}
-        title="Reject this question?"
+        title={`${t('admin_review.reject')} this question?`}
         onClose={() => setDialog({ type: 'idle' })}
         onSubmit={handleRejectSubmit}
         isPending={isRejecting}
