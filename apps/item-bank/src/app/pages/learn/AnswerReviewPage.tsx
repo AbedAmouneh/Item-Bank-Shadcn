@@ -5,11 +5,20 @@ import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
 import { useAttemptResult } from '../../../features/learn/hooks';
 import type { AttemptResultQuestion } from '@item-bank/types';
 
+/** Pill label — small rounded tag used above section headings. */
+function PillLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+      {children}
+    </span>
+  );
+}
+
 /**
  * Answer review page — shows all questions with learner answers vs correct answers.
  *
  * For each question displays:
- *   - Question number and text
+ *   - Question number badge (pill style) and text
  *   - Learner's answer (formatted)
  *   - Correct answer (formatted)
  *   - ✅ or ❌ indicator
@@ -33,7 +42,7 @@ export default function AnswerReviewPage() {
       <main className="w-full max-w-3xl mx-auto px-6 py-10 flex flex-col gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
           // eslint-disable-next-line react/no-array-index-key
-          <div key={i} className="h-36 rounded-lg bg-muted animate-pulse" />
+          <div key={i} className="h-36 rounded-2xl border-2 border-border bg-card animate-pulse" />
         ))}
       </main>
     );
@@ -52,15 +61,20 @@ export default function AnswerReviewPage() {
   return (
     <main className="w-full max-w-3xl mx-auto px-6 py-10 flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-xl font-bold text-foreground">{t('learn.answer_review_title')}</h1>
-        <Link
-          to={`/learn/exams/${assessmentIdNum}/results/${attemptIdNum}`}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft size={14} />
-          {t('learn.back_to_results')}
-        </Link>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-4">
+          <PillLabel>📖 {t('learn.answer_review_title')}</PillLabel>
+          <Link
+            to={`/learn/exams/${assessmentIdNum}/results/${attemptIdNum}`}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <ArrowLeft size={14} />
+            {t('learn.back_to_results')}
+          </Link>
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {t('learn.answer_review_title')}
+        </h1>
       </div>
 
       {/* Question list */}
@@ -96,16 +110,17 @@ interface ReviewQuestionCardProps {
 function ReviewQuestionCard({ question, t }: ReviewQuestionCardProps) {
   return (
     <div
-      className={`rounded-lg border bg-card p-5 flex flex-col gap-4 ${
+      className={`rounded-2xl border-2 bg-card p-5 flex flex-col gap-4 ${
         question.is_correct ? 'border-green-500/30' : 'border-destructive/30'
       }`}
     >
       {/* Question header */}
       <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="flex flex-col gap-2 flex-1 min-w-0">
+          {/* Pill-style question number badge */}
+          <span className="inline-flex self-start items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
             {t('learn.question_number', { number: question.position })}
-          </p>
+          </span>
           <p className="text-sm font-medium text-foreground leading-relaxed">
             {question.content.text}
           </p>
@@ -135,7 +150,7 @@ function ReviewQuestionCard({ question, t }: ReviewQuestionCardProps) {
         <div className="flex flex-col gap-1">
           <p className="text-xs font-medium text-muted-foreground">{t('learn.your_answer')}</p>
           <p
-            className={`text-sm px-3 py-2 rounded-md ${
+            className={`text-sm px-3 py-2 rounded-xl ${
               question.is_correct
                 ? 'bg-green-50 text-green-800 dark:bg-green-950/20 dark:text-green-300'
                 : 'bg-destructive/5 text-destructive'
@@ -149,7 +164,7 @@ function ReviewQuestionCard({ question, t }: ReviewQuestionCardProps) {
             <p className="text-xs font-medium text-muted-foreground">
               {t('learn.correct_answer')}
             </p>
-            <p className="text-sm px-3 py-2 rounded-md bg-green-50 text-green-800 dark:bg-green-950/20 dark:text-green-300">
+            <p className="text-sm px-3 py-2 rounded-xl bg-green-50 text-green-800 dark:bg-green-950/20 dark:text-green-300">
               {formatAnswer(question, question.correct_answer.value)}
             </p>
           </div>
@@ -158,7 +173,7 @@ function ReviewQuestionCard({ question, t }: ReviewQuestionCardProps) {
 
       {/* Explanation */}
       {question.content.explanation && (
-        <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground leading-relaxed">
+        <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs text-muted-foreground leading-relaxed">
           <span className="font-medium">{t('learn.explanation')}: </span>
           {question.content.explanation}
         </div>
