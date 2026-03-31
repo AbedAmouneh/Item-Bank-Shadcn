@@ -7,7 +7,7 @@
 
 import type { Role } from '@item-bank/types';
 
-import { apiRequest, clearCsrfToken } from './client';
+import { apiRequest, clearCsrfToken, setCsrfToken } from './client';
 
 /** Shape of the user object returned by the server on login and /me. */
 export interface ApiUser {
