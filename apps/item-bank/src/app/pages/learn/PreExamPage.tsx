@@ -5,6 +5,32 @@ import { ArrowLeft, ArrowRight, Clock, RotateCcw, Target, ShieldAlert } from 'lu
 import { Button } from '@item-bank/ui';
 import { useAssessmentBrief, useStartAttempt } from '../../../features/learn/hooks';
 
+/** Pill label — small rounded tag used above section headings. */
+function PillLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+      {children}
+    </span>
+  );
+}
+
+/** Pastel icon box — soft coloured rounded square behind an icon. */
+function IconBox({
+  children,
+  className = 'bg-primary/10',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 /**
  * Pre-exam briefing page.
  *
@@ -44,12 +70,13 @@ export default function PreExamPage() {
   if (isLoading) {
     return (
       <main className="w-full max-w-2xl mx-auto px-6 py-12 flex flex-col gap-6">
+        <div className="h-5 w-24 rounded-full bg-muted animate-pulse" />
         <div className="h-8 w-2/3 rounded bg-muted animate-pulse" />
         <div className="h-4 w-full rounded bg-muted animate-pulse" />
         <div className="grid grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             // eslint-disable-next-line react/no-array-index-key
-            <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />
+            <div key={i} className="h-20 rounded-2xl border-2 border-border bg-card animate-pulse" />
           ))}
         </div>
       </main>
@@ -78,8 +105,9 @@ export default function PreExamPage() {
       </Link>
 
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground">{brief.title}</h1>
+      <div className="flex flex-col gap-3">
+        <PillLabel>📝 {t('learn.exam_brief')}</PillLabel>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{brief.title}</h1>
         {brief.description && (
           <p className="text-muted-foreground text-sm leading-relaxed">{brief.description}</p>
         )}
@@ -88,7 +116,11 @@ export default function PreExamPage() {
       {/* Info grid */}
       <div className="grid grid-cols-2 gap-4">
         <InfoCard
-          icon={<Clock size={18} className="text-primary" />}
+          icon={
+            <IconBox className="bg-primary/10">
+              <Clock size={16} className="text-primary" />
+            </IconBox>
+          }
           label={t('learn.time_limit')}
           value={
             brief.time_limit_mins !== null
@@ -97,17 +129,32 @@ export default function PreExamPage() {
           }
         />
         <InfoCard
-          icon={<Target size={18} className="text-primary" />}
+          icon={
+            <IconBox className="bg-primary/10">
+              <Target size={16} className="text-primary" />
+            </IconBox>
+          }
           label={t('learn.question_count')}
           value={String(brief.question_count)}
         />
         <InfoCard
-          icon={<Target size={18} className="text-primary" />}
+          icon={
+            <IconBox className="bg-primary/10">
+              <Target size={16} className="text-primary" />
+            </IconBox>
+          }
           label={t('learn.passing_score')}
           value={`${brief.passing_score_percent}%`}
         />
         <InfoCard
-          icon={<RotateCcw size={18} className="text-primary" />}
+          icon={
+            <IconBox className={attemptsExhausted ? 'bg-destructive/10' : 'bg-primary/10'}>
+              <RotateCcw
+                size={16}
+                className={attemptsExhausted ? 'text-destructive' : 'text-primary'}
+              />
+            </IconBox>
+          }
           label={t('learn.attempts_remaining_label')}
           value={
             attemptsExhausted
@@ -119,8 +166,10 @@ export default function PreExamPage() {
 
       {/* Anti-cheat warning */}
       {brief.anti_cheat_enabled && (
-        <div className="flex gap-3 rounded-lg border border-amber-400/40 bg-amber-50 dark:bg-amber-950/20 px-4 py-3">
-          <ShieldAlert size={18} className="text-amber-600 shrink-0 mt-0.5" />
+        <div className="flex gap-3 rounded-2xl border-2 border-amber-400/40 bg-amber-50 dark:bg-amber-950/20 px-4 py-4">
+          <IconBox className="bg-amber-100 dark:bg-amber-900/40">
+            <ShieldAlert size={16} className="text-amber-600" />
+          </IconBox>
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
               {t('learn.anti_cheat_title')}
@@ -162,10 +211,12 @@ interface InfoCardProps {
 
 function InfoCard({ icon, label, value }: InfoCardProps) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card px-4 py-3">
-      <div className="flex items-center gap-2 text-muted-foreground">
+    <div className="flex flex-col gap-3 rounded-2xl border-2 border-border bg-card px-4 py-4">
+      <div className="flex items-center gap-2.5">
         {icon}
-        <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </span>
       </div>
       <p className="text-base font-semibold text-foreground">{value}</p>
     </div>
