@@ -11,11 +11,20 @@ import {
 } from '@item-bank/ui';
 import { useAttemptResult } from '../../../features/learn/hooks';
 
+/** Pill label — small rounded tag used above section headings. */
+function PillLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+      {children}
+    </span>
+  );
+}
+
 /**
  * Exam results page — fetches the graded result for one attempt.
  *
  * Displays:
- *   - Pass / Fail indicator
+ *   - Pass / Fail indicator inside a pastel circle
  *   - Score percentage (large)
  *   - Stats: correct count, time taken, attempt number
  *   - Download Certificate (disabled, coming soon)
@@ -39,12 +48,12 @@ export default function ExamResultsPage() {
   if (isLoading) {
     return (
       <main className="w-full max-w-xl mx-auto px-6 py-12 flex flex-col gap-6 items-center">
-        <div className="h-20 w-20 rounded-full bg-muted animate-pulse" />
+        <div className="h-24 w-24 rounded-full bg-muted animate-pulse" />
         <div className="h-10 w-32 rounded bg-muted animate-pulse" />
         <div className="grid grid-cols-3 gap-4 w-full">
           {Array.from({ length: 3 }).map((_, i) => (
             // eslint-disable-next-line react/no-array-index-key
-            <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />
+            <div key={i} className="h-20 rounded-2xl border-2 border-border bg-card animate-pulse" />
           ))}
         </div>
       </main>
@@ -65,18 +74,31 @@ export default function ExamResultsPage() {
 
   return (
     <main className="w-full max-w-xl mx-auto px-6 py-12 flex flex-col gap-8 items-center text-center">
-      {/* Pass / Fail indicator */}
-      {result.passed ? (
-        <CheckCircle2 size={72} className="text-green-500" aria-hidden />
-      ) : (
-        <XCircle size={72} className="text-destructive" aria-hidden />
-      )}
+      {/* Pass / Fail indicator — icon inside a soft pastel circle */}
+      <div
+        className={`flex h-24 w-24 items-center justify-center rounded-full ${
+          result.passed
+            ? 'bg-green-100 dark:bg-green-950/40'
+            : 'bg-destructive/10'
+        }`}
+      >
+        {result.passed ? (
+          <CheckCircle2 size={48} className="text-green-500" aria-hidden />
+        ) : (
+          <XCircle size={48} className="text-destructive" aria-hidden />
+        )}
+      </div>
 
       {/* Score */}
-      <div className="flex flex-col gap-1">
-        <p className="text-5xl font-bold text-foreground">{result.score_percent}%</p>
+      <div className="flex flex-col items-center gap-2">
+        <PillLabel>
+          {result.passed ? `✅ ${t('learn.passed')}` : `❌ ${t('learn.not_passed')}`}
+        </PillLabel>
+        <p className="text-5xl font-bold tracking-tight text-foreground">
+          {result.score_percent}%
+        </p>
         <p
-          className={`text-lg font-semibold ${
+          className={`text-base font-semibold ${
             result.passed ? 'text-green-600 dark:text-green-400' : 'text-destructive'
           }`}
         >
@@ -151,7 +173,7 @@ export default function ExamResultsPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-card px-3 py-4">
+    <div className="flex flex-col gap-1 rounded-2xl border-2 border-border bg-card px-3 py-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-base font-semibold text-foreground">{value}</p>
     </div>
