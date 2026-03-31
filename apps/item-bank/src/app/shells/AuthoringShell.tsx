@@ -99,6 +99,12 @@ export default function AuthoringShell() {
   // Only dual-role users (authoring + learner) see the switch button.
   const isLearnerToo = user?.roles.includes('learner') ?? false;
 
+  // NavBar only accepts 'admin' | 'user' — collapse the full Role union down.
+  const adminRoleSet = new Set(['admin', 'super_admin', 'org_admin', 'sales']);
+  const navRole: 'admin' | 'user' | undefined = user?.role != null
+    ? (adminRoleSet.has(user.role) ? 'admin' : 'user')
+    : undefined;
+
   return (
     <div className="w-full min-w-0 overflow-hidden">
       <NavBar
@@ -109,7 +115,7 @@ export default function AuthoringShell() {
         }
         onMarkAllNotificationsAsRead={() => markAllMutation.mutate()}
         onLogout={handleLogout}
-        userRole={user?.role}
+        userRole={navRole}
         userName={emailLocal}
         userInitials={emailLocal.slice(0, 2).toUpperCase()}
         onSwitchToLearn={isLearnerToo ? handleSwitchToLearn : undefined}
