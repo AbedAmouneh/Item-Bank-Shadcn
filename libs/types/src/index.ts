@@ -48,6 +48,18 @@ export interface AuthUser {
 }
 
 export type {
+  Assessment,
+  AssessmentPoolQuestion,
+  AssessmentsPage,
+  AssessmentType,
+  AssessmentStatus,
+  CreateAssessmentData,
+  UpdateAssessmentData,
+  GetAssessmentsParams,
+  AddToPoolData,
+} from './assessments';
+
+export type {
   Tenant,
   TenantStatus,
   TenantPlan,
