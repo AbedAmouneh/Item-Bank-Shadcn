@@ -23,6 +23,7 @@ import { NotificationPanel } from './NotificationPanel';
 const primaryNavItems = [
   { labelKey: 'nav.dashboard', path: '/dashboard' },
   { labelKey: 'nav.projects', path: '/projects' },
+  { labelKey: 'nav.exams', path: '/exams' },
   { labelKey: 'nav.itemBanks', path: '/item-banks' },
   { labelKey: 'nav.games', path: '/games' },
 ];
