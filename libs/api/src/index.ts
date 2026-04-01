@@ -100,6 +100,27 @@ export type {
   AssignUserData,
 } from './courses';
 export {
+  getAssessments,
+  getAssessment,
+  createAssessment,
+  updateAssessment,
+  deleteAssessment,
+  getQuestionPool,
+  addToPool,
+  removeFromPool,
+} from './assessments';
+export type {
+  Assessment,
+  AssessmentsPage,
+  AssessmentPoolQuestion,
+  AssessmentType,
+  AssessmentStatus,
+  CreateAssessmentData,
+  UpdateAssessmentData,
+  GetAssessmentsParams,
+  AddToPoolData,
+} from '@item-bank/types';
+export {
   getMyLearning,
   getLearnerCourse,
   completeModule,
