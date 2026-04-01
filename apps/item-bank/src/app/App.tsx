@@ -33,6 +33,8 @@ import ItemBankDetail from './pages/ItemBankDetail';
 import CoursesList from './pages/courses/CoursesList';
 import CourseDetail from './pages/courses/CourseDetail';
 import CourseEditor from './pages/courses/CourseEditor';
+import AssessmentsList from './pages/assessments/AssessmentsList';
+import AssessmentEditor from './pages/assessments/AssessmentEditor';
 import AdminTags from './pages/AdminTags';
 import AdminReview from './pages/AdminReview';
 import AdminAuditLog from './pages/AdminAuditLog';
@@ -167,6 +169,9 @@ export default function App() {
                   <Route path="/projects" element={<CoursesList />} />
                   <Route path="/projects/:id" element={<CourseDetail />} />
                   <Route path="/projects/:id/edit" element={<CourseEditor />} />
+                  <Route path="/exams" element={<AssessmentsList />} />
+                  <Route path="/exams/new" element={<AssessmentEditor />} />
+                  <Route path="/exams/:id/edit" element={<AssessmentEditor />} />
                   <Route path="/admin/tags" element={<AdminTags />} />
                   <Route path="/admin/audit-log" element={<AdminAuditLog />} />
                   <Route
