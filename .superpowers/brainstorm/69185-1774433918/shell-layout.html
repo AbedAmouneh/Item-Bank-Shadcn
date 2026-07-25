@@ -1,0 +1,137 @@
+<h2>Platform Shell — Layout Options</h2>
+<p class="subtitle">Pick the shell structure that feels most natural for an admin dashboard. Click to select.</p>
+
+<div class="cards">
+
+  <!-- Option A: Full sidebar, no top header -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;height:220px;background:#0f172a;border-radius:6px;overflow:hidden;font-size:11px;">
+        <!-- Sidebar -->
+        <div style="width:56px;background:#1e293b;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:6px;border-right:1px solid #334155;">
+          <div style="width:32px;height:32px;background:#6366f1;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;margin-bottom:8px;">A</div>
+          <div style="width:36px;height:36px;background:#312e81;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <div style="width:16px;height:3px;background:#a5b4fc;border-radius:2px;box-shadow:0 4px 0 #a5b4fc, 0 8px 0 #a5b4fc;"></div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <div style="width:14px;height:14px;border:2px solid #475569;border-radius:3px;"></div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <div style="width:14px;height:14px;border:2px solid #475569;border-radius:50%;"></div>
+          </div>
+          <div style="flex:1;"></div>
+          <div style="width:28px;height:28px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">SA</div>
+        </div>
+        <!-- Main -->
+        <div style="flex:1;background:#0f172a;padding:16px;">
+          <div style="height:12px;width:120px;background:#1e293b;border-radius:3px;margin-bottom:12px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div style="height:40px;background:#1e293b;border-radius:6px;border:1px solid #334155;"></div>
+            <div style="height:40px;background:#1e293b;border-radius:6px;border:1px solid #334155;"></div>
+          </div>
+          <div style="height:80px;background:#1e293b;border-radius:6px;border:1px solid #334155;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Icon rail sidebar</h3>
+      <p>Compact icon-only sidebar (no top bar). Logo at top, nav icons with tooltips, avatar at bottom. Maximum screen space for content.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Wide sidebar + top header -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;flex-direction:column;height:220px;background:#f8fafc;border-radius:6px;overflow:hidden;font-size:11px;border:1px solid #e2e8f0;">
+        <!-- Top header -->
+        <div style="height:44px;background:white;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 12px;gap:8px;">
+          <div style="width:22px;height:22px;background:#6366f1;border-radius:5px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:10px;">A</div>
+          <span style="font-size:11px;font-weight:600;color:#1e293b;">Platform</span>
+          <div style="flex:1;"></div>
+          <div style="width:22px;height:22px;background:#ede9fe;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#6366f1;">SA</div>
+          <div style="width:16px;height:10px;border-top:2px solid #94a3b8;border-bottom:2px solid #94a3b8;"></div>
+        </div>
+        <!-- Body -->
+        <div style="display:flex;flex:1;">
+          <!-- Sidebar -->
+          <div style="width:140px;background:#f1f5f9;border-right:1px solid #e2e8f0;padding:8px;">
+            <div style="height:28px;background:#6366f1;border-radius:6px;display:flex;align-items:center;padding:0 8px;margin-bottom:4px;">
+              <span style="color:white;font-size:9px;font-weight:600;">● Dashboard</span>
+            </div>
+            <div style="height:28px;border-radius:6px;display:flex;align-items:center;padding:0 8px;margin-bottom:4px;">
+              <span style="color:#64748b;font-size:9px;">○ Tenants</span>
+            </div>
+          </div>
+          <!-- Main -->
+          <div style="flex:1;padding:10px;background:white;">
+            <div style="height:10px;width:80px;background:#f1f5f9;border-radius:3px;margin-bottom:8px;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+              <div style="height:36px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0;"></div>
+              <div style="height:36px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0;"></div>
+            </div>
+            <div style="height:60px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Header + wide sidebar</h3>
+      <p>Thin top bar (branding + user) with a full-width labelled sidebar below. Nav items have icons and text labels. Clean, familiar admin pattern.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Sidebar with branding section -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;height:220px;background:#f8fafc;border-radius:6px;overflow:hidden;font-size:11px;border:1px solid #e2e8f0;">
+        <!-- Sidebar -->
+        <div style="width:160px;background:linear-gradient(160deg,#312e81,#1e1b4b);display:flex;flex-direction:column;padding:0;">
+          <!-- Brand header -->
+          <div style="padding:14px 12px 10px;border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div style="display:flex;align-items:center;gap:7px;">
+              <div style="width:26px;height:26px;background:#6366f1;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:11px;">A</div>
+              <div>
+                <div style="color:white;font-size:10px;font-weight:700;line-height:1.2;">Platform</div>
+                <div style="color:#a5b4fc;font-size:8px;line-height:1.2;">Super Admin</div>
+              </div>
+            </div>
+          </div>
+          <!-- Nav -->
+          <div style="padding:8px 6px;flex:1;">
+            <div style="font-size:8px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:4px 6px;margin-bottom:2px;">Navigation</div>
+            <div style="height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;padding:0 8px;margin-bottom:2px;gap:6px;">
+              <div style="width:8px;height:8px;background:#a5b4fc;border-radius:2px;"></div>
+              <span style="color:white;font-size:9px;font-weight:600;">Dashboard</span>
+            </div>
+            <div style="height:28px;border-radius:6px;display:flex;align-items:center;padding:0 8px;margin-bottom:2px;gap:6px;">
+              <div style="width:8px;height:8px;border:1.5px solid #6366f1;border-radius:2px;"></div>
+              <span style="color:#a5b4fc;font-size:9px;">Tenants</span>
+            </div>
+          </div>
+          <!-- User footer -->
+          <div style="padding:8px 10px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:6px;">
+            <div style="width:22px;height:22px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:white;">SA</div>
+            <div>
+              <div style="color:white;font-size:8px;font-weight:600;">super_admin</div>
+              <div style="color:#a5b4fc;font-size:7px;">Logout</div>
+            </div>
+          </div>
+        </div>
+        <!-- Main -->
+        <div style="flex:1;padding:12px;background:white;">
+          <div style="height:10px;width:90px;background:#f1f5f9;border-radius:3px;margin-bottom:8px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+            <div style="height:36px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0;"></div>
+            <div style="height:36px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0;"></div>
+          </div>
+          <div style="height:60px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Branded full sidebar</h3>
+      <p>No top bar — the sidebar owns the full height. Dark branded panel with section label, nav items, and user/logout pinned at the bottom.</p>
+    </div>
+  </div>
+
+</div>

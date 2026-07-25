@@ -6,7 +6,7 @@
   /* ─── LIGHT MODE ─────────────────────────────────────────────── */
   :root {
     /* shadcn base tokens */
-    --background: 210 40% 98%;        /* #F8FAFC slate-50 */
+    --background: 30 65% 96%;         /* warm cream — LearnHub-inspired */
     --foreground: 222 47% 7%;         /* #0F172A slate-900 */
 
     --card: 0 0% 100%;                /* #FFFFFF */
@@ -32,15 +32,15 @@
     --destructive: 351 95% 61%;       /* #F43F5E rose-500 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;            /* #E2E8F0 slate-200 */
-    --input: 214 32% 91%;
+    --border: 214 32% 84%;            /* slightly stronger border */
+    --input: 214 32% 84%;
     --ring: 239 84% 67%;              /* indigo-500 */
 
     --radius: 0.625rem;
 
     /* ── Semantic surface tokens ── */
-    --surface-default: 210 40% 98%;   /* page background */
-    --surface-subtle: 210 40% 96%;    /* slight off-white */
+    --surface-default: 30 65% 96%;    /* page background — warm cream */
+    --surface-subtle: 30 55% 93%;     /* slightly deeper cream */
     --surface-card: 0 0% 100%;        /* white card */
     --surface-input: 0 0% 100%;       /* input bg */
 
@@ -222,6 +222,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
